@@ -1,0 +1,12 @@
+.form { display: grid; gap: 1.1rem; }
+.two { display: grid; gap: 1.1rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+.form small { font-weight: 400; color: var(--muted); }
+.seg { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; padding: .35rem; background: var(--off); border-radius: 16px; border: 1px solid var(--line); }
+.seg button { display: inline-flex; align-items: center; justify-content: center; gap: .45rem; min-height: 48px; border: 0; border-radius: 12px; background: transparent; cursor: pointer; font-size: .9rem; color: var(--muted); transition: .2s; padding: .4rem .6rem; }
+.seg button.on { background: #fff; color: var(--olive-ink); font-weight: 500; box-shadow: var(--shadow); }
+.seg button svg { color: var(--olive); flex-shrink: 0; }
+.submit { width: 100%; margin-top: .4rem; }
+.err { color: #a2442a; font-size: .9rem; }
+.done { display: grid; gap: .8rem; justify-items: center; text-align: center; padding: 2rem 0; }
+.done > span { width: 64px; height: 64px; border-radius: 50%; background: var(--sage); color: var(--olive-dark); display: grid; place-items: center; }
+.done p { color: var(--muted); max-width: 36ch; }

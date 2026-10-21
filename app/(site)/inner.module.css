@@ -1,0 +1,33 @@
+.stack { display: grid; gap: clamp(4rem, 9vw, 7rem); }
+.phoneWrap { display: grid; place-items: center; justify-items: center !important; width: 100%; padding: 2rem 0; background: var(--sage); border-radius: var(--r-arch); }
+.narrow { max-width: 820px; }
+.prose { display: grid; gap: 1rem; color: var(--muted); }
+.prose h2 { font-size: 1.6rem; margin-top: 1.5rem; }
+.stats { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); }
+.dash { background: #fff; border-radius: var(--r-lg); box-shadow: var(--shadow-lg); padding: 1.4rem; display: grid; gap: 1rem; width: 100%; }
+.dashHead { display: flex; justify-content: space-between; align-items: center; }
+.dashHead p:first-child { font-family: var(--f-display); font-size: 1.3rem; color: var(--olive-ink); }
+.dashHead span { font-size: .78rem; padding: .25rem .7rem; border-radius: 99px; background: var(--sage); color: var(--olive-dark); }
+.tile { background: var(--off); border-radius: 16px; padding: .9rem 1rem; display: grid; }
+.tile small { font-size: .78rem; color: var(--muted); }
+.tile b { font-family: var(--f-display); font-size: 1.6rem; color: var(--olive-ink); font-weight: 600; }
+.tile em { font-style: normal; font-size: .76rem; color: var(--olive); }
+.chart { display: flex; align-items: flex-end; gap: 6px; height: 110px; padding: .6rem .4rem 0; border-bottom: 1px solid var(--line); }
+.chart span { flex: 1; background: var(--sage); border-radius: 6px 6px 0 0; }
+.chart span:nth-last-child(-n+3) { background: var(--olive); }
+.enq { list-style: none; margin: 0; padding: 0; display: grid; gap: .5rem; font-size: .88rem; }
+.enq li { display: flex; justify-content: space-between; gap: 1rem; padding: .6rem .8rem; border-radius: 12px; background: var(--off); }
+.enq em { font-style: normal; font-size: .76rem; color: var(--olive-dark); background: var(--sage); padding: .1rem .55rem; border-radius: 99px; white-space: nowrap; }
+.formWrap { display: grid; gap: 3rem; grid-template-columns: minmax(0, 1fr); align-items: start; }
+.formCard { background: #fff; border-radius: var(--r-lg); box-shadow: var(--shadow); padding: clamp(1.4rem, 4vw, 2.4rem); }
+.formSide { display: grid; gap: 1.2rem; align-content: start; }
+.formSide :global(.lead) { max-width: 40ch; }
+.formArch { position: relative; aspect-ratio: 4 / 5; max-width: 340px; border-radius: var(--r-arch); overflow: hidden; margin-top: 1rem; }
+.formArch img { object-fit: cover; }
+.auth { min-height: calc(100svh - 76px); display: grid; place-items: center; padding: 3rem 0; }
+.authCard { width: min(100%, 460px); background: #fff; border-radius: var(--r-lg); box-shadow: var(--shadow-lg); padding: clamp(1.6rem, 5vw, 2.6rem); display: grid; gap: 1.2rem; }
+.authCard h1 { font-size: 2.2rem; }
+.authCard > p { color: var(--muted); }
+.authAlt { text-align: center; font-size: .92rem; color: var(--muted); }
+.authAlt a { color: var(--olive-dark); font-weight: 500; }
+@media (min-width: 900px) { .formWrap { grid-template-columns: minmax(0, .9fr) minmax(0, 1.1fr); } }

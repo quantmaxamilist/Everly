@@ -1,0 +1,12 @@
+.grid { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr)); }
+.item { background: #fff; border-radius: var(--r-lg); padding: 1.7rem 1.5rem; display: grid; gap: .6rem; align-content: start; box-shadow: var(--shadow); }
+.icon { width: 50px; height: 50px; border-radius: 15px; background: var(--sage); color: var(--olive-dark); display: grid; place-items: center; margin-bottom: .3rem; }
+.item p { color: var(--muted); font-size: .95rem; }
+.split { display: grid; gap: 3rem; grid-template-columns: minmax(0, 1fr); align-items: center; }
+.split > div { display: grid; gap: 1.1rem; justify-items: start; }
+.img { position: relative; aspect-ratio: 5 / 4; border-radius: var(--r-lg); overflow: hidden; box-shadow: var(--shadow-lg); width: 100%; }
+.img img { object-fit: cover; }
+.list { list-style: none; padding: 0; margin: .3rem 0 0; display: grid; gap: .7rem; }
+.list li { display: flex; gap: .7rem; align-items: flex-start; }
+.list svg { color: var(--olive); flex-shrink: 0; margin-top: .15rem; }
+@media (min-width: 900px) { .split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .rev > :first-child { order: 2; } }
