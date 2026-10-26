@@ -1,10 +1,14 @@
 /**
  * Demo data for the market-research previews (couple + supplier).
- * Everything here is FICTIONAL sample data — venues, suppliers, prices, couples and figures.
+ * Everything here is FICTIONAL sample data — venues, suppliers, prices, couples, reviews and figures.
+ * Nothing is saved or sent; the supplier-side figures are generated from a fixed seed so they never change.
  */
 
-export type Category = 'Venues' | 'Photographers' | 'Catering' | 'Florists' | 'Music';
-export const categories: Category[] = ['Venues', 'Photographers', 'Catering', 'Florists', 'Music'];
+export type Category = 'Venues' | 'Photographers' | 'Catering' | 'Florists' | 'Music' | 'Cakes' | 'Hair & make-up';
+export const categories: Category[] = ['Venues', 'Photographers', 'Catering', 'Florists', 'Music', 'Cakes', 'Hair & make-up'];
+export const catIcon: Record<Category, string> = { Venues: 'home', Photographers: 'camera', Catering: 'layers', Florists: 'leaf', Music: 'music', Cakes: 'cake', 'Hair & make-up': 'brush' };
+/** singular label, e.g. "venue", "photographer" */
+export const catOne: Record<Category, string> = { Venues: 'venue', Photographers: 'photographer', Catering: 'caterer', Florists: 'florist', Music: 'band / DJ', Cakes: 'cake maker', 'Hair & make-up': 'hair & make-up artist' };
 
 export const regions = ['Cotswolds', 'Devon', 'Cornwall', 'Lake District', 'Yorkshire', 'London', 'Surrey', 'Scotland'];
 export const styles = ['Rustic', 'Country house', 'Garden', 'Coastal', 'Classic', 'Modern'];
@@ -31,18 +35,31 @@ export type Supplier = {
   rating: number;
   reviews: number;
   capacity?: number;
+  travels?: boolean;      // covers the whole UK, so shows in every region
   img: string;
   gallery: string[];
   about: string;
   fromPrice: number;
-  unavailable?: string[]; // ISO dates already booked
+  booked?: string[];      // fixed booked dates (ISO) — more are generated on the supplier side
   packages: Package[];
 };
 
+/* ---------------- sample weddings (couple side quick-start) ---------------- */
+export type Wedding = { names: string; date: string; region: string; guests: number; budget: number };
+export const sampleWeddings: (Wedding & { blurb: string; img: string })[] = [
+  { names: 'Sophie & James', date: '2027-06-12', region: 'Cotswolds', guests: 110, budget: 25000, blurb: 'Country-house summer wedding', img: '/images/villa.jpg' },
+  { names: 'Aisha & Ravi', date: '2027-09-18', region: 'London', guests: 180, budget: 42000, blurb: 'Big city celebration', img: '/images/setting.jpg' },
+  { names: 'Emma & Lewis', date: '2027-05-22', region: 'Cornwall', guests: 70, budget: 16000, blurb: 'Small coastal wedding', img: '/images/aisle.jpg' },
+  { names: 'Megan & Callum', date: '2027-08-14', region: 'Lake District', guests: 120, budget: 22000, blurb: 'Rustic barn in the fells', img: '/images/hills.jpg' },
+];
+export const SAMPLE_DATES = sampleWeddings.map((w) => w.date);
+
+/* ---------------- suppliers ---------------- */
 export const suppliers: Supplier[] = [
+  /* ---- Venues ---- */
   {
     id: 'stone-villa', name: 'The Stone Villa', category: 'Venues', region: 'Cotswolds', town: 'Chipping Campden', style: 'Country house',
-    rating: 4.9, reviews: 128, capacity: 150, img: '/images/villa.jpg', gallery: ['/images/villa.jpg', '/images/table.jpg', '/images/arch.jpg'],
+    rating: 4.9, reviews: 128, capacity: 150, img: '/images/villa.jpg', gallery: ['/images/villa.jpg', '/images/table.jpg', '/images/arch.jpg', '/images/gardens.jpg'],
     about: 'A honey-stone farmhouse with olive groves, a walled garden for ceremonies and a long-table barn for the wedding breakfast. Exclusive use for your whole day.',
     fromPrice: 6500,
     packages: [
@@ -50,28 +67,123 @@ export const suppliers: Supplier[] = [
       { id: 'sv-weekend', name: 'Weekend Celebration', price: 9800, summary: 'Fri – Sun with 12 bedrooms', includes: ['Everything in Full Day Exclusive', 'Friday welcome evening', 'Sunday recovery brunch space', '12 bedrooms for 2 nights', 'Late licence until 1am'], hours: '3 days', maxGuests: 150, deposit: 25 },
       { id: 'sv-twilight', name: 'Twilight Wedding', price: 4200, summary: 'Ceremony from 4pm', includes: ['Ceremony in the walled garden', 'Barn for dinner & evening', 'Tables, chairs & linen', 'Venue coordinator'], hours: '8 hrs', maxGuests: 100, deposit: 25 },
     ],
-    unavailable: ['2027-06-05', '2027-06-19', '2027-06-26'],
   },
   {
     id: 'avenue-house', name: 'Avenue House', category: 'Venues', region: 'Cotswolds', town: 'Stow-on-the-Wold', style: 'Classic',
-    rating: 4.8, reviews: 94, capacity: 180, img: '/images/avenue.jpg', gallery: ['/images/avenue.jpg', '/images/setting.jpg'],
+    rating: 4.8, reviews: 94, capacity: 180, img: '/images/avenue.jpg', gallery: ['/images/avenue.jpg', '/images/setting.jpg', '/images/aisle.jpg'],
     about: 'A Georgian manor at the end of a tree-lined avenue, with a ceremony room, formal lawns and a ballroom for up to 180.',
-    fromPrice: 8200,
+    fromPrice: 8200, booked: ['2027-06-12'],
     packages: [
       { id: 'ah-day', name: 'Manor Day', price: 8200, summary: 'Exclusive use 11am – midnight', includes: ['Ceremony room or lawn', 'Ballroom for dinner & dancing', 'Tables, chairs & linen', 'Venue coordinator', 'Bridal suite on the night'], hours: '13 hrs', maxGuests: 180, deposit: 30 },
       { id: 'ah-midweek', name: 'Midweek Manor', price: 6100, summary: 'Mon – Thu dates', includes: ['Ceremony room or lawn', 'Ballroom for dinner & dancing', 'Tables, chairs & linen', 'Venue coordinator'], hours: '12 hrs', maxGuests: 180, deposit: 30 },
     ],
-    unavailable: ['2027-06-12'],
+  },
+  {
+    id: 'bramley-orchard', name: 'Bramley Orchard', category: 'Venues', region: 'Cotswolds', town: 'Painswick', style: 'Garden',
+    rating: 4.9, reviews: 47, capacity: 90, img: '/images/gardens.jpg', gallery: ['/images/gardens.jpg', '/images/bouquet2.jpg', '/images/table2.jpg'],
+    about: 'An apple orchard and Victorian glasshouse for smaller, relaxed weddings. Ceremony under the trees, dinner by candlelight in the glasshouse.',
+    fromPrice: 3900,
+    packages: [
+      { id: 'bo-day', name: 'Orchard Day', price: 3900, summary: 'Exclusive use 12pm – 11pm', includes: ['Ceremony in the orchard', 'Glasshouse for dinner', 'Festoon lighting', 'Tables & chairs'], hours: '11 hrs', maxGuests: 90, deposit: 25 },
+      { id: 'bo-intimate', name: 'Intimate Wedding', price: 2400, summary: 'Up to 40 guests, weekdays', includes: ['Ceremony in the orchard', 'Glasshouse for dinner', 'Tables & chairs'], hours: '7 hrs', maxGuests: 40, deposit: 25 },
+    ],
   },
   {
     id: 'formal-gardens', name: 'The Formal Gardens', category: 'Venues', region: 'Devon', town: 'Totnes', style: 'Garden',
-    rating: 4.7, reviews: 61, capacity: 120, img: '/images/gardens.jpg', gallery: ['/images/gardens.jpg', '/images/aisle.jpg'],
+    rating: 4.7, reviews: 61, capacity: 120, img: '/images/arch.jpg', gallery: ['/images/arch.jpg', '/images/gardens.jpg', '/images/aisle.jpg'],
     about: 'Parterre gardens and an orangery overlooking the Dart valley — made for outdoor ceremonies.',
     fromPrice: 4800,
     packages: [
       { id: 'fg-day', name: 'Garden Day', price: 4800, summary: 'Exclusive use 11am – 11pm', includes: ['Outdoor ceremony in the parterre', 'Orangery for dinner', 'Tables & chairs', 'Venue coordinator'], hours: '12 hrs', maxGuests: 120, deposit: 25 },
     ],
   },
+  {
+    id: 'harbour-light', name: 'Harbour Light Hotel', category: 'Venues', region: 'Cornwall', town: 'St Ives', style: 'Coastal',
+    rating: 4.8, reviews: 112, capacity: 90, img: '/images/aisle.jpg', gallery: ['/images/aisle.jpg', '/images/setting.jpg', '/images/table.jpg'],
+    about: 'A whitewashed harbour-side hotel with a sea-view terrace for ceremonies and 24 bedrooms for guests.',
+    fromPrice: 5400, booked: ['2027-05-22'],
+    packages: [
+      { id: 'hl-day', name: 'Harbour Day', price: 5400, summary: 'Terrace ceremony + dinner', includes: ['Sea-view terrace ceremony', 'Prosecco reception', 'Dining room exclusive use', 'Bridal suite'], hours: '12 hrs', maxGuests: 90, deposit: 30 },
+      { id: 'hl-all', name: 'All-inclusive 70', price: 11900, summary: '70 guests, food & drink included', includes: ['Terrace ceremony', 'Three-course dinner', 'Half a bottle of wine per guest', 'Evening buffet', 'Bridal suite'], hours: '12 hrs', maxGuests: 70, deposit: 30 },
+    ],
+  },
+  {
+    id: 'trevose-barn', name: 'Trevose Cove Barn', category: 'Venues', region: 'Cornwall', town: 'Padstow', style: 'Rustic',
+    rating: 4.9, reviews: 38, capacity: 130, img: '/images/hills.jpg', gallery: ['/images/hills.jpg', '/images/table2.jpg', '/images/field.jpg'],
+    about: 'A restored threshing barn a short walk from the beach, with clifftop ceremony spot and fire-pit evening garden.',
+    fromPrice: 4600,
+    packages: [
+      { id: 'tc-day', name: 'Cove Day', price: 4600, summary: 'Exclusive use 11am – midnight', includes: ['Clifftop ceremony spot', 'Barn for dinner & dancing', 'Fire-pit garden', 'Tables & chairs'], hours: '13 hrs', maxGuests: 130, deposit: 25 },
+      { id: 'tc-weekend', name: 'Cove Weekend', price: 7200, summary: 'Fri – Sun with glamping field', includes: ['Everything in Cove Day', 'Glamping field for 60', 'Friday BBQ evening', 'Sunday beach brunch space'], hours: '3 days', maxGuests: 130, deposit: 25 },
+    ],
+  },
+  {
+    id: 'fellside-barn', name: 'Fellside Barn', category: 'Venues', region: 'Lake District', town: 'Ambleside', style: 'Rustic',
+    rating: 4.8, reviews: 76, capacity: 140, img: '/images/field.jpg', gallery: ['/images/field.jpg', '/images/hills.jpg', '/images/table2.jpg'],
+    about: 'A slate-and-oak barn under the fells, with lake views from the ceremony meadow.',
+    fromPrice: 5200, booked: ['2027-08-14'],
+    packages: [
+      { id: 'fb-day', name: 'Fellside Day', price: 5200, summary: 'Exclusive use 11am – midnight', includes: ['Meadow or barn ceremony', 'Barn for dinner & dancing', 'Tables, chairs & linen', 'Venue coordinator'], hours: '13 hrs', maxGuests: 140, deposit: 25 },
+    ],
+  },
+  {
+    id: 'langdale-hall', name: 'Langdale Hall', category: 'Venues', region: 'Lake District', town: 'Grasmere', style: 'Country house',
+    rating: 4.7, reviews: 52, capacity: 160, img: '/images/hero.jpg', gallery: ['/images/hero.jpg', '/images/avenue.jpg', '/images/setting.jpg'],
+    about: 'A Victorian country house with lakeside lawns, a panelled ceremony room and 18 bedrooms.',
+    fromPrice: 6900,
+    packages: [
+      { id: 'lh-day', name: 'Hall Day', price: 6900, summary: 'Exclusive use 11am – midnight', includes: ['Ceremony room or lawn', 'Lakeside drinks reception', 'Great Hall for dinner', 'Bridal suite'], hours: '13 hrs', maxGuests: 160, deposit: 30 },
+      { id: 'lh-weekend', name: 'House Party Weekend', price: 12500, summary: 'Fri – Sun, all 18 bedrooms', includes: ['Everything in Hall Day', 'All 18 bedrooms, 2 nights', 'Friday supper room', 'Sunday brunch room'], hours: '3 days', maxGuests: 160, deposit: 30 },
+    ],
+  },
+  {
+    id: 'thornbury-hall', name: 'Thornbury Hall', category: 'Venues', region: 'Yorkshire', town: 'Harrogate', style: 'Country house',
+    rating: 4.8, reviews: 89, capacity: 200, img: '/images/avenue.jpg', gallery: ['/images/avenue.jpg', '/images/gardens.jpg', '/images/setting.jpg'],
+    about: 'A Palladian hall in 40 acres of parkland, with an orangery and a ballroom for up to 200.',
+    fromPrice: 7400,
+    packages: [
+      { id: 'th-day', name: 'Hall Day', price: 7400, summary: 'Exclusive use 11am – midnight', includes: ['Orangery ceremony', 'Ballroom dinner', 'Parkland portraits', 'Venue coordinator'], hours: '13 hrs', maxGuests: 200, deposit: 25 },
+    ],
+  },
+  {
+    id: 'glasshouse', name: 'The Glasshouse', category: 'Venues', region: 'London', town: 'Shoreditch', style: 'Modern',
+    rating: 4.7, reviews: 143, capacity: 200, img: '/images/setting.jpg', gallery: ['/images/setting.jpg', '/images/table.jpg', '/images/aisle.jpg'],
+    about: 'A glass-roofed former print hall with a roof terrace — industrial-modern, made for big city parties.',
+    fromPrice: 9500, booked: ['2027-09-18'],
+    packages: [
+      { id: 'gh-day', name: 'Hall & Terrace', price: 9500, summary: 'Exclusive use 12pm – 1am', includes: ['Ceremony on the roof terrace', 'Main hall for dinner & dancing', 'In-house lighting rig', 'Venue manager'], hours: '13 hrs', maxGuests: 200, deposit: 30 },
+      { id: 'gh-eve', name: 'Evening Party', price: 5800, summary: '6pm – 1am', includes: ['Main hall', 'In-house lighting rig', 'Late licence'], hours: '7 hrs', maxGuests: 200, deposit: 30 },
+    ],
+  },
+  {
+    id: 'printworks-loft', name: 'Riverside Loft', category: 'Venues', region: 'London', town: 'Bermondsey', style: 'Modern',
+    rating: 4.6, reviews: 71, capacity: 190, img: '/images/table.jpg', gallery: ['/images/table.jpg', '/images/setting.jpg'],
+    about: 'A Thames-side warehouse loft with exposed brick, river views and an in-house bar team.',
+    fromPrice: 7800,
+    packages: [
+      { id: 'rl-day', name: 'Loft Day', price: 7800, summary: 'Exclusive use 12pm – midnight', includes: ['Ceremony with river views', 'Dinner & dancing in the loft', 'Bar team', 'Venue manager'], hours: '12 hrs', maxGuests: 190, deposit: 25 },
+    ],
+  },
+  {
+    id: 'willow-mill', name: 'Willow Mill', category: 'Venues', region: 'Surrey', town: 'Dorking', style: 'Rustic',
+    rating: 4.8, reviews: 66, capacity: 130, img: '/images/table2.jpg', gallery: ['/images/table2.jpg', '/images/field.jpg', '/images/gardens.jpg'],
+    about: 'A working watermill on the River Mole, with a willow-lined ceremony lawn and timber-framed barn.',
+    fromPrice: 5900,
+    packages: [
+      { id: 'wm-day', name: 'Mill Day', price: 5900, summary: 'Exclusive use 11am – midnight', includes: ['Riverside ceremony lawn', 'Barn for dinner & dancing', 'Tables & chairs', 'Venue coordinator'], hours: '13 hrs', maxGuests: 130, deposit: 25 },
+    ],
+  },
+  {
+    id: 'loch-ard', name: 'Loch Ard Lodge', category: 'Venues', region: 'Scotland', town: 'Aberfoyle', style: 'Rustic',
+    rating: 4.9, reviews: 41, capacity: 100, img: '/images/hills.jpg', gallery: ['/images/hills.jpg', '/images/field.jpg'],
+    about: 'A lochside hunting lodge in the Trossachs with a boathouse ceremony spot and whisky bar.',
+    fromPrice: 5600,
+    packages: [
+      { id: 'la-day', name: 'Lodge Day', price: 5600, summary: 'Exclusive use 11am – midnight', includes: ['Boathouse ceremony', 'Lodge dining room', 'Whisky bar', 'Piper on arrival'], hours: '13 hrs', maxGuests: 100, deposit: 25 },
+    ],
+  },
+
+  /* ---- Photographers ---- */
   {
     id: 'meadow-light', name: 'Meadow & Light Photography', category: 'Photographers', region: 'Cotswolds', town: 'Cirencester', style: 'Rustic',
     rating: 5.0, reviews: 212, img: '/images/field.jpg', gallery: ['/images/field.jpg', '/images/couple.jpg', '/images/bouquet2.jpg'],
@@ -89,11 +201,44 @@ export const suppliers: Supplier[] = [
     fromPrice: 1100,
     packages: [
       { id: 'gh-full', name: 'Signature Day', price: 1450, summary: '8 hours coverage', includes: ['Ceremony to first dance', '500+ edited photos', 'Online gallery'], hours: '8 hrs', deposit: 30 },
+      { id: 'gh-half', name: 'Essentials', price: 1100, summary: '5 hours coverage', includes: ['Ceremony & portraits', '300+ edited photos', 'Online gallery'], hours: '5 hrs', deposit: 30 },
     ],
   },
   {
+    id: 'saltwater', name: 'Saltwater Stories', category: 'Photographers', region: 'Cornwall', town: 'Falmouth', style: 'Coastal',
+    rating: 4.9, reviews: 64, img: '/images/aisle.jpg', gallery: ['/images/aisle.jpg', '/images/couple.jpg', '/images/hills.jpg'],
+    about: 'Photo + film duo shooting relaxed coastal weddings — beach portraits at sunset are our thing.',
+    fromPrice: 1200,
+    packages: [
+      { id: 'sw-photo', name: 'Photo Day', price: 1200, summary: '8 hours photography', includes: ['Ceremony to first dance', 'Sunset beach portraits', '500+ edited photos'], hours: '8 hrs', deposit: 25 },
+      { id: 'sw-film', name: 'Photo + Film', price: 2350, summary: 'Photos plus 5-minute film', includes: ['Everything in Photo Day', 'Highlights film (5 min)', 'Full ceremony film', 'Drone shots'], hours: '10 hrs', deposit: 25 },
+    ],
+  },
+  {
+    id: 'north-pine', name: 'North & Pine', category: 'Photographers', region: 'Lake District', town: 'Keswick', style: 'Rustic', travels: true,
+    rating: 4.9, reviews: 101, img: '/images/hills.jpg', gallery: ['/images/hills.jpg', '/images/field.jpg', '/images/couple.jpg'],
+    about: 'Adventurous, moody landscapes and honest moments. Based in the Lakes, travelling UK-wide.',
+    fromPrice: 1300,
+    packages: [
+      { id: 'np-day', name: 'Whole Day', price: 1800, summary: '10 hours + mountain portraits', includes: ['Prep to first dance', 'Mountain portrait session', '700+ edited photos', 'Printed album'], hours: '10 hrs', deposit: 25 },
+      { id: 'np-elope', name: 'Elopement', price: 1300, summary: '4 hours, any location', includes: ['Ceremony & adventure portraits', '250+ edited photos', 'Location scouting'], hours: '4 hrs', deposit: 25 },
+    ],
+  },
+  {
+    id: 'studio-halden', name: 'Studio Halden', category: 'Photographers', region: 'London', town: 'Hackney', style: 'Modern', travels: true,
+    rating: 4.7, reviews: 58, img: '/images/bouquet2.jpg', gallery: ['/images/bouquet2.jpg', '/images/setting.jpg', '/images/couple.jpg'],
+    about: 'Fashion-led, flash-lit city wedding photography with a fast 2-week turnaround.',
+    fromPrice: 1400,
+    packages: [
+      { id: 'sh-day', name: 'City Day', price: 1900, summary: '9 hours, 2 photographers', includes: ['Two photographers', 'Flash party coverage', '700+ edited photos', '2-week delivery'], hours: '9 hrs', deposit: 30 },
+      { id: 'sh-short', name: 'Registry & Party', price: 1400, summary: '6 hours', includes: ['Registry ceremony', 'Street portraits', '400+ edited photos'], hours: '6 hrs', deposit: 30 },
+    ],
+  },
+
+  /* ---- Catering ---- */
+  {
     id: 'long-table', name: 'The Long Table Kitchen', category: 'Catering', region: 'Cotswolds', town: 'Moreton-in-Marsh', style: 'Rustic',
-    rating: 4.9, reviews: 143, img: '/images/table2.jpg', gallery: ['/images/table2.jpg', '/images/setting.jpg'],
+    rating: 4.9, reviews: 143, img: '/images/table2.jpg', gallery: ['/images/table2.jpg', '/images/setting.jpg', '/images/table.jpg'],
     about: 'Seasonal, locally sourced menus served family-style down long tables.',
     fromPrice: 58,
     packages: [
@@ -101,6 +246,37 @@ export const suppliers: Supplier[] = [
       { id: 'lt-three', name: 'Three-Course Breakfast', price: 72, perGuest: true, summary: 'Per guest, plated', includes: ['Canapés on arrival', 'Three plated courses', 'Evening bacon rolls', 'Service staff'], deposit: 20 },
     ],
   },
+  {
+    id: 'smoke-ember', name: 'Smoke & Ember', category: 'Catering', region: 'Surrey', town: 'Guildford', style: 'Rustic', travels: true,
+    rating: 4.8, reviews: 96, img: '/images/table.jpg', gallery: ['/images/table.jpg', '/images/table2.jpg'],
+    about: 'Live-fire cooking — whole roasted lamb, flatbreads from the wood oven and big seasonal salads.',
+    fromPrice: 49,
+    packages: [
+      { id: 'se-fire', name: 'Fire Feast', price: 49, perGuest: true, summary: 'Per guest, live-fire sharing', includes: ['Wood-fired flatbreads', 'Two fire-roasted meats', 'Seasonal salads', 'Chef team'], deposit: 25 },
+      { id: 'se-full', name: 'Fire Feast + Evening', price: 64, perGuest: true, summary: 'Per guest, day + evening', includes: ['Everything in Fire Feast', 'Evening street-food station', 'Service staff'], deposit: 25 },
+    ],
+  },
+  {
+    id: 'copper-pot', name: 'Copper Pot Catering', category: 'Catering', region: 'London', town: 'Islington', style: 'Modern',
+    rating: 4.7, reviews: 122, img: '/images/setting.jpg', gallery: ['/images/setting.jpg', '/images/table.jpg'],
+    about: 'Modern British menus with a global twist; halal, vegan and kosher-style menus on request.',
+    fromPrice: 68,
+    packages: [
+      { id: 'cp-plated', name: 'Plated Dinner', price: 78, perGuest: true, summary: 'Per guest, three courses', includes: ['Canapés', 'Three plated courses', 'Front-of-house team', 'Crockery & glassware'], deposit: 25 },
+      { id: 'cp-bowl', name: 'Bowl Food Party', price: 68, perGuest: true, summary: 'Per guest, roaming', includes: ['6 bowl-food dishes', '2 dessert bowls', 'Front-of-house team'], deposit: 25 },
+    ],
+  },
+  {
+    id: 'harvest-hearth', name: 'Harvest & Hearth', category: 'Catering', region: 'Devon', town: 'Ashburton', style: 'Garden',
+    rating: 4.9, reviews: 57, img: '/images/table2.jpg', gallery: ['/images/table2.jpg', '/images/bouquet.jpg'],
+    about: 'Farm-to-table Devon produce, cooked over our own field kitchen.',
+    fromPrice: 54,
+    packages: [
+      { id: 'hh-feast', name: 'Field Kitchen Feast', price: 54, perGuest: true, summary: 'Per guest, sharing boards', includes: ['Grazing boards', 'Sharing mains', 'Pudding table'], deposit: 20 },
+    ],
+  },
+
+  /* ---- Florists ---- */
   {
     id: 'wild-bloom', name: 'Wild Bloom Florals', category: 'Florists', region: 'Cotswolds', town: 'Burford', style: 'Garden',
     rating: 4.9, reviews: 76, img: '/images/bouquet.jpg', gallery: ['/images/bouquet.jpg', '/images/table.jpg', '/images/arch.jpg'],
@@ -112,12 +288,136 @@ export const suppliers: Supplier[] = [
     ],
   },
   {
-    id: 'the-standards', name: 'The Standards Band', category: 'Music', region: 'London', town: 'London', style: 'Modern',
-    rating: 4.8, reviews: 58, img: '/images/aisle.jpg', gallery: ['/images/aisle.jpg'],
+    id: 'petal-stem', name: 'Petal & Stem', category: 'Florists', region: 'London', town: 'Columbia Road', style: 'Modern', travels: true,
+    rating: 4.8, reviews: 133, img: '/images/bouquet2.jpg', gallery: ['/images/bouquet2.jpg', '/images/setting.jpg'],
+    about: 'Sculptural, colour-led installations — hanging clouds, statement arches and bold bouquets.',
+    fromPrice: 650,
+    packages: [
+      { id: 'ps-party', name: 'Bridal Party', price: 650, summary: 'Bouquets, posies & buttonholes', includes: ['Bridal bouquet', '5 bridesmaid posies', '10 buttonholes'], deposit: 30 },
+      { id: 'ps-install', name: 'Statement Install', price: 2800, summary: 'Hanging cloud + tables', includes: ['Hanging floral cloud', '15 table designs', 'Bridal party flowers', 'Set-up & clear-down'], deposit: 30 },
+    ],
+  },
+  {
+    id: 'moorland-blooms', name: 'Moorland Blooms', category: 'Florists', region: 'Yorkshire', town: 'Helmsley', style: 'Rustic',
+    rating: 4.9, reviews: 44, img: '/images/arch.jpg', gallery: ['/images/arch.jpg', '/images/bouquet.jpg'],
+    about: 'Home-grown British flowers and foraged heather, wild and loose.',
+    fromPrice: 420,
+    packages: [
+      { id: 'mb-party', name: 'Wild Bridal Party', price: 420, summary: 'Bouquets & buttonholes', includes: ['Bridal bouquet', '3 bridesmaid posies', '6 buttonholes'], deposit: 25 },
+      { id: 'mb-full', name: 'Full Wild Wedding', price: 1250, summary: 'Ceremony + tables', includes: ['Ceremony urns', '10 table jars', 'Bridal party flowers'], deposit: 25 },
+    ],
+  },
+  {
+    id: 'sea-pink', name: 'Sea Pink Flowers', category: 'Florists', region: 'Cornwall', town: 'Truro', style: 'Coastal',
+    rating: 4.7, reviews: 39, img: '/images/bouquet.jpg', gallery: ['/images/bouquet.jpg', '/images/aisle.jpg'],
+    about: 'Soft coastal palettes — sea pinks, grasses and blues for beach and harbour weddings.',
+    fromPrice: 480,
+    packages: [
+      { id: 'sp-party', name: 'Bridal Party', price: 480, summary: 'Bouquets & buttonholes', includes: ['Bridal bouquet', '4 bridesmaid posies', '8 buttonholes'], deposit: 30 },
+    ],
+  },
+
+  /* ---- Music ---- */
+  {
+    id: 'the-standards', name: 'The Standards Band', category: 'Music', region: 'London', town: 'London', style: 'Modern', travels: true,
+    rating: 4.8, reviews: 58, img: '/images/setting.jpg', gallery: ['/images/setting.jpg', '/images/aisle.jpg'],
     about: 'Five-piece party band playing soul, Motown and modern pop — plus DJ until late.',
     fromPrice: 1850,
     packages: [
       { id: 'ts-band', name: 'Band & DJ', price: 1850, summary: '2 sets + DJ until midnight', includes: ['2 × 60 min live sets', 'DJ until midnight', 'PA & lighting'], hours: '5 hrs', deposit: 25 },
+      { id: 'ts-full', name: 'Ceremony to Last Dance', price: 2650, summary: 'Acoustic duo + band + DJ', includes: ['Acoustic duo for ceremony & drinks', '2 × 60 min live sets', 'DJ until midnight', 'PA & lighting'], hours: '9 hrs', deposit: 25 },
+    ],
+  },
+  {
+    id: 'strings-attached', name: 'Strings Attached Quartet', category: 'Music', region: 'Cotswolds', town: 'Cheltenham', style: 'Classic', travels: true,
+    rating: 5.0, reviews: 71, img: '/images/aisle.jpg', gallery: ['/images/aisle.jpg', '/images/gardens.jpg'],
+    about: 'String quartet for ceremonies and drinks receptions — classical to pop covers, arranged for your walk down the aisle.',
+    fromPrice: 690,
+    packages: [
+      { id: 'sa-cer', name: 'Ceremony', price: 690, summary: 'Ceremony music', includes: ['Arrival music', 'Aisle & signing music', 'One custom arrangement'], hours: '1.5 hrs', deposit: 25 },
+      { id: 'sa-full', name: 'Ceremony & Drinks', price: 1090, summary: 'Ceremony + 2hr reception', includes: ['Ceremony music', '2 hrs drinks reception', 'Two custom arrangements'], hours: '3.5 hrs', deposit: 25 },
+    ],
+  },
+  {
+    id: 'night-shift', name: 'Night Shift DJs', category: 'Music', region: 'Yorkshire', town: 'Leeds', style: 'Modern', travels: true,
+    rating: 4.7, reviews: 164, img: '/images/table.jpg', gallery: ['/images/table.jpg', '/images/setting.jpg'],
+    about: 'Party DJs with a full light show and a no-cheese promise (unless you ask for it).',
+    fromPrice: 650,
+    packages: [
+      { id: 'ns-eve', name: 'Evening DJ', price: 650, summary: '7pm – midnight', includes: ['Pro DJ', 'Dance-floor lighting', 'Your must-play list'], hours: '5 hrs', deposit: 20 },
+      { id: 'ns-day', name: 'All-day DJ', price: 1050, summary: 'Ceremony to midnight', includes: ['Ceremony PA & mics', 'Background music for dinner', 'Evening DJ set', 'Light show'], hours: '10 hrs', deposit: 20 },
+    ],
+  },
+  {
+    id: 'acoustic-fox', name: 'Acoustic Fox', category: 'Music', region: 'Devon', town: 'Plymouth', style: 'Garden', travels: true,
+    rating: 4.9, reviews: 49, img: '/images/field.jpg', gallery: ['/images/field.jpg', '/images/bouquet2.jpg'],
+    about: 'Solo singer-guitarist for ceremonies, drinks and laid-back evenings.',
+    fromPrice: 420,
+    packages: [
+      { id: 'af-cer', name: 'Ceremony & Drinks', price: 420, summary: '2 hours live', includes: ['Ceremony songs', 'Drinks reception set', 'PA included'], hours: '2 hrs', deposit: 25 },
+      { id: 'af-eve', name: 'Evening Sets', price: 680, summary: '2 × 45 min sets', includes: ['2 × 45 min live sets', 'Playlist between sets', 'PA & lighting'], hours: '4 hrs', deposit: 25 },
+    ],
+  },
+
+  /* ---- Cakes ---- */
+  {
+    id: 'crumb-crown', name: 'Crumb & Crown', category: 'Cakes', region: 'Cotswolds', town: 'Tetbury', style: 'Classic',
+    rating: 4.9, reviews: 88, img: '/images/table.jpg', gallery: ['/images/table.jpg', '/images/bouquet.jpg'],
+    about: 'Elegant buttercream and sugar-flower cakes, delivered and set up on the day.',
+    fromPrice: 380,
+    packages: [
+      { id: 'cc-3', name: 'Three-Tier Classic', price: 520, summary: 'Serves 110', includes: ['Three tiers, two flavours', 'Fresh flowers', 'Delivery & set-up', 'Tasting box'], deposit: 30 },
+      { id: 'cc-2', name: 'Two-Tier', price: 380, summary: 'Serves 70', includes: ['Two tiers', 'Fresh flowers', 'Delivery & set-up'], deposit: 30 },
+    ],
+  },
+  {
+    id: 'little-bake', name: 'The Little Bake House', category: 'Cakes', region: 'Devon', town: 'Dartmouth', style: 'Rustic', travels: true,
+    rating: 4.8, reviews: 52, img: '/images/table2.jpg', gallery: ['/images/table2.jpg', '/images/setting.jpg'],
+    about: 'Semi-naked cakes, dessert tables and doughnut walls — posted tasting boxes UK-wide.',
+    fromPrice: 290,
+    packages: [
+      { id: 'lb-naked', name: 'Semi-Naked Three-Tier', price: 450, summary: 'Serves 100', includes: ['Three tiers', 'Seasonal fruit & flowers', 'Delivery & set-up'], deposit: 25 },
+      { id: 'lb-dessert', name: 'Dessert Table', price: 690, summary: 'Cake + 120 sweet treats', includes: ['Two-tier cake', '120 mini desserts', 'Styled table'], deposit: 25 },
+    ],
+  },
+  {
+    id: 'sugar-loaf', name: 'Sugar Loaf Cakes', category: 'Cakes', region: 'London', town: 'Greenwich', style: 'Modern', travels: true,
+    rating: 4.7, reviews: 67, img: '/images/setting.jpg', gallery: ['/images/setting.jpg', '/images/table.jpg'],
+    about: 'Architectural, palette-knife and painted cakes for modern weddings.',
+    fromPrice: 480,
+    packages: [
+      { id: 'sl-4', name: 'Four-Tier Statement', price: 890, summary: 'Serves 180', includes: ['Four tiers, three flavours', 'Hand-painted design', 'Delivery & set-up'], deposit: 30 },
+    ],
+  },
+
+  /* ---- Hair & make-up ---- */
+  {
+    id: 'bloom-beauty', name: 'Bloom Bridal Beauty', category: 'Hair & make-up', region: 'Cotswolds', town: 'Cheltenham', style: 'Classic', travels: true,
+    rating: 5.0, reviews: 118, img: '/images/couple.jpg', gallery: ['/images/couple.jpg', '/images/bouquet2.jpg'],
+    about: 'Soft, glowing bridal make-up and timeless hair. Two artists so the morning runs on time.',
+    fromPrice: 280,
+    packages: [
+      { id: 'bb-bride', name: 'Bride + Trial', price: 280, summary: 'Hair & make-up', includes: ['Trial session', 'Wedding-day hair & make-up', 'Touch-up kit'], deposit: 30 },
+      { id: 'bb-party', name: 'Bridal Party of 5', price: 720, summary: 'Bride + 4', includes: ['Bride trial', 'Hair & make-up for 5', 'Two artists on the day', 'Touch-up kit'], deposit: 30 },
+    ],
+  },
+  {
+    id: 'glow-studio', name: 'Glow Studio', category: 'Hair & make-up', region: 'London', town: 'Marylebone', style: 'Modern', travels: true,
+    rating: 4.8, reviews: 91, img: '/images/bouquet2.jpg', gallery: ['/images/bouquet2.jpg', '/images/couple.jpg'],
+    about: 'Editorial make-up and sleek styling — airbrush and lashes included.',
+    fromPrice: 340,
+    packages: [
+      { id: 'gs-bride', name: 'Bride Luxe', price: 340, summary: 'Airbrush + hair', includes: ['Trial session', 'Airbrush make-up & lashes', 'Wedding-day hair'], deposit: 30 },
+      { id: 'gs-party', name: 'Party of 6', price: 990, summary: 'Bride + 5', includes: ['Bride trial', 'Hair & make-up for 6', 'Three artists'], deposit: 30 },
+    ],
+  },
+  {
+    id: 'coastline-bridal', name: 'Coastline Bridal', category: 'Hair & make-up', region: 'Cornwall', town: 'Newquay', style: 'Coastal',
+    rating: 4.9, reviews: 36, img: '/images/couple.jpg', gallery: ['/images/couple.jpg', '/images/aisle.jpg'],
+    about: 'Windproof, beach-ready hair and natural make-up for Cornish weddings.',
+    fromPrice: 240,
+    packages: [
+      { id: 'cb-bride', name: 'Bride + Trial', price: 240, summary: 'Hair & make-up', includes: ['Trial session', 'Wedding-day hair & make-up'], deposit: 25 },
     ],
   },
 ];
@@ -126,27 +426,166 @@ export const gbp = (n: number) => '£' + Math.round(n).toLocaleString('en-GB');
 export const fmtDate = (iso: string, opts: Intl.DateTimeFormatOptions = { weekday: 'short', day: 'numeric', month: 'short', year: 'numeric' }) =>
   new Date(iso + 'T12:00:00').toLocaleDateString('en-GB', opts);
 export const pkgTotal = (p: Package, guests: number) => (p.perGuest ? p.price * guests : p.price);
+export const supById = (id: string) => suppliers.find((x) => x.id === id);
 
-/* ---------------- supplier side (venue persona: The Stone Villa) ---------------- */
+/* ---------------- reviews (sample) ---------------- */
+export type Review = { by: string; when: string; stars: number; text: string };
+const reviewPool: Record<Category, string[]> = {
+  Venues: ['The team thought of everything — we didn’t have to lift a finger on the day.', 'Guests still talk about the ceremony spot. Worth every penny.', 'Flexible on suppliers and so calm when it rained. Plan B was just as beautiful.', 'Comparing it side by side with two other venues made the decision easy.'],
+  Photographers: ['We cried looking through the gallery. Every real moment is there.', 'Totally invisible on the day, then delivered in under five weeks.', 'Made two very awkward people look relaxed in portraits!', 'The sunset portraits are the best photos we own.'],
+  Catering: ['Guests are still asking for the lamb recipe.', 'Handled 12 dietary requirements without a single mix-up.', 'Generous portions and the service team were brilliant.', 'The sharing-style dinner got everyone talking across the tables.'],
+  Florists: ['The arch was even better than the mood board.', 'Our bouquet lasted the whole week after the wedding.', 'Listened to our budget and still made it look lavish.', 'Re-used the ceremony flowers on the tables — clever and beautiful.'],
+  Music: ['Packed dance floor from the first song to the last.', 'The aisle arrangement of our song was perfect.', 'Read the room brilliantly — everyone from Gran to the kids danced.', 'Easy to deal with and arrived early to set up.'],
+  Cakes: ['Looked stunning and tasted even better.', 'The tasting box made choosing flavours so fun.', 'Delivered and set up perfectly in 30°C heat!', 'Every slice went — nobody took any home.'],
+  'Hair & make-up': ['Felt like myself, just the best version.', 'Make-up lasted through tears, dancing and a heatwave.', 'Kept the whole bridal party on schedule and calm.', 'The trial took all the stress away.'],
+};
+const reviewers = ['Priya & Sam', 'Hannah & Tom', 'Lucy & Ben', 'Chloe & Harry', 'Ella & George', 'Zara & Adam', 'Mia & Daniel', 'Isla & Ryan', 'Freya & Joe', 'Ruby & Will'];
+const reviewWhen = ['2 weeks ago', '1 month ago', '2 months ago', '3 months ago'];
+
+/* ---------------- deterministic generator (same numbers every load) ---------------- */
+function seedFrom(str: string) { let h = 2166136261; for (let i = 0; i < str.length; i++) h = Math.imul(h ^ str.charCodeAt(i), 16777619); return h >>> 0; }
+function rng(seed: number) { return () => { seed |= 0; seed = (seed + 0x6d2b79f5) | 0; let t = Math.imul(seed ^ (seed >>> 15), 1 | seed); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+const pick = <T,>(r: () => number, a: T[]) => a[Math.floor(r() * a.length)];
+
+export function reviewsFor(sup: Supplier, n = 3): Review[] {
+  const r = rng(seedFrom(sup.id + ':rev'));
+  const pool = [...reviewPool[sup.category]];
+  const who = [...reviewers];
+  return Array.from({ length: Math.min(n, pool.length) }, (_, i) => {
+    const text = pool.splice(Math.floor(r() * pool.length), 1)[0];
+    const by = who.splice(Math.floor(r() * who.length), 1)[0];
+    return { by, when: reviewWhen[i], stars: r() > 0.25 ? 5 : 4, text };
+  });
+}
+
+/* ---------------- supplier side ---------------- */
 export type Booking = {
   id: string; couple: string; date: string; endDate?: string; pkg: string; guests: number; total: number; paid: number;
   status: 'booked' | 'held' | 'enquiry'; source: 'Everly' | 'Direct';
 };
-export const supplierBookings: Booking[] = [
-  { id: 'E-20418', couple: 'Priya & Sam', date: '2027-06-05', pkg: 'Full Day Exclusive', guests: 120, total: 6500, paid: 1625, status: 'booked', source: 'Everly' },
-  { id: 'E-20431', couple: 'Hannah & Tom', date: '2027-06-18', endDate: '2027-06-20', pkg: 'Weekend Celebration', guests: 140, total: 9800, paid: 9800, status: 'booked', source: 'Everly' },
-  { id: 'D-1182', couple: 'Lucy & Ben', date: '2027-06-26', pkg: 'Full Day Exclusive', guests: 95, total: 6500, paid: 1625, status: 'booked', source: 'Direct' },
-  { id: 'E-20452', couple: 'Olivia & Jack', date: '2027-06-09', pkg: 'Twilight Wedding', guests: 70, total: 4200, paid: 0, status: 'held', source: 'Everly' },
-];
-export const otherEnquiries = [
-  { id: 'E-20466', couple: 'Amelia & Noah', date: '2027-07-17', pkg: 'Full Day Exclusive', guests: 110, received: '2h ago' },
-  { id: 'E-20470', couple: 'Grace & Oliver', date: '2027-08-21', pkg: 'Weekend Celebration', guests: 150, received: 'Yesterday' },
-];
-export const monthly = [
-  { m: 'Jan', v: 9800 }, { m: 'Feb', v: 6500 }, { m: 'Mar', v: 12300 }, { m: 'Apr', v: 18700 }, { m: 'May', v: 24100 }, { m: 'Jun', v: 31400 },
-];
-/** day prices for the calendar (June 2027): weekends higher */
-export function dayPrice(iso: string) {
-  const d = new Date(iso + 'T12:00:00').getDay();
-  return d === 6 ? 6500 : d === 5 ? 5600 : d === 0 ? 5200 : 4200;
+export type EnqStatus = 'new' | 'held' | 'booked' | 'declined';
+export type Enquiry = {
+  id: string; couple: string; date: string; guests: number; supplier: string; sid: string; pkg: string; pid: string;
+  total: number; deposit: number; message: string; phone: string; received: string; status: EnqStatus; fromCouplePreview?: boolean;
+};
+export type Persona = {
+  sup: Supplier; initials: string; bookings: Booking[]; enquiries: Enquiry[]; monthly: { m: string; v: number }[];
+  costRate: number; costLabel: string; lastYear: number; conversion: number; reviews: Review[];
+};
+
+export const PREVIEW_MONTHS = [3, 4, 5, 6, 7, 8]; // Apr – Sep 2027 (0-based months)
+const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+export const monthName = (m: number, long = false) => (long ? new Date(2027, m, 1).toLocaleDateString('en-GB', { month: 'long' }) : MONTH_NAMES[m]);
+
+const couples = ['Priya & Sam', 'Hannah & Tom', 'Lucy & Ben', 'Olivia & Jack', 'Amelia & Noah', 'Grace & Oliver', 'Chloe & Harry', 'Ella & George', 'Zara & Adam', 'Mia & Daniel', 'Isla & Ryan', 'Freya & Joe', 'Ruby & Will', 'Evie & Matt', 'Leah & Chris', 'Nadia & Kieran', 'Jess & Aaron', 'Holly & Luke', 'Kate & Rhys', 'Anna & Marco', 'Beth & Owen', 'Sara & Imran', 'Laura & Dan', 'Fiona & Euan', 'Rosie & Alfie', 'Maya & Ethan', 'Alice & Theo', 'Niamh & Conor', 'Tara & Josh', 'Lily & Sam'];
+const costInfo: Record<Category, [number, string]> = {
+  Venues: [0.18, 'staff, cleaning, utilities'], Photographers: [0.12, 'editing, travel, second shooter'], Catering: [0.42, 'ingredients, chefs, service staff'],
+  Florists: [0.38, 'stems, sundries, delivery'], Music: [0.3, 'musicians, travel, equipment'], Cakes: [0.3, 'ingredients, boxes, delivery'], 'Hair & make-up': [0.15, 'products, travel, assistant'],
+};
+const messages: Record<Category, string[]> = {
+  Venues: ['Hi! We’re getting married on {date} with around {guests} guests and love the {pkg} package. Is the date available, and could we arrange a visit?', 'Hello — we’re hoping to book {date} for {guests} guests. Could you share your wet-weather plan and whether we can bring our own caterer?', 'Hi! Is {date} still free? We’d love the {pkg} and would like to come and see the venue on a weekend.'],
+  Photographers: ['Hi! We love your natural style. Are you free on {date}? We’re interested in {pkg} — could you send a full sample gallery?', 'Hello! Our wedding is on {date}, around {guests} guests. Do you travel to our venue and is {pkg} still available?', 'Hi! Can we add an engagement shoot to {pkg}? Our date is {date}.'],
+  Catering: ['Hello! We’re planning for {guests} guests on {date} and are keen on the {pkg}. Can you cater for two vegans and a gluten-free guest?', 'Hi! Could we book a tasting? We’re thinking {pkg} for {guests} guests on {date}.', 'Hello — do you provide crockery and bar staff with the {pkg}? Our date is {date}.'],
+  Florists: ['Hi! We’re thinking {pkg} in whites and soft greens. Are you available on {date}?', 'Hello! Could you do a quote for {pkg} for {date}? We’d love lots of trailing greenery.', 'Hi! Can the ceremony flowers be moved to the tables after? Date is {date}.'],
+  Music: ['Hi! Are you free on {date}? We’d love {pkg} — can you learn one song for our first dance?', 'Hello! What time would you need to arrive to set up for {pkg} on {date}?', 'Hi! Is {date} free for {pkg}? We have around {guests} guests.'],
+  Cakes: ['Hi! We’d love a cake for {guests} guests on {date}. Do you offer tastings?', 'Hello! Could {pkg} be lemon & elderflower plus chocolate? Our date is {date}.', 'Hi! Is {date} free for the {pkg}? We need one tier gluten-free.'],
+  'Hair & make-up': ['Hi! Looking for bridal hair & make-up on {date} for me plus 3 bridesmaids. Do you offer a trial?', 'Hello! Is {date} available for {pkg}? Getting ready starts at 8am.', 'Hi! Could you do the mums too? We’re looking at {pkg} for {date}.'],
+};
+const received = ['12 min ago', '2h ago', '5h ago', 'Yesterday', '2 days ago', '3 days ago'];
+
+const iso = (y: number, m: number, d: number) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+const addDays = (s: string, n: number) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + n); return iso(d.getFullYear(), d.getMonth(), d.getDate()); };
+const roundPrice = (n: number) => (n >= 1000 ? Math.round(n / 100) * 100 : n >= 100 ? Math.round(n / 10) * 10 : Math.round(n));
+const fill = (t: string, v: Record<string, string>) => t.replace(/\{(\w+)\}/g, (_, k) => v[k] ?? '');
+const multiDay = (p: Package) => p.hours === '3 days';
+
+/** weekend prices are higher; per-guest suppliers show per-head prices */
+export function dayPrice(sup: Supplier, isoDate: string) {
+  const d = new Date(isoDate + 'T12:00:00').getDay();
+  if (sup.packages[0].perGuest) return roundPrice(sup.fromPrice * (d === 6 ? 1.1 : 1));
+  const k = sup.category === 'Venues' ? (d === 6 ? 1 : d === 5 ? 0.86 : d === 0 ? 0.8 : 0.65) : (d === 6 ? 1 : d === 5 || d === 0 ? 0.95 : 0.85);
+  return roundPrice(sup.fromPrice * k);
 }
+export const shortGbp = (n: number) => (n >= 1000 ? `£${(n / 1000).toFixed(1).replace(/\.0$/, '')}k` : `£${n}`);
+export function shortPrice(sup: Supplier, n: number) {
+  return sup.packages[0].perGuest ? `£${n}pp` : shortGbp(n);
+}
+
+const cache = new Map<string, Persona>();
+export function personaFor(id: string): Persona {
+  const hit = cache.get(id);
+  if (hit) return hit;
+  const sup = supById(id) ?? suppliers[0];
+  const r = rng(seedFrom(sup.id));
+  const guestsFor = (p: Package) => Math.min(p.maxGuests ?? 200, Math.round((60 + r() * 100) / 5) * 5);
+  const used = new Set<string>();
+  const names = [...couples].sort(() => r() - 0.5);
+  let n = 0;
+  const bookings: Booking[] = [];
+  const mk = (date: string, status: Booking['status']): void => {
+    const p = pick(r, sup.packages);
+    const guests = guestsFor(p);
+    const total = pkgTotal(p, guests);
+    const end = multiDay(p) ? addDays(date, 2) : undefined;
+    for (let i = 0; i <= (end ? 2 : 0); i++) used.add(addDays(date, i));
+    const paidMode = r();
+    bookings.push({
+      id: (r() < 0.72 ? 'E-' : 'D-') + (20400 + Math.floor(r() * 500)), couple: names[n++ % names.length], date, endDate: end, pkg: p.name, guests, total,
+      paid: status !== 'booked' ? 0 : paidMode < 0.35 ? total : Math.round((total * p.deposit) / 100), status, source: 'Everly',
+    });
+  };
+  (sup.booked ?? []).forEach((d) => mk(d, 'booked'));
+  for (const m of PREVIEW_MONTHS) {
+    const days = new Date(2027, m + 1, 0).getDate();
+    const cand: string[] = [];
+    for (let d = 1; d <= days; d++) { const s = iso(2027, m, d); const wd = new Date(s + 'T12:00:00').getDay(); if (wd === 6 || wd === 5 || (wd === 0 && r() < 0.4)) cand.push(s); }
+    const want = 2 + Math.floor(r() * 3) + (m === 5 || m === 6 ? 1 : 0); // busier in summer
+    for (let i = 0; i < want && cand.length; i++) {
+      const s = cand.splice(Math.floor(r() * cand.length), 1)[0];
+      const span = [s, addDays(s, 1), addDays(s, 2)];
+      if (span.some((x) => SAMPLE_DATES.includes(x) || used.has(x))) continue;
+      mk(s, r() < 0.14 ? 'held' : 'booked');
+    }
+  }
+  bookings.forEach((b) => { b.source = b.id.startsWith('E') ? 'Everly' : 'Direct'; });
+  bookings.sort((a, b) => a.date.localeCompare(b.date));
+
+  // incoming enquiries
+  const enquiries: Enquiry[] = [];
+  const tmpl = messages[sup.category];
+  for (let i = 0; i < 5; i++) {
+    let date = '';
+    for (let t = 0; t < 40 && !date; t++) {
+      const m = pick(r, PREVIEW_MONTHS); const d = 1 + Math.floor(r() * 28); const s = iso(2027, m, d);
+      const wd = new Date(s + 'T12:00:00').getDay();
+      if ((wd === 6 || wd === 5) && !used.has(s) && !SAMPLE_DATES.includes(s)) date = s;
+    }
+    const p = pick(r, sup.packages); const guests = guestsFor(p); const couple = names[n++ % names.length];
+    enquiries.push({
+      id: 'E-' + (20460 + i * 7), couple, date, guests, supplier: sup.name, sid: sup.id, pkg: p.name, pid: p.id, total: pkgTotal(p, guests), deposit: p.deposit,
+      message: fill(tmpl[i % tmpl.length], { date: fmtDate(date, { day: 'numeric', month: 'long', year: 'numeric' }), guests: String(guests), pkg: p.name }),
+      phone: `07700 900${String(100 + Math.floor(r() * 800))}`, received: received[i], status: i < 3 ? 'new' : 'held',
+    });
+    used.add(date);
+  }
+
+  const monthly = PREVIEW_MONTHS.map((m) => ({ m: MONTH_NAMES[m], v: bookings.filter((b) => b.status === 'booked' && +b.date.slice(5, 7) - 1 === m).reduce((t, b) => t + b.total, 0) }));
+  const words = sup.name.replace(/^The /, '').split(/\s+/).filter((w) => /^[A-Z]/.test(w));
+  const persona: Persona = {
+    sup, initials: (words[0][0] + (words[1]?.[0] ?? '')).toUpperCase(), bookings, enquiries, monthly,
+    costRate: costInfo[sup.category][0], costLabel: costInfo[sup.category][1],
+    lastYear: 0.78 + r() * 0.12, conversion: 28 + Math.floor(r() * 18), reviews: reviewsFor(sup, 3),
+  };
+  cache.set(id, persona);
+  return persona;
+}
+
+/** dates a couple sees as unavailable for a supplier (booked or held) */
+export function unavailable(sup: Supplier): Set<string> {
+  const out = new Set<string>();
+  personaFor(sup.id).bookings.forEach((b) => { let d = b.date; const end = b.endDate || b.date; while (d <= end) { out.add(d); d = addDays(d, 1); } });
+  return out;
+}
+
+/** one supplier of each type, offered in the supplier preview's "Preview as" switcher */
+export const featuredPersonas = ['stone-villa', 'meadow-light', 'long-table', 'wild-bloom', 'the-standards', 'crumb-crown', 'bloom-beauty'];

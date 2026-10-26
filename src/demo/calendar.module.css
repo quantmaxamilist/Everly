@@ -23,3 +23,15 @@
 .lgBooked { background: var(--olive-dark); }
 .lgHeld { background: #6b5a8a; }
 .lgEnq { border: 1.5px dashed var(--champagne); }
+
+/* web platform: bigger month grid */
+:global(.preview-web) .cal { padding: 18px 16px 18px; gap: 8px; }
+:global(.preview-web) .dow { font-size: .78rem; }
+:global(.preview-web) .week { gap: 8px; }
+:global(.preview-web) .empty, :global(.preview-web) .day { min-height: 98px; }
+:global(.preview-web) .day { justify-items: start; padding: 10px 12px; font-size: .92rem; border-radius: 14px; }
+:global(.preview-web) .p { font-size: .76rem; }
+:global(.preview-web) .pill { height: 30px; bottom: 9px; padding: 0 10px 0 4px; }
+:global(.preview-web) .src { width: 22px; height: 22px; font-size: .66rem; }
+:global(.preview-web) .name { font-size: .78rem; }
+:global(.preview-web) .legend { font-size: .78rem; }

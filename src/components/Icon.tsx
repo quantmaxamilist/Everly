@@ -32,6 +32,13 @@ const paths: Record<string, React.ReactNode> = {
   down: <path d="M7 7l10 10M17 9v8H9" />,
   edit: <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z" />,
   clock: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>,
+  camera: <><path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.5-2h5.6l1.5 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5v-9Z" /><circle cx="12" cy="12.8" r="3.3" /></>,
+  cake: <><path d="M4.5 20.5h15M5.5 20.5v-6h13v6M7.5 14.5V11h9v3.5" /><path d="M12 11V8.5M12 6.5c-.9-.8-.9-1.9 0-3 .9 1.1.9 2.2 0 3Z" /><path d="M5.5 17c1.2 1 2.4 1 3.6 0s2.4-1 3.6 0 2.4 1 3.6 0 1.5-.6 2.2-.4" /></>,
+  music: <><path d="M9 18V5.5l11-2V16" /><circle cx="6.5" cy="18" r="2.5" /><circle cx="17.5" cy="16" r="2.5" /></>,
+  brush: <><path d="M14.5 4.5 19.5 9.5 11 18l-5-5 8.5-8.5Z" /><path d="M6 13c-2 .5-2.5 2-2.5 3.5S3 19.5 2.5 20c2.5.5 5.5 0 6.5-2.5" /></>,
+  monitor: <><rect x="3" y="4.5" width="18" height="12" rx="2" /><path d="M9 20h6M12 16.5V20" /></>,
+  phone: <><rect x="7" y="3" width="10" height="18" rx="2.5" /><path d="M11 18h2" /></>,
+  chevron: <path d="m9 6 6 6-6 6" />,
 };
 export default function Icon({ name, className, size }: { name: keyof typeof paths | string; className?: string; size?: number }) {
   return (
