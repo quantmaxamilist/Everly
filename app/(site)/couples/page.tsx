@@ -21,7 +21,7 @@ export default function Page() {
   return (
     <>
       <PageHero eyebrow="For couples" title={<>Plan less. <em>Enjoy more.</em></>} lead="Everly brings your venue, suppliers, budget and bookings together, so you can spend less time on spreadsheets and more time looking forward to the day." img="/images/couple.jpg">
-        <A to="/signup" className="btn">Start building — it&rsquo;s free <Icon name="arrow" /></A>
+        <A to="/start" className="btn">Start building — it&rsquo;s free <Icon name="arrow" /></A>
       </PageHero>
       <section className="section sand">
         <div className="container">

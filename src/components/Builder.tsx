@@ -121,7 +121,7 @@ export default function Builder() {
           </ul>
           <div className={s.sumCta}>
             <button type="button" className="btn btn--ghost btn--sm" onClick={save}><Icon name="plus" /> Save &amp; compare</button>
-            <A to="/signup" className="btn btn--sm">Build yours <Icon name="arrow" /></A>
+            <A to="/start" className="btn btn--sm">Build yours <Icon name="arrow" /></A>
           </div>
         </div>
         {saved.length > 0 && (

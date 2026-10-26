@@ -25,6 +25,13 @@ const paths: Record<string, React.ReactNode> = {
   message: <path d="M4 5.5h16v11H9l-5 4v-15Z" />,
   leaf: <><path d="M5 19C5 10 10 5 20 4c0 9-5 15-13 15H5Z" /><path d="M5 19c3-4 6-7 10-9" /></>,
   mail: <><rect x="3" y="5" width="18" height="14" rx="2.5" /><path d="m3.5 6.5 8.5 6.5 8.5-6.5" /></>,
+  filter: <path d="M4 6h16M7 12h10M10 18h4" />,
+  inbox: <><path d="M3.5 13.5 6 5h12l2.5 8.5V19a1.5 1.5 0 0 1-1.5 1.5H5A1.5 1.5 0 0 1 3.5 19v-5.5Z" /><path d="M3.5 13.5H9a3 3 0 0 0 6 0h5.5" /></>,
+  grid: <><rect x="4" y="4" width="7" height="7" rx="1.5" /><rect x="13" y="4" width="7" height="7" rx="1.5" /><rect x="4" y="13" width="7" height="7" rx="1.5" /><rect x="13" y="13" width="7" height="7" rx="1.5" /></>,
+  up: <path d="M7 17 17 7M9 7h8v8" />,
+  down: <path d="M7 7l10 10M17 9v8H9" />,
+  edit: <path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3Z" />,
+  clock: <><circle cx="12" cy="12" r="8.5" /><path d="M12 7.5V12l3 2" /></>,
 };
 export default function Icon({ name, className, size }: { name: keyof typeof paths | string; className?: string; size?: number }) {
   return (

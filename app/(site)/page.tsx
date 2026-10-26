@@ -32,7 +32,7 @@ export default function Home() {
             <h1>Don&rsquo;t just plan your wedding. <em>Build&nbsp;it.</em></h1>
             <p className="lead">Choose your venue, add your suppliers and see the full cost as you go. Build a few versions, compare them, then book and pay in one place.</p>
             <div className={s.ctas}>
-              <A to="/signup" className="btn">Start building <Icon name="arrow" /></A>
+              <A to="/start" className="btn">Start building <Icon name="arrow" /></A>
               <a href="#builder" className="btn btn--ghost">Try the builder</a>
             </div>
             <ul className={s.ticks}>

@@ -1,0 +1,20 @@
+.wrap { min-height: 100svh; background: var(--olive); color: var(--off); display: grid; grid-template-rows: auto 1fr auto; padding: 24px var(--gutter); overflow: hidden; position: relative; }
+.wrap::before, .wrap::after { content: ''; position: absolute; border-radius: 50%; border: 1px solid rgba(250,246,242,.14); pointer-events: none; }
+.wrap::before { width: 120vmax; height: 120vmax; left: 50%; top: 50%; translate: -50% -50%; }
+.wrap::after { width: 80vmax; height: 80vmax; left: 50%; top: 50%; translate: -50% -50%; }
+.home { justify-self: center; position: relative; z-index: 1; }
+.home img { height: 46px; width: auto; }
+.center { display: grid; place-items: center; align-content: center; gap: clamp(28px, 5vw, 48px); position: relative; z-index: 1; }
+.q { color: var(--off); font-size: clamp(2.4rem, 1.6rem + 3vw, 4rem); text-align: center; animation: rise .7s var(--ease) both; }
+.q em { color: var(--champagne); }
+.bubbles { display: flex; flex-wrap: wrap; justify-content: center; gap: clamp(18px, 4vw, 40px); }
+.bubble { width: clamp(150px, 40vw, 220px); aspect-ratio: 1; border-radius: 50%; background: var(--off); color: var(--olive-ink); display: grid; place-items: center; align-content: center; gap: 6px; text-decoration: none; text-align: center; padding: 18px; box-shadow: 0 30px 60px -24px rgba(31,36,24,.6); transition: transform .4s var(--ease), box-shadow .4s var(--ease), background .3s; animation: pop .8s var(--ease) both .15s; }
+.b2 { animation-delay: .27s; }
+.bubble:hover { transform: translateY(-6px) scale(1.04); background: #fff; box-shadow: 0 40px 70px -24px rgba(31,36,24,.7); }
+.bubble b { font-family: var(--f-display); font-weight: 600; font-size: clamp(1.3rem, 1rem + 1vw, 1.7rem); }
+.bubble small { font-size: .82rem; color: var(--muted); max-width: 16ch; line-height: 1.35; }
+.ic { width: 58px; height: 58px; border-radius: 50%; background: var(--sage); color: var(--olive-dark); display: grid; place-items: center; margin-bottom: 4px; }
+.note { text-align: center; font-size: .8rem; opacity: .7; position: relative; z-index: 1; }
+@keyframes rise { from { opacity: 0; transform: translateY(16px); } }
+@keyframes pop { from { opacity: 0; transform: scale(.7); } }
+@media (prefers-reduced-motion: reduce) { .q, .bubble { animation: none; } }

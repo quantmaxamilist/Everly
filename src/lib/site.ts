@@ -5,6 +5,9 @@
  */
 const PREVIEW = process.env.NEXT_PUBLIC_PREVIEW === '1';
 
+/** Brand name in ONE place — the client is renaming soon. */
+export const BRAND = 'Everly';
+
 export const site = {
   name: 'Everly.',
   plainName: 'Everly',

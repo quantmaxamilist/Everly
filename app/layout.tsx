@@ -4,8 +4,6 @@ import '@fontsource/playfair-display/400-italic.css';
 import '@fontsource/inter/400.css';
 import '@fontsource/inter/500.css';
 import './globals.css';
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
 import Reveal from '@/components/Reveal';
 import { site } from '@/lib/site';
 
@@ -36,10 +34,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       </head>
       <body>
-        <a className="skip" href="#main">Skip to content</a>
-        <Header />
-        <main id="main">{children}</main>
-        <Footer />
+        {children}
         <Reveal />
       </body>
     </html>

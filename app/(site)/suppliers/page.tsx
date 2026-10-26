@@ -22,7 +22,7 @@ export default function Page() {
   return (
     <>
       <PageHero eyebrow="For suppliers" title={<>Get booked. <em>Get paid.</em></>} lead="Show couples exactly what you offer and what it costs. Everly handles the enquiries, contracts and deposits, so you can focus on the weddings." img="/images/setting.jpg">
-        <A to="/signup?role=supplier" className="btn">List your business <Icon name="arrow" /></A>
+        <A to="/start" className="btn">List your business <Icon name="arrow" /></A>
       </PageHero>
       <section className="section sand">
         <div className="container">

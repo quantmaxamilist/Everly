@@ -1,0 +1,25 @@
+.cal { background: #fff; border-radius: 22px; padding: 12px 8px 14px; display: grid; gap: 6px; }
+.dow { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); text-align: center; font-size: .7rem; color: var(--muted); padding-bottom: 2px; }
+.week { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.empty { min-height: 62px; }
+.day { min-height: 62px; border-radius: 12px; border: 1px solid var(--line); background: var(--off); display: grid; align-content: start; justify-items: center; gap: 2px; padding: 6px 2px 4px; cursor: pointer; font-size: .78rem; color: var(--olive-ink); transition: border-color .2s, background .2s; }
+.day:hover { border-color: var(--olive); }
+.day b { font-weight: 500; }
+.p { font-size: .66rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.weekend .p { color: var(--olive-dark); font-weight: 500; }
+.taken { background: #ece8df; }
+.taken b, .taken .p { color: #a39c8e; text-decoration: line-through; }
+.blocked { background: repeating-linear-gradient(135deg, #f1ede5 0 6px, #e7e2d7 6px 12px); }
+.blocked .p { color: #9a4a2c; text-decoration: none; }
+.pill { position: absolute; bottom: 6px; height: 24px; border-radius: 99px; border: 0; display: flex; align-items: center; gap: 5px; padding: 0 6px 0 3px; cursor: pointer; overflow: hidden; z-index: 1; box-shadow: 0 4px 10px -4px rgba(31,36,24,.4); }
+.pill_booked { background: var(--olive-dark); color: #fff; }
+.pill_held { background: #6b5a8a; color: #fff; }
+.pill_enquiry { background: #fff; color: var(--olive-ink); border: 1.5px dashed var(--champagne); }
+.src { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: .6rem; font-weight: 600; background: rgba(255,255,255,.22); flex-shrink: 0; }
+.pill_enquiry .src { background: var(--champagne); color: var(--olive-ink); }
+.name { font-size: .68rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: .7rem; color: var(--muted); padding: 6px 4px 0; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+.lgBooked { background: var(--olive-dark); }
+.lgHeld { background: #6b5a8a; }
+.lgEnq { border: 1.5px dashed var(--champagne); }

@@ -12,7 +12,7 @@ export default function Page() {
         <p className="eyebrow">Welcome back</p>
         <h1>Log <em>in</em></h1>
         <Form kind="login" />
-        <p className={s.authAlt}>New to Everly? <A to="/signup">Start building</A></p>
+        <p className={s.authAlt}>New to Everly? <A to="/start">Start building</A></p>
       </div>
     </section>
   );

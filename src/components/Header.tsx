@@ -32,7 +32,7 @@ export default function Header() {
         </nav>
         <div className={s.actions}>
           <A to="/login" className={s.login}>Log in</A>
-          <A to="/signup" className="btn btn--sm">Start building</A>
+          <A to="/start" className="btn btn--sm">Start building</A>
         </div>
         <button className={s.toggle} type="button" aria-expanded={open} aria-controls="mnav" aria-label={open ? 'Close menu' : 'Open menu'} onClick={() => setOpen(!open)}>
           <Icon name={open ? 'close' : 'menu'} />
@@ -45,7 +45,7 @@ export default function Header() {
           <A to="/contact">Contact</A>
         </nav>
         <div className={s.mcta}>
-          <A to="/signup" className="btn">Start building <Icon name="arrow" /></A>
+          <A to="/start" className="btn">Start building <Icon name="arrow" /></A>
           <A to="/login" className="btn btn--ghost">Log in</A>
         </div>
       </div>

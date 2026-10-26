@@ -19,8 +19,8 @@ export default function Footer() {
           <div>
             <p className={s.h}>Get started</p>
             <ul>
-              <li><A to="/signup">Start building</A></li>
-              <li><A to="/signup?role=supplier">List your business</A></li>
+              <li><A to="/start">Start building</A></li>
+              <li><A to="/start">List your business</A></li>
               <li><A to="/login">Log in</A></li>
             </ul>
           </div>

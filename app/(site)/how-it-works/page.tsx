@@ -13,7 +13,7 @@ export default function Page() {
   return (
     <>
       <PageHero eyebrow="How it works" title={<>Four steps from idea <em>to booked</em></>} lead="Everly turns wedding planning into something you build. Here is how it works, from your first idea to your final payment." img="/images/aisle.jpg">
-        <A to="/signup" className="btn">Start building <Icon name="arrow" /></A>
+        <A to="/start" className="btn">Start building <Icon name="arrow" /></A>
       </PageHero>
       <section className="section sand">
         <div className={`container ${s.stack}`}>
