@@ -459,29 +459,44 @@ export function reviewsFor(sup: Supplier, n = 3): Review[] {
 }
 
 /* ---------------- supplier side ---------------- */
-export type Booking = {
-  id: string; couple: string; date: string; endDate?: string; pkg: string; guests: number; total: number; paid: number;
-  status: 'booked' | 'held' | 'enquiry'; source: 'Everly' | 'Direct';
-};
-export type EnqStatus = 'new' | 'held' | 'booked' | 'declined';
-export type Enquiry = {
-  id: string; couple: string; date: string; guests: number; supplier: string; sid: string; pkg: string; pid: string;
-  total: number; deposit: number; message: string; phone: string; received: string; status: EnqStatus; fromCouplePreview?: boolean;
-};
-export type Persona = {
-  sup: Supplier; initials: string; bookings: Booking[]; enquiries: Enquiry[]; monthly: { m: string; v: number }[];
-  costRate: number; costLabel: string; lastYear: number; conversion: number; reviews: Review[];
-};
+/** Platform fee — the most Everly will take. */
+export const FEE = 0.03;
+export const FEE_LABEL = '3%';
+/** "Today" for the preview, so countdowns and due dates read the same for everyone. */
+export const TODAY = '2026-10-29';
+/** Final balance is due this many days before the wedding (default policy). */
+export const BALANCE_DAYS = 56;
+/** Couples have this many days to sign and pay the deposit once a contract is sent. */
+export const CONTRACT_DAYS = 7;
 
-export const PREVIEW_MONTHS = [3, 4, 5, 6, 7, 8]; // Apr – Sep 2027 (0-based months)
+/**
+ * Booking journey:
+ * new (enquiry) → held (date held, contract sent) → deposit (contract signed + deposit paid) → paid (fully paid)
+ * plus declined / cancelled.
+ */
+export type JobStatus = 'new' | 'held' | 'deposit' | 'paid' | 'declined' | 'cancelled';
+export const STATUS_LABEL: Record<JobStatus, string> = { new: 'New enquiry', held: 'Date held', deposit: 'Deposit paid', paid: 'Fully paid', declined: 'Declined', cancelled: 'Cancelled' };
+export type Job = {
+  id: string; couple: string; date: string; endDate?: string; pkg: string; pid?: string; guests: number;
+  total: number; deposit: number; paid: number; status: JobStatus; source: 'Everly' | 'Direct';
+  message?: string; phone?: string; email?: string; received?: string; contractDaysAgo?: number;
+  fromCouplePreview?: boolean; noQuote?: boolean; note?: string; balanceDays?: number; cancelPolicy?: string; securityDeposit?: number;
+};
+export const isBooked = (j: Job) => j.status === 'deposit' || j.status === 'paid';
+export const blocksDate = (j: Job) => j.status === 'held' || isBooked(j);
+export const depositAmt = (j: Job) => Math.round((j.total * j.deposit) / 100);
+
+export type Persona = { sup: Supplier; initials: string; jobs: Job[]; conversion: number; reviews: Review[] };
+
+/** Months the preview covers: Jan 2026 – Dec 2027, as 'YYYY-MM'. */
+export const PREVIEW_MONTHS: string[] = Array.from({ length: 24 }, (_, i) => `${2026 + Math.floor(i / 12)}-${String((i % 12) + 1).padStart(2, '0')}`);
 const MONTH_NAMES = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-export const monthName = (m: number, long = false) => (long ? new Date(2027, m, 1).toLocaleDateString('en-GB', { month: 'long' }) : MONTH_NAMES[m]);
-
-const couples = ['Priya & Sam', 'Hannah & Tom', 'Lucy & Ben', 'Olivia & Jack', 'Amelia & Noah', 'Grace & Oliver', 'Chloe & Harry', 'Ella & George', 'Zara & Adam', 'Mia & Daniel', 'Isla & Ryan', 'Freya & Joe', 'Ruby & Will', 'Evie & Matt', 'Leah & Chris', 'Nadia & Kieran', 'Jess & Aaron', 'Holly & Luke', 'Kate & Rhys', 'Anna & Marco', 'Beth & Owen', 'Sara & Imran', 'Laura & Dan', 'Fiona & Euan', 'Rosie & Alfie', 'Maya & Ethan', 'Alice & Theo', 'Niamh & Conor', 'Tara & Josh', 'Lily & Sam'];
-const costInfo: Record<Category, [number, string]> = {
-  Venues: [0.18, 'staff, cleaning, utilities'], Photographers: [0.12, 'editing, travel, second shooter'], Catering: [0.42, 'ingredients, chefs, service staff'],
-  Florists: [0.38, 'stems, sundries, delivery'], Music: [0.3, 'musicians, travel, equipment'], Cakes: [0.3, 'ingredients, boxes, delivery'], 'Hair & make-up': [0.15, 'products, travel, assistant'],
+export const monthLabel = (ym: string, long = false) => {
+  const [y, m] = ym.split('-').map(Number);
+  return long ? `${new Date(y, m - 1, 1).toLocaleDateString('en-GB', { month: 'long' })} ${y}` : `${MONTH_NAMES[m - 1]}${long ? '' : ` ${String(y).slice(2)}`}`;
 };
+
+const couples = ['Priya & Sam', 'Hannah & Tom', 'Lucy & Ben', 'Olivia & Jack', 'Amelia & Noah', 'Grace & Oliver', 'Chloe & Harry', 'Ella & George', 'Zara & Adam', 'Mia & Daniel', 'Isla & Ryan', 'Freya & Joe', 'Ruby & Will', 'Evie & Matt', 'Leah & Chris', 'Nadia & Kieran', 'Jess & Aaron', 'Holly & Luke', 'Kate & Rhys', 'Anna & Marco', 'Beth & Owen', 'Sara & Imran', 'Laura & Dan', 'Fiona & Euan', 'Rosie & Alfie', 'Maya & Ethan', 'Alice & Theo', 'Niamh & Conor', 'Tara & Josh', 'Lily & Sam', 'Erin & Max', 'Poppy & Jake', 'Katie & Liam', 'Ava & Harvey', 'Emily & Joel', 'Sophia & Rory', 'Megan & Tom', 'Charlotte & Ed', 'Jasmine & Kai', 'Bella & Finn'];
 const messages: Record<Category, string[]> = {
   Venues: ['Hi! We’re getting married on {date} with around {guests} guests and love the {pkg} package. Is the date available, and could we arrange a visit?', 'Hello — we’re hoping to book {date} for {guests} guests. Could you share your wet-weather plan and whether we can bring our own caterer?', 'Hi! Is {date} still free? We’d love the {pkg} and would like to come and see the venue on a weekend.'],
   Photographers: ['Hi! We love your natural style. Are you free on {date}? We’re interested in {pkg} — could you send a full sample gallery?', 'Hello! Our wedding is on {date}, around {guests} guests. Do you travel to our venue and is {pkg} still available?', 'Hi! Can we add an engagement shoot to {pkg}? Our date is {date}.'],
@@ -494,7 +509,8 @@ const messages: Record<Category, string[]> = {
 const received = ['12 min ago', '2h ago', '5h ago', 'Yesterday', '2 days ago', '3 days ago'];
 
 const iso = (y: number, m: number, d: number) => `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
-const addDays = (s: string, n: number) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + n); return iso(d.getFullYear(), d.getMonth(), d.getDate()); };
+export const addDays = (s: string, n: number) => { const d = new Date(s + 'T12:00:00'); d.setDate(d.getDate() + n); return iso(d.getFullYear(), d.getMonth(), d.getDate()); };
+export const daysBetween = (a: string, b: string) => Math.round((new Date(b + 'T12:00:00').getTime() - new Date(a + 'T12:00:00').getTime()) / 864e5);
 const roundPrice = (n: number) => (n >= 1000 ? Math.round(n / 100) * 100 : n >= 100 ? Math.round(n / 10) * 10 : Math.round(n));
 const fill = (t: string, v: Record<string, string>) => t.replace(/\{(\w+)\}/g, (_, k) => v[k] ?? '');
 const multiDay = (p: Package) => p.hours === '3 days';
@@ -506,9 +522,26 @@ export function dayPrice(sup: Supplier, isoDate: string) {
   const k = sup.category === 'Venues' ? (d === 6 ? 1 : d === 5 ? 0.86 : d === 0 ? 0.8 : 0.65) : (d === 6 ? 1 : d === 5 || d === 0 ? 0.95 : 0.85);
   return roundPrice(sup.fromPrice * k);
 }
-export const shortGbp = (n: number) => (n >= 1000 ? `£${(n / 1000).toFixed(1).replace(/\.0$/, '')}k` : `£${n}`);
+export const shortGbp = (n: number) => (n >= 1000 ? `£${(n / 1000).toFixed(1).replace(/\.0$/, '')}k` : `£${Math.round(n)}`);
 export function shortPrice(sup: Supplier, n: number) {
   return sup.packages[0].perGuest ? `£${n}pp` : shortGbp(n);
+}
+
+/** payments a supplier is waiting on: deposits for held dates, balances for deposit-paid bookings */
+export type Due = { job: Job; kind: 'Deposit' | 'Final payment'; amount: number; due: string; inDays: number };
+export function paymentsDue(jobs: Job[], today = TODAY): Due[] {
+  const out: Due[] = [];
+  for (const j of jobs) {
+    if (j.noQuote) continue;
+    if (j.status === 'held') {
+      const due = addDays(today, CONTRACT_DAYS - (j.contractDaysAgo ?? 0));
+      out.push({ job: j, kind: 'Deposit', amount: depositAmt(j), due, inDays: daysBetween(today, due) });
+    } else if (j.status === 'deposit' && j.total > j.paid) {
+      const due = addDays(j.date, -(j.balanceDays ?? BALANCE_DAYS));
+      out.push({ job: j, kind: 'Final payment', amount: j.total - j.paid, due, inDays: daysBetween(today, due) });
+    }
+  }
+  return out.sort((a, b) => a.due.localeCompare(b.due));
 }
 
 const cache = new Map<string, Persona>();
@@ -521,71 +554,136 @@ export function personaFor(id: string): Persona {
   const used = new Set<string>();
   const names = [...couples].sort(() => r() - 0.5);
   let n = 0;
-  const bookings: Booking[] = [];
-  const mk = (date: string, status: Booking['status']): void => {
+  const jobs: Job[] = [];
+  const statusFor = (date: string): JobStatus => {
+    if (date < TODAY) return 'paid';
+    const ahead = daysBetween(TODAY, date);
+    if (ahead < BALANCE_DAYS) return r() < 0.88 ? 'paid' : 'deposit';
+    if (ahead < 150) return r() < 0.25 ? 'paid' : 'deposit';
+    const x = r();
+    return x < 0.12 ? 'held' : x < 0.25 ? 'paid' : 'deposit';
+  };
+  const mk = (date: string, status: JobStatus): void => {
     const p = pick(r, sup.packages);
     const guests = guestsFor(p);
     const total = pkgTotal(p, guests);
     const end = multiDay(p) ? addDays(date, 2) : undefined;
     for (let i = 0; i <= (end ? 2 : 0); i++) used.add(addDays(date, i));
-    const paidMode = r();
-    bookings.push({
-      id: (r() < 0.72 ? 'E-' : 'D-') + (20400 + Math.floor(r() * 500)), couple: names[n++ % names.length], date, endDate: end, pkg: p.name, guests, total,
-      paid: status !== 'booked' ? 0 : paidMode < 0.35 ? total : Math.round((total * p.deposit) / 100), status, source: 'Everly',
+    const direct = r() > 0.72;
+    jobs.push({
+      id: (direct ? 'D-' : 'E-') + (19000 + Math.floor(r() * 2000)), couple: names[n++ % names.length], date, endDate: end, pkg: p.name, pid: p.id, guests, total, deposit: p.deposit,
+      paid: status === 'paid' ? total : status === 'deposit' ? Math.round((total * p.deposit) / 100) : 0, status, source: direct ? 'Direct' : 'Everly',
+      contractDaysAgo: status === 'held' ? 1 + Math.floor(r() * 5) : undefined,
     });
   };
-  (sup.booked ?? []).forEach((d) => mk(d, 'booked'));
-  for (const m of PREVIEW_MONTHS) {
-    const days = new Date(2027, m + 1, 0).getDate();
+  (sup.booked ?? []).forEach((d) => mk(d, 'deposit'));
+  for (const ym of PREVIEW_MONTHS) {
+    const [y, m1] = ym.split('-').map(Number); const m = m1 - 1;
+    const days = new Date(y, m + 1, 0).getDate();
     const cand: string[] = [];
-    for (let d = 1; d <= days; d++) { const s = iso(2027, m, d); const wd = new Date(s + 'T12:00:00').getDay(); if (wd === 6 || wd === 5 || (wd === 0 && r() < 0.4)) cand.push(s); }
-    const want = 2 + Math.floor(r() * 3) + (m === 5 || m === 6 ? 1 : 0); // busier in summer
+    for (let d = 1; d <= days; d++) { const s = iso(y, m, d); const wd = new Date(s + 'T12:00:00').getDay(); if (wd === 6 || wd === 5 || (wd === 0 && r() < 0.4)) cand.push(s); }
+    const season = m >= 4 && m <= 8 ? 3 : m === 3 || m === 9 ? 2 : 1; // busier May–Sep
+    const want = Math.max(1, season + Math.floor(r() * 2) + (m === 5 || m === 6 ? 1 : 0) - (y === 2026 ? 1 : 0));
     for (let i = 0; i < want && cand.length; i++) {
       const s = cand.splice(Math.floor(r() * cand.length), 1)[0];
       const span = [s, addDays(s, 1), addDays(s, 2)];
       if (span.some((x) => SAMPLE_DATES.includes(x) || used.has(x))) continue;
-      mk(s, r() < 0.14 ? 'held' : 'booked');
+      mk(s, statusFor(s));
     }
   }
-  bookings.forEach((b) => { b.source = b.id.startsWith('E') ? 'Everly' : 'Direct'; });
-  bookings.sort((a, b) => a.date.localeCompare(b.date));
 
-  // incoming enquiries
-  const enquiries: Enquiry[] = [];
+  // incoming enquiries (3 new, 2 already held with a contract out)
   const tmpl = messages[sup.category];
   for (let i = 0; i < 5; i++) {
     let date = '';
-    for (let t = 0; t < 40 && !date; t++) {
-      const m = pick(r, PREVIEW_MONTHS); const d = 1 + Math.floor(r() * 28); const s = iso(2027, m, d);
+    for (let t = 0; t < 60 && !date; t++) {
+      const ym = PREVIEW_MONTHS[15 + Math.floor(r() * 7)]; // Apr – Oct 2027
+      const [y, m1] = ym.split('-').map(Number); const s = iso(y, m1 - 1, 1 + Math.floor(r() * 28));
       const wd = new Date(s + 'T12:00:00').getDay();
       if ((wd === 6 || wd === 5) && !used.has(s) && !SAMPLE_DATES.includes(s)) date = s;
     }
     const p = pick(r, sup.packages); const guests = guestsFor(p); const couple = names[n++ % names.length];
-    enquiries.push({
-      id: 'E-' + (20460 + i * 7), couple, date, guests, supplier: sup.name, sid: sup.id, pkg: p.name, pid: p.id, total: pkgTotal(p, guests), deposit: p.deposit,
+    const first = couple.split(' & ')[0].toLowerCase();
+    jobs.push({
+      id: 'E-' + (20460 + i * 7), couple, date, guests, pkg: p.name, pid: p.id, total: pkgTotal(p, guests), deposit: p.deposit, paid: 0, source: 'Everly',
       message: fill(tmpl[i % tmpl.length], { date: fmtDate(date, { day: 'numeric', month: 'long', year: 'numeric' }), guests: String(guests), pkg: p.name }),
-      phone: `07700 900${String(100 + Math.floor(r() * 800))}`, received: received[i], status: i < 3 ? 'new' : 'held',
+      phone: `07700 900${String(100 + Math.floor(r() * 800))}`, email: `${first}@example.com`, received: received[i], status: i < 3 ? 'new' : 'held', contractDaysAgo: i < 3 ? undefined : 2 + i,
     });
     used.add(date);
   }
+  jobs.sort((a, b) => a.date.localeCompare(b.date));
 
-  const monthly = PREVIEW_MONTHS.map((m) => ({ m: MONTH_NAMES[m], v: bookings.filter((b) => b.status === 'booked' && +b.date.slice(5, 7) - 1 === m).reduce((t, b) => t + b.total, 0) }));
   const words = sup.name.replace(/^The /, '').split(/\s+/).filter((w) => /^[A-Z]/.test(w));
   const persona: Persona = {
-    sup, initials: (words[0][0] + (words[1]?.[0] ?? '')).toUpperCase(), bookings, enquiries, monthly,
-    costRate: costInfo[sup.category][0], costLabel: costInfo[sup.category][1],
-    lastYear: 0.78 + r() * 0.12, conversion: 28 + Math.floor(r() * 18), reviews: reviewsFor(sup, 3),
+    sup, initials: (words[0][0] + (words[1]?.[0] ?? words[0][1] ?? '')).toUpperCase(), jobs,
+    conversion: 28 + Math.floor(r() * 18), reviews: reviewsFor(sup, 3),
   };
   cache.set(id, persona);
   return persona;
 }
 
-/** dates a couple sees as unavailable for a supplier (booked or held) */
+/** dates a couple sees as unavailable for a supplier (held or booked) */
 export function unavailable(sup: Supplier): Set<string> {
   const out = new Set<string>();
-  personaFor(sup.id).bookings.forEach((b) => { let d = b.date; const end = b.endDate || b.date; while (d <= end) { out.add(d); d = addDays(d, 1); } });
+  personaFor(sup.id).jobs.filter(blocksDate).forEach((b) => { let d = b.date; const end = b.endDate || b.date; while (d <= end) { out.add(d); d = addDays(d, 1); } });
   return out;
 }
 
 /** one supplier of each type, offered in the supplier preview's "Preview as" switcher */
 export const featuredPersonas = ['stone-villa', 'meadow-light', 'long-table', 'wild-bloom', 'the-standards', 'crumb-crown', 'bloom-beauty'];
+
+/* ---------------- inspiration mood boards ---------------- */
+export type Board = {
+  id: string; name: string; blurb: string; imgs: string[]; palette: [string, string][]; words: string[]; ideas: string[];
+  match: { region: string; style: string; regions: string[]; styles: string[] };
+};
+export const boards: Board[] = [
+  {
+    id: 'country', name: 'Country house', blurb: 'Honey stone, walled gardens and long candlelit tables.',
+    imgs: ['/images/villa.jpg', '/images/table.jpg', '/images/avenue.jpg', '/images/bouquet.jpg', '/images/gardens.jpg'],
+    palette: [['Olive', '#7A8F58'], ['Honey stone', '#D8C29D'], ['Ivory', '#FAF6F2'], ['Soft sage', '#C9D3B0'], ['Blush', '#E7C8BE']],
+    words: ['Walled garden', 'Garden roses', 'Long tables', 'Candlelight', 'Linen'],
+    ideas: ['Ceremony in the walled garden, drinks on the lawn', 'Long banquet tables with trailing greenery', 'String quartet for the aisle, party band after dinner'],
+    match: { region: 'Cotswolds', style: 'Country house', regions: ['Cotswolds', 'Yorkshire', 'Lake District'], styles: ['Country house', 'Classic', 'Garden'] },
+  },
+  {
+    id: 'city', name: 'City', blurb: 'Warehouse lofts, rooftop vows and a late-night party.',
+    imgs: ['/images/setting.jpg', '/images/table.jpg', '/images/aisle.jpg', '/images/bouquet2.jpg', '/images/table2.jpg'],
+    palette: [['Ink', '#2A2A24'], ['Champagne', '#D4B895'], ['Chalk', '#F4F1EC'], ['Smoke', '#9A978C'], ['Brass', '#B08D57']],
+    words: ['Rooftop', 'Industrial', 'Flash photography', 'Cocktails', 'Statement florals'],
+    ideas: ['Registry ceremony, then street portraits across the city', 'Bowl-food dinner and a cocktail bar', 'Hanging floral cloud over the dance floor'],
+    match: { region: 'London', style: 'Modern', regions: ['London'], styles: ['Modern'] },
+  },
+  {
+    id: 'mountain', name: 'Mountain', blurb: 'Fells, lakes and a cosy barn with a fire pit.',
+    imgs: ['/images/hills.jpg', '/images/field.jpg', '/images/hero.jpg', '/images/table2.jpg', '/images/couple.jpg'],
+    palette: [['Pine', '#3F4E34'], ['Slate', '#6B7177'], ['Moss', '#8C9A6B'], ['Heather', '#A88BA0'], ['Oat', '#E8DCC6']],
+    words: ['Lakeside vows', 'Fire pits', 'Wool blankets', 'Adventure portraits', 'Whisky bar'],
+    ideas: ['Meadow ceremony with the fells behind you', 'Mountain portrait session at golden hour', 'Hot drinks and blankets around the fire pit'],
+    match: { region: 'Lake District', style: 'Rustic', regions: ['Lake District', 'Scotland', 'Yorkshire'], styles: ['Rustic', 'Country house'] },
+  },
+  {
+    id: 'seaside', name: 'Seaside', blurb: 'Clifftop ceremonies, sea pinks and sunset on the beach.',
+    imgs: ['/images/aisle.jpg', '/images/hills.jpg', '/images/bouquet2.jpg', '/images/couple.jpg', '/images/setting.jpg'],
+    palette: [['Sea', '#5E8C99'], ['Sand', '#E9DCC4'], ['Sea pink', '#E4A9B0'], ['Driftwood', '#A89580'], ['Foam', '#F6F4EE']],
+    words: ['Clifftop', 'Sea pinks', 'Barefoot', 'Sunset portraits', 'Seafood feast'],
+    ideas: ['Terrace ceremony overlooking the harbour', 'Sunset beach portraits after dinner', 'Grasses and sea pinks instead of formal florals'],
+    match: { region: 'Cornwall', style: 'Coastal', regions: ['Cornwall', 'Devon'], styles: ['Coastal', 'Garden'] },
+  },
+  {
+    id: 'garden', name: 'Garden party', blurb: 'Orchards, parterres and a relaxed outdoor feast.',
+    imgs: ['/images/gardens.jpg', '/images/arch.jpg', '/images/bouquet.jpg', '/images/table2.jpg', '/images/field.jpg'],
+    palette: [['Leaf', '#6E8B4E'], ['Petal', '#F1D7D2'], ['Butter', '#F3E3A6'], ['Cream', '#FBF7EF'], ['Lavender', '#B9AFD1']],
+    words: ['Floral arch', 'Orchard', 'Festoon lights', 'Sharing boards', 'Lawn games'],
+    ideas: ['Floral arch at the end of a grass aisle', 'Sharing boards and a pudding table', 'Festoon lights strung through the trees'],
+    match: { region: 'Devon', style: 'Garden', regions: ['Devon', 'Cotswolds', 'Surrey'], styles: ['Garden'] },
+  },
+  {
+    id: 'barn', name: 'Rustic barn', blurb: 'Timber beams, wildflowers and dancing till late.',
+    imgs: ['/images/table2.jpg', '/images/field.jpg', '/images/hills.jpg', '/images/bouquet.jpg', '/images/table.jpg'],
+    palette: [['Oak', '#8A6A4A'], ['Wheat', '#E6D3A8'], ['Fern', '#6F8455'], ['Rust', '#B5643C'], ['Cream', '#FAF3E6']],
+    words: ['Timber beams', 'Wildflowers', 'Hay bales', 'Live-fire food', 'Barn dance'],
+    ideas: ['Wildflowers in jam jars down the tables', 'Live-fire sharing feast', 'Ceilidh or party band in the barn'],
+    match: { region: 'Surrey', style: 'Rustic', regions: ['Surrey', 'Cornwall', 'Lake District', 'Scotland'], styles: ['Rustic'] },
+  },
+];

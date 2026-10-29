@@ -7,7 +7,7 @@ import s from './app.module.css';
 
 export type Step = { label: string; done: boolean };
 export type Mode = 'web' | 'app';
-export type NavItem<T extends string> = { id: T; label: string; icon: string; count?: number };
+export type NavItem<T extends string> = { id: T; label: string; icon: string; count?: number; appHidden?: boolean; appLabel?: string };
 
 /** Which layout the preview is drawn in. Web = laptop/desktop platform, App = phone app. */
 const ModeCtx = createContext<Mode>('app');
@@ -27,6 +27,8 @@ type ShellProps<T extends string> = {
   search: string;
   /** extra controls shown in the guide / sidebar (e.g. supplier "Preview as" switcher) */
   extra?: React.ReactNode;
+  /** always-visible control (e.g. guest slider): web top bar / app strip above the tabs */
+  toolbar?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -34,7 +36,7 @@ type ShellProps<T extends string> = {
  * Laptop/desktop: the web platform by default, with a small Web / App toggle.
  * Phones: always the app.
  */
-export function Shell<T extends string>({ side, title, intro, steps, other, nav, account, search, extra, children }: ShellProps<T>) {
+export function Shell<T extends string>({ side, title, intro, steps, other, nav, account, search, extra, toolbar, children }: ShellProps<T>) {
   const [wide, setWide] = useState<boolean | null>(null);
   const [pref, setPref] = useState<Mode>('web');
 
@@ -80,6 +82,7 @@ export function Shell<T extends string>({ side, title, intro, steps, other, nav,
           <div className={s.wMain}>
             <header className={s.wBar}>
               <div className={s.wSearch}><Icon name="search" size={18} /><span>{search}</span></div>
+              {toolbar}
               <span className={s.spacer} />
               {toggle}
               <span className={s.wIcon} aria-hidden="true"><Icon name="bell" size={18} /></span>
@@ -109,7 +112,8 @@ export function Shell<T extends string>({ side, title, intro, steps, other, nav,
         </aside>
         <div className={s.app}>
           {children}
-          {!nav.hideInApp && <Tabs<T> items={nav.items} active={nav.active} onChange={nav.onChange} />}
+          {toolbar && !nav.hideInApp && <div className={s.appStrip}>{toolbar}</div>}
+          {!nav.hideInApp && <Tabs<T> items={nav.items.filter((x) => !x.appHidden)} active={nav.active} onChange={nav.onChange} />}
         </div>
         <div className={s.side} aria-hidden="true">
           <p>This is a clickable preview with sample data — nothing is saved or sent.</p>
@@ -178,7 +182,7 @@ export function Sheet({ title, onClose, children, wide }: { title: string; onClo
   return (
     <>
       <div className={s.scrim} onClick={onClose} />
-      <div className={`${s.sheet} ${wide ? s.sheetWide : ''}`} role="dialog" aria-modal="true" aria-label={title}>
+      <div className={`${s.sheet} ${wide ? s.sheetWide : ''}`} role="dialog" aria-modal="true" aria-label={title} onClick={(e) => e.stopPropagation()}>
         <div className={s.sheetHandle} />
         <div className={s.sheetHead}><h3>{title}</h3><button className={s.close} onClick={onClose} aria-label="Close"><Icon name="close" /></button></div>
         <div className={s.body}>{children}</div>
@@ -197,10 +201,21 @@ export function Tabs<T extends string>({ items, active, onChange }: { items: Nav
     <nav className={s.tabs}>
       {items.map((t) => (
         <button key={t.id} className={active === t.id ? s.on : ''} onClick={() => onChange(t.id)} aria-current={active === t.id ? 'page' : undefined}>
-          <Icon name={t.icon} />{t.label}{t.count ? <span className={s.dot}>{t.count}</span> : null}
+          <Icon name={t.icon} />{t.appLabel ?? t.label}{t.count ? <span className={s.dot}>{t.count}</span> : null}
         </button>
       ))}
     </nav>
+  );
+}
+
+/** Guest-number slider shown on every couple screen. */
+export function GuestSlider({ value, onChange }: { value: number; onChange: (n: number) => void }) {
+  return (
+    <label className={s.guestSlider}>
+      <Icon name="users" size={17} />
+      <input type="range" min={20} max={250} step={5} value={value} onChange={(e) => onChange(+e.target.value)} aria-label="Guest numbers" />
+      <b>{value}</b><span>guests</span>
+    </label>
   );
 }
 
