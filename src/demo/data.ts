@@ -459,7 +459,7 @@ export function reviewsFor(sup: Supplier, n = 3): Review[] {
 }
 
 /* ---------------- supplier side ---------------- */
-/** Platform fee — the most Everly will take. */
+/** Platform fee — the most Asteria will take. */
 export const FEE = 0.03;
 export const FEE_LABEL = '3%';
 /** "Today" for the preview, so countdowns and due dates read the same for everyone. */
@@ -478,10 +478,18 @@ export type JobStatus = 'new' | 'held' | 'deposit' | 'paid' | 'declined' | 'canc
 export const STATUS_LABEL: Record<JobStatus, string> = { new: 'New enquiry', held: 'Date held', deposit: 'Deposit paid', paid: 'Fully paid', declined: 'Declined', cancelled: 'Cancelled' };
 export type Job = {
   id: string; couple: string; date: string; endDate?: string; pkg: string; pid?: string; guests: number;
-  total: number; deposit: number; paid: number; status: JobStatus; source: 'Everly' | 'Direct';
+  total: number; deposit: number; paid: number; status: JobStatus; source: 'Asteria' | 'Direct';
   message?: string; phone?: string; email?: string; received?: string; contractDaysAgo?: number;
   fromCouplePreview?: boolean; noQuote?: boolean; note?: string; balanceDays?: number; cancelPolicy?: string; securityDeposit?: number;
 };
+/** Card processing: 1.5% + 20p on every payment the couple makes (deposit and final payment). */
+export const PROC_PCT = 0.015;
+export const PROC_FIXED = 0.2;
+export const PROC_LABEL = '1.5% + 20p per transaction';
+/** number of card payments for a booking: deposit + final payment, or one if the deposit is the whole amount */
+export const txCount = (j: { total: number; deposit: number; noQuote?: boolean }) => (j.noQuote || !j.total ? 0 : j.deposit > 0 && j.deposit < 100 ? 2 : 1);
+export const processingFee = (j: { total: number; deposit: number; noQuote?: boolean }) => (txCount(j) ? Math.round((j.total * PROC_PCT + PROC_FIXED * txCount(j)) * 100) / 100 : 0);
+export const gbp2 = (n: number) => '£' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const isBooked = (j: Job) => j.status === 'deposit' || j.status === 'paid';
 export const blocksDate = (j: Job) => j.status === 'held' || isBooked(j);
 export const depositAmt = (j: Job) => Math.round((j.total * j.deposit) / 100);
@@ -571,8 +579,8 @@ export function personaFor(id: string): Persona {
     for (let i = 0; i <= (end ? 2 : 0); i++) used.add(addDays(date, i));
     const direct = r() > 0.72;
     jobs.push({
-      id: (direct ? 'D-' : 'E-') + (19000 + Math.floor(r() * 2000)), couple: names[n++ % names.length], date, endDate: end, pkg: p.name, pid: p.id, guests, total, deposit: p.deposit,
-      paid: status === 'paid' ? total : status === 'deposit' ? Math.round((total * p.deposit) / 100) : 0, status, source: direct ? 'Direct' : 'Everly',
+      id: (direct ? 'D-' : 'A-') + (19000 + Math.floor(r() * 2000)), couple: names[n++ % names.length], date, endDate: end, pkg: p.name, pid: p.id, guests, total, deposit: p.deposit,
+      paid: status === 'paid' ? total : status === 'deposit' ? Math.round((total * p.deposit) / 100) : 0, status, source: direct ? 'Direct' : 'Asteria',
       contractDaysAgo: status === 'held' ? 1 + Math.floor(r() * 5) : undefined,
     });
   };
@@ -605,7 +613,7 @@ export function personaFor(id: string): Persona {
     const p = pick(r, sup.packages); const guests = guestsFor(p); const couple = names[n++ % names.length];
     const first = couple.split(' & ')[0].toLowerCase();
     jobs.push({
-      id: 'E-' + (20460 + i * 7), couple, date, guests, pkg: p.name, pid: p.id, total: pkgTotal(p, guests), deposit: p.deposit, paid: 0, source: 'Everly',
+      id: 'A-' + (20460 + i * 7), couple, date, guests, pkg: p.name, pid: p.id, total: pkgTotal(p, guests), deposit: p.deposit, paid: 0, source: 'Asteria',
       message: fill(tmpl[i % tmpl.length], { date: fmtDate(date, { day: 'numeric', month: 'long', year: 'numeric' }), guests: String(guests), pkg: p.name }),
       phone: `07700 900${String(100 + Math.floor(r() * 800))}`, email: `${first}@example.com`, received: received[i], status: i < 3 ? 'new' : 'held', contractDaysAgo: i < 3 ? undefined : 2 + i,
     });

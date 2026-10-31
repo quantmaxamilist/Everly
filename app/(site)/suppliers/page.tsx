@@ -7,7 +7,7 @@ import A from '@/components/A';
 import Icon from '@/components/Icon';
 import s from '../inner.module.css';
 
-export const metadata: Metadata = { title: 'For suppliers', description: 'List your venue or wedding business on Everly. Packages, availability, enquiries, contracts and deposits in one dashboard.' };
+export const metadata: Metadata = { title: 'For suppliers', description: 'List your venue or wedding business on Asteria. Packages, availability, enquiries, contracts and deposits in one dashboard.' };
 
 const items = [
   { icon: 'layers', t: 'Packages & pricing', d: 'Create packages, extras and upgrades, with seasonal, day-of-week and per-guest pricing.' },
@@ -21,7 +21,7 @@ const items = [
 export default function Page() {
   return (
     <>
-      <PageHero eyebrow="For suppliers" title={<>Get booked. <em>Get paid.</em></>} lead="Show couples exactly what you offer and what it costs. Everly handles the enquiries, contracts and deposits, so you can focus on the weddings." img="/images/setting.jpg">
+      <PageHero eyebrow="For suppliers" title={<>Get booked. <em>Get paid.</em></>} lead="Show couples exactly what you offer and what it costs. Asteria handles the enquiries, contracts and deposits, so you can focus on the weddings." img="/images/setting.jpg">
         <A to="/start" className="btn">List your business <Icon name="arrow" /></A>
       </PageHero>
       <section className="section sand">
@@ -49,7 +49,7 @@ export default function Page() {
           </Split>
         </div>
       </section>
-      <CtaBand title="Be one of the first on Everly" text="Register your interest now and we will help you set up your listing ahead of launch." />
+      <CtaBand title="Be one of the first on Asteria" text="Register your interest now and we will help you set up your listing ahead of launch." />
     </>
   );
 }

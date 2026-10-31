@@ -9,7 +9,7 @@ export default function Page() {
       <div className={`container ${s.narrow} ${s.prose}`}>
         <p className="eyebrow">Legal</p>
         <h1>Privacy policy</h1>
-        <p>This page will hold Everly&rsquo;s privacy policy, prepared by a solicitor before launch.</p>
+        <p>This page will hold Asteria&rsquo;s privacy policy, prepared by a solicitor before launch.</p>
       </div>
     </section>
   );

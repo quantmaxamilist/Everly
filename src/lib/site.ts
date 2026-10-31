@@ -1,22 +1,22 @@
 /**
- * Everly. — site content + config.
+ * Asteria — site content + config.
  * Copy is DRAFT (written by Quantweb from the client brief) — client to approve.
  * Example venues/prices in the builder demo are illustrative, not real listings.
  */
 const PREVIEW = process.env.NEXT_PUBLIC_PREVIEW === '1';
 
-/** Brand name in ONE place — the client is renaming soon. */
-export const BRAND = 'Everly';
+/** Brand name in ONE place. */
+export const BRAND = 'Asteria';
 
 export const site = {
-  name: 'Everly.',
-  plainName: 'Everly',
-  tagline: "Don't just plan your wedding. Build it.",
+  name: 'Asteria',
+  plainName: 'Asteria',
+  tagline: 'Every event starts here.',
   description:
-    'Everly is the UK wedding planning platform where couples build their wedding — venue, suppliers and budget — compare options side by side, then book and pay in one place.',
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.everly.co.uk', // TODO: confirm domain
-  email: 'hello@everly.co.uk', // TODO: confirm inbox
-  instagram: '', // TODO
+    'Asteria is the UK wedding planning platform where couples build their wedding — venue, suppliers and budget — compare options side by side, then book and pay in one place.',
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.asteriaevents.co.uk', // TODO: confirm domain (placeholder)
+  email: 'hello@asteriaevents.co.uk', // TODO: confirm inbox (placeholder)
+  instagram: '', // TODO: brand pack shows @asteriaeventsco — confirm before adding
 };
 
 /** Internal link. In the static preview build, links point at flat .html files. */
@@ -64,12 +64,12 @@ export const options: Option[] = [
 ];
 
 export const faqs = [
-  { q: 'What is Everly?', a: 'Everly is a wedding planning platform where you build your wedding rather than just list it. Pick a venue, add suppliers and packages, and watch your total update as you go. When you are happy, you book and pay through Everly.' },
+  { q: 'What is Asteria?', a: 'Asteria is a wedding planning platform where you build your wedding rather than just list it. Pick a venue, add suppliers and packages, and watch your total update as you go. When you are happy, you book and pay through Asteria.' },
   { q: 'Is it free for couples?', a: 'Yes — creating an account, building and comparing weddings is free for couples.' },
   { q: 'Can I build more than one version of my wedding?', a: 'Yes. Create as many builds as you like — a summer villa wedding and a winter manor wedding, for example — and compare them side by side before you commit.' },
-  { q: 'Do I need a budget to start?', a: 'No. Adding a budget is optional. If you do add one, Everly shows what is allocated and what is left as you build.' },
-  { q: 'How do payments work?', a: 'Deposits and balances are paid securely by card through Everly using Stripe. Each supplier sets their own deposit, and you can see what is paid and what is due in My Wedding.' },
-  { q: 'How do contracts work?', a: 'Suppliers can share their contract with you through Everly, and you can sign it online. Signed copies are saved to both accounts.' },
+  { q: 'Do I need a budget to start?', a: 'No. Adding a budget is optional. If you do add one, Asteria shows what is allocated and what is left as you build.' },
+  { q: 'How do payments work?', a: 'Deposits and balances are paid securely by card through Asteria using Stripe. Each supplier sets their own deposit, and you can see what is paid and what is due in My Wedding.' },
+  { q: 'How do contracts work?', a: 'Suppliers can share their contract with you through Asteria, and you can sign it online. Signed copies are saved to both accounts.' },
   { q: 'I am a supplier — how do I join?', a: 'Register your interest as a supplier and we will be in touch about listing your business, packages and availability ahead of launch.' },
-  { q: 'Is there an app?', a: 'Everly launches on the web first, with iPhone and Android apps to follow using the same account.' },
+  { q: 'Is there an app?', a: 'Asteria launches on the web first, with iPhone and Android apps to follow using the same account.' },
 ];

@@ -8,7 +8,7 @@ export default function CtaBand({ title = 'Start building your wedding', text = 
       <div className={`container ${s.in}`}>
         <div className={`${s.card} rv`}>
           <div className={s.copy}>
-            <p className="eyebrow">Everly.</p>
+            <p className="eyebrow">Asteria</p>
             <h2>{title}</h2>
             <p className="lead">{text}</p>
             <div className={s.ctas}>

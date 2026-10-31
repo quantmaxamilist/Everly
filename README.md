@@ -1,4 +1,4 @@
-# Everly. — website (+ platform later)
+# Asteria. — website (+ platform later)
 
 Next.js 15 (App Router, TypeScript). One project: public marketing pages now, logged-in platform routes added later in the same app.
 
@@ -18,7 +18,7 @@ Deploy: import into Vercel, framework preset **Next.js**.
 - Platform (Phase 1) will live under routes like `/dashboard`, `/builds`, `/my-wedding`, `/supplier` (already disallowed in robots.ts)
 
 ## Before launch
-- [ ] Confirm domain (`NEXT_PUBLIC_SITE_URL`, default everly.co.uk) and contact email (`src/lib/site.ts`, currently hello@everly.co.uk)
+- [ ] Confirm domain (`NEXT_PUBLIC_SITE_URL`, placeholder asteriaevents.co.uk) and contact email (`src/lib/site.ts`, placeholder hello@asteriaevents.co.uk)
 - [ ] `NEXT_PUBLIC_WEB3FORMS_KEY` so early-access + contact forms email the owner (without it, forms show a success message only)
 - [ ] Client to approve all copy (draft)
 - [ ] Privacy policy + terms from a solicitor

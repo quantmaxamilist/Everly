@@ -3,10 +3,10 @@
 .copy { display: grid; gap: 1.1rem; justify-items: start; }
 .copy h2 { color: var(--off); max-width: 14ch; }
 .copy :global(.eyebrow) { color: var(--champagne); }
-.copy :global(.lead) { color: rgba(250, 246, 242, .78); }
+.copy :global(.lead) { color: rgba(243, 238, 232, .78); }
 .ctas { display: flex; flex-wrap: wrap; gap: .7rem; margin-top: .5rem; }
-.ctas :global(.btn--ghost) { color: var(--off); border-color: rgba(250, 246, 242, .35); }
-.ctas :global(.btn--ghost:hover) { background: rgba(250, 246, 242, .08); color: #fff; }
-.arch { position: relative; width: min(100%, 360px); aspect-ratio: 3 / 4; border-radius: var(--r-arch); overflow: hidden; justify-self: center; border: 6px solid rgba(250, 246, 242, .1); }
+.ctas :global(.btn--ghost) { color: var(--off); border-color: rgba(243, 238, 232, .35); }
+.ctas :global(.btn--ghost:hover) { background: rgba(243, 238, 232, .08); color: #fff; }
+.arch { position: relative; width: min(100%, 360px); aspect-ratio: 3 / 4; border-radius: var(--r-arch); overflow: hidden; justify-self: center; border: 6px solid rgba(243, 238, 232, .1); }
 .arch img { object-fit: cover; }
 @media (min-width: 900px) { .card { grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); } .arch { justify-self: end; } }

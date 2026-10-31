@@ -148,7 +148,7 @@ function Steps({ steps }: { steps: Step[] }) {
 
 export function Logo() {
   // eslint-disable-next-line @next/next/no-img-element
-  return <img className={s.logo} src={asset('/brand/everly-logo.png')} alt={BRAND} width={62} height={26} />;
+  return <img className={s.logo} src={asset('/brand/asteria-logo.svg')} alt={BRAND} width={100} height={22} />;
 }
 
 /** Screen header. App: compact top bar (logo when no title). Web: page heading. */

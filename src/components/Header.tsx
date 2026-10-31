@@ -24,7 +24,7 @@ export default function Header() {
   return (
     <header className={`${s.hdr} ${scrolled ? s.scrolled : ''} ${open ? s.isOpen : ''}`}>
       <div className={`container ${s.in}`}>
-        <A to="/" className={s.logo} aria-label="Everly home"><Logo height={38} /></A>
+        <A to="/" className={s.logo} aria-label="Asteria home"><Logo height={28} /></A>
         <nav className={s.nav} aria-label="Main">
           {nav.map((n) => (
             <A key={n.path} to={n.path} className={isActive(n.path) ? s.active : undefined} aria-current={isActive(n.path) ? 'page' : undefined}>{n.label}</A>

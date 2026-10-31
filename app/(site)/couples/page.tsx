@@ -20,7 +20,7 @@ const items = [
 export default function Page() {
   return (
     <>
-      <PageHero eyebrow="For couples" title={<>Plan less. <em>Enjoy more.</em></>} lead="Everly brings your venue, suppliers, budget and bookings together, so you can spend less time on spreadsheets and more time looking forward to the day." img="/images/couple.jpg">
+      <PageHero eyebrow="For couples" title={<>Plan less. <em>Enjoy more.</em></>} lead="Asteria brings your venue, suppliers, budget and bookings together, so you can spend less time on spreadsheets and more time looking forward to the day." img="/images/couple.jpg">
         <A to="/start" className="btn">Start building — it&rsquo;s free <Icon name="arrow" /></A>
       </PageHero>
       <section className="section sand">
@@ -31,7 +31,7 @@ export default function Page() {
       </section>
       <section className="section">
         <div className="container">
-          <Split eyebrow="Your budget, your way" title={<>Always know <em>the real cost</em></>} text="Add a budget and Everly shows what is allocated and what is left with every choice. No budget? No problem — just build and see where you land." points={['Live totals as you build', 'Spend breakdown by supplier', 'Smart suggestions to save money']} img="/images/bouquet2.jpg" alt="Bride holding a white bouquet" />
+          <Split eyebrow="Your budget, your way" title={<>Always know <em>the real cost</em></>} text="Add a budget and Asteria shows what is allocated and what is left with every choice. No budget? No problem — just build and see where you land." points={['Live totals as you build', 'Spend breakdown by supplier', 'Smart suggestions to save money']} img="/images/bouquet2.jpg" alt="Bride holding a white bouquet" />
         </div>
       </section>
       <CtaBand />

@@ -11,18 +11,18 @@
 .taken b, .taken .p { color: #a39c8e; text-decoration: line-through; }
 .blocked { background: repeating-linear-gradient(135deg, #f1ede5 0 6px, #e7e2d7 6px 12px); }
 .blocked .p { color: #9a4a2c; text-decoration: none; }
-.pill { position: absolute; bottom: 6px; height: 24px; border-radius: 99px; border: 0; display: flex; align-items: center; gap: 5px; padding: 0 6px 0 3px; cursor: pointer; overflow: hidden; z-index: 1; box-shadow: 0 4px 10px -4px rgba(31,36,24,.4); }
-.pill_held { background: #6b5a8a; color: #fff; }
+.pill { position: absolute; bottom: 6px; height: 24px; border-radius: 99px; border: 0; display: flex; align-items: center; gap: 5px; padding: 0 6px 0 3px; cursor: pointer; overflow: hidden; z-index: 1; box-shadow: 0 4px 10px -4px rgba(28, 28, 20,.4); }
+.pill_held { background: #a68d6b; color: #fff; }
 .pill_new { background: #fff; color: var(--olive-ink); border: 1.5px dashed var(--champagne); }
-.pill_deposit { background: var(--olive); color: #fff; }
-.pill_paid { background: var(--olive-dark); color: #fff; }
+.pill_deposit { background: var(--accent); color: #fff; }
+.pill_paid { background: var(--olive); color: #fff; }
 .src { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: .6rem; font-weight: 600; background: rgba(255,255,255,.22); flex-shrink: 0; }
 .pill_new .src { background: var(--champagne); color: var(--olive-ink); }
 .name { font-size: .68rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: .7rem; color: var(--muted); padding: 6px 4px 0; }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
-.lgBooked { background: var(--olive-dark); }
-.lgHeld { background: #6b5a8a; }
+.lgBooked { background: var(--olive); }
+.lgHeld { background: #a68d6b; }
 .lgEnq { border: 1.5px dashed var(--champagne); }
 
 /* web platform: bigger month grid */
@@ -39,5 +39,5 @@
 
 .sel { background: var(--sage) !important; border-color: var(--olive) !important; box-shadow: inset 0 0 0 1.5px var(--olive); }
 .past { opacity: .55; }
-.lgDeposit { background: var(--olive); }
+.lgDeposit { background: var(--accent); }
 .lgClosed { background: repeating-linear-gradient(135deg, #f1ede5 0 3px, #d9d2c4 3px 6px); }

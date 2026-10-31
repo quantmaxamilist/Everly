@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: 'How it works', description: 'Set up 
 export default function Page() {
   return (
     <>
-      <PageHero eyebrow="How it works" title={<>Four steps from idea <em>to booked</em></>} lead="Everly turns wedding planning into something you build. Here is how it works, from your first idea to your final payment." img="/images/aisle.jpg">
+      <PageHero eyebrow="How it works" title={<>Four steps from idea <em>to booked</em></>} lead="Asteria turns wedding planning into something you build. Here is how it works, from your first idea to your final payment." img="/images/aisle.jpg">
         <A to="/start" className="btn">Start building <Icon name="arrow" /></A>
       </PageHero>
       <section className="section sand">

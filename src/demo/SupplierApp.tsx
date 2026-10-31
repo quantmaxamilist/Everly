@@ -6,7 +6,7 @@ import { Shell, Top, Sheet, Toast, Stars, loadEnquiry, useWeb } from './ui';
 import type { EnquiryPayload } from './CoupleApp';
 import {
   suppliers, personaFor, featuredPersonas, categories, catOne, PREVIEW_MONTHS, monthLabel, dayPrice, shortPrice, shortGbp, gbp, fmtDate, supById, addDays, daysBetween, paymentsDue, depositAmt, isBooked, blocksDate,
-  FEE, FEE_LABEL, TODAY, BALANCE_DAYS, CONTRACT_DAYS, STATUS_LABEL, pkgTotal, type Job, type JobStatus, type Persona, type Supplier, type Due,
+  FEE, FEE_LABEL, PROC_LABEL, txCount, processingFee, gbp2, TODAY, BALANCE_DAYS, CONTRACT_DAYS, STATUS_LABEL, pkgTotal, type Job, type JobStatus, type Persona, type Supplier, type Due,
 } from './data';
 import s from './app.module.css';
 import c from './calendar.module.css';
@@ -47,7 +47,7 @@ export default function SupplierApp() {
     let as: string | null = null;
     try { as = new URLSearchParams(location.search).get('as'); } catch {}
     const e = loadEnquiry<EnquiryPayload>();
-    const cj: Job | null = e && supById(e.sid) ? { id: 'E-20488', couple: e.couple, date: e.date, guests: e.guests, pkg: e.pkg, pid: e.pid, total: e.total, deposit: e.deposit, paid: 0, status: 'new', source: 'Everly', message: e.message, phone: e.phone, received: 'Just now', fromCouplePreview: true } : null;
+    const cj: Job | null = e && supById(e.sid) ? { id: 'A-20488', couple: e.couple, date: e.date, guests: e.guests, pkg: e.pkg, pid: e.pid, total: e.total, deposit: e.deposit, paid: 0, status: 'new', source: 'Asteria', message: e.message, phone: e.phone, received: 'Just now', fromCouplePreview: true } : null;
     setCoupleJob(cj);
     load(as && supById(as) ? as : cj ? cj.pid && suppliers.find((x) => x.packages.some((p) => p.id === cj.pid))!.id || 'stone-villa' : 'stone-villa', cj);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
@@ -193,7 +193,8 @@ function JobDetail({ j, sup, act, jobs }: { j: Job; sup: Supplier; act: Acts; jo
   const [confirm, setConfirm] = useState(false);
   useEffect(() => setConfirm(false), [j.id, j.status]);
   const dep = depositAmt(j);
-  const fee = j.source === 'Everly' ? Math.round(j.total * FEE) : 0;
+  const fee = j.source === 'Asteria' ? Math.round(j.total * FEE) : 0;
+  const proc = processingFee(j);
   const balanceDue = addDays(j.date, -(j.balanceDays ?? BALANCE_DAYS));
   const stage = PIPE.findIndex(([st]) => st === j.status);
   const clash = jobs.find((b) => b.id !== j.id && blocksDate(b) && j.date >= b.date && j.date <= (b.endDate || b.date));
@@ -230,7 +231,7 @@ function JobDetail({ j, sup, act, jobs }: { j: Job; sup: Supplier; act: Acts; jo
       )}
       <div>
         <h3 style={{ fontSize: '1.6rem' }}>{j.couple}</h3>
-        <p className={s.muted}>{j.guests} guests · {j.source === 'Everly' ? 'via Everly' : 'Direct booking'}{j.phone ? ` · ${j.phone}` : ''}{j.email ? ` · ${j.email}` : ''}{j.received ? ` · received ${j.received.toLowerCase()}` : ''}</p>
+        <p className={s.muted}>{j.guests} guests · {j.source === 'Asteria' ? 'via Asteria' : 'Direct booking'}{j.phone ? ` · ${j.phone}` : ''}{j.email ? ` · ${j.email}` : ''}{j.received ? ` · received ${j.received.toLowerCase()}` : ''}</p>
       </div>
       <div className={s.enqGrid}>
         <div className={s.card} style={{ gridTemplateColumns: '1fr auto', alignItems: 'center', ...bg }}>
@@ -251,8 +252,9 @@ function JobDetail({ j, sup, act, jobs }: { j: Job; sup: Supplier; act: Acts; jo
             <b className={s.h3}>Quote</b>
             <ul className={s.lines}>
               <li><span>{j.pkg}</span><span>{gbp(j.total)}</span></li>
-              {fee ? <li className={s.muted}><span>Everly fee ({FEE_LABEL})</span><span>−{gbp(fee)}</span></li> : <li className={s.muted}><span>Direct booking — no Everly fee</span><span>£0</span></li>}
-              <li><b>You receive</b><b>{gbp(j.total - fee)}</b></li>
+              {fee ? <li className={s.muted}><span>Asteria fee ({FEE_LABEL})</span><span>−{gbp(fee)}</span></li> : <li className={s.muted}><span>Direct booking — no Asteria fee</span><span>£0</span></li>}
+              <li className={s.muted}><span>Processing fees (1.5% + 20p × {txCount(j)} payment{txCount(j) > 1 ? 's' : ''})</span><span>−{gbp2(proc)}</span></li>
+              <li><b>You receive</b><b>{gbp2(j.total - fee - proc)}</b></li>
             </ul>
           </div>
           <div className={s.card} style={bg}>
@@ -300,13 +302,16 @@ function Dashboard({ persona, jobs, onOpen, avatar, onFilter }: { persona: Perso
   const cur = inP(from, to); const prev = inP(prevFrom, prevTo);
   const sum = (l: Job[], k: 'total' | 'paid') => l.reduce((t, j) => t + j[k], 0);
   const value = sum(cur, 'total'); const prevValue = sum(prev, 'total');
-  const fees = Math.round(cur.filter((j) => j.source === 'Everly').reduce((t, j) => t + j.total, 0) * FEE);
+  const fees = Math.round(cur.filter((j) => j.source === 'Asteria').reduce((t, j) => t + j.total, 0) * FEE);
+  const proc = Math.round(cur.reduce((t, j) => t + processingFee(j), 0) * 100) / 100;
+  const tx = cur.reduce((t, j) => t + txCount(j), 0);
+  const keep = value - fees - proc;
   const received = sum(cur, 'paid');
   const pct = (a: number, b: number) => (b ? Math.round(((a - b) / b) * 100) : a ? 100 : 0);
   const d1 = pct(value, prevValue); const d2 = cur.length - prev.length;
   const kpis = [
     { l: 'Bookings value', v: gbp(value), d: `${d1 >= 0 ? '+' : ''}${d1}%`, up: d1 >= 0 },
-    { l: 'You keep', v: gbp(value - fees), d: `after ${FEE_LABEL} Everly fee`, up: true, plain: true },
+    { l: 'You keep', v: gbp(keep), d: 'after Asteria & processing fees', up: true, plain: true },
     { l: 'Weddings booked', v: String(cur.length), d: `${d2 >= 0 ? '+' : ''}${d2}`, up: d2 >= 0 },
     { l: 'Received so far', v: gbp(received), d: value ? `${Math.round((received / value) * 100)}% of value` : '—', up: true, plain: true },
   ];
@@ -366,9 +371,10 @@ function Dashboard({ persona, jobs, onOpen, avatar, onFilter }: { persona: Perso
           <div className={s.card}>
             <b className={s.h3}>Profit breakdown</b>
             <ul className={s.lines}>
-              <li><span>Bookings value</span><span>{gbp(value)}</span></li>
-              <li className={s.muted}><span>Everly fee ({FEE_LABEL}, Everly bookings only)</span><span>−{gbp(fees)}</span></li>
-              <li><b>You keep</b><b>{gbp(value - fees)}</b></li>
+              <li><span>Bookings value</span><span>{gbp2(value)}</span></li>
+              <li className={s.muted}><span>Asteria fee ({FEE_LABEL}, Asteria bookings only)</span><span>−{gbp2(fees)}</span></li>
+              <li className={s.muted}><span>Processing fees ({PROC_LABEL})<br /><small>{tx} card payment{tx === 1 ? '' : 's'}</small></span><span>−{gbp2(proc)}</span></li>
+              <li><b>You keep</b><b>{gbp2(keep)}</b></li>
             </ul>
             <p className={s.muted} style={{ fontSize: '.76rem' }}>{cur.filter((j) => j.source === 'Direct').length} direct bookings this period — no fee on those.</p>
           </div>
@@ -486,7 +492,7 @@ function Calendar({ sup, jobs, month, setMonth, prices, setPrices, closed, setCl
             })}
             {spans.map(({ b, start, len }) => (
               <button key={b.id} className={`${c.pill} ${c['pill_' + b.status]}`} style={{ left: `calc(${(start / 7) * 100}% + 3px)`, width: `calc(${(len / 7) * 100}% - 6px)` }} onClick={() => onJob(b)}>
-                <span className={c.src}>{b.source === 'Everly' ? 'E' : 'D'}</span>
+                <span className={c.src}>{b.source === 'Asteria' ? 'A' : 'D'}</span>
                 <span className={c.name}>{len > 1 ? b.couple : firstName(b.couple)}</span>
               </button>
             ))}
@@ -494,7 +500,7 @@ function Calendar({ sup, jobs, month, setMonth, prices, setPrices, closed, setCl
         );
       })}
       <div className={c.legend}>
-        <span><i className={c.lgEnq} />Enquiry</span><span><i className={c.lgHeld} />Date held</span><span><i className={c.lgDeposit} />Deposit paid</span><span><i className={c.lgBooked} />Fully paid</span><span><i className={c.lgClosed} />Closed</span><span><b>E</b> Everly · <b>D</b> direct</span>
+        <span><i className={c.lgEnq} />Enquiry</span><span><i className={c.lgHeld} />Date held</span><span><i className={c.lgDeposit} />Deposit paid</span><span><i className={c.lgBooked} />Fully paid</span><span><i className={c.lgClosed} />Closed</span><span><b>A</b> Asteria · <b>D</b> direct</span>
       </div>
     </div>
   );
@@ -624,7 +630,7 @@ function BookingForm({ sup, range, withQuote, onSave, onClose }: { sup: Supplier
             <b className={s.h3}>Quote</b>
             <div className={s.field}><label htmlFor="q1">Package</label><select id="q1" className={s.input} value={g.pid} onChange={(e) => { const p = sup.packages.find((x) => x.id === e.target.value)!; set({ pid: p.id, deposit: p.deposit }); setTotal(null); }}>{sup.packages.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>
             <div className={s.field}><label htmlFor="q2">Total</label><input id="q2" inputMode="numeric" className={s.input} value={gbp(t)} onChange={(e) => setTotal(+e.target.value.replace(/\D/g, '') || 0)} /></div>
-            <p className={s.muted}>Direct booking — no Everly fee.</p>
+            <p className={s.muted}>Direct booking — no Asteria fee.</p>
           </div>
           <div className={s.card}>
             <b className={s.h3}>Policy</b>
@@ -642,7 +648,7 @@ function BookingForm({ sup, range, withQuote, onSave, onClose }: { sup: Supplier
         <div className={s.card}>
           <b className={s.h3}>Notes</b>
           <textarea className={s.input} placeholder="e.g. Friend of the family, invoice sent separately" value={g.note} onChange={(e) => set({ note: e.target.value })} />
-          <p className={s.muted}>The dates are blocked on your calendar. Add a quote later if you want Everly to track payments.</p>
+          <p className={s.muted}>The dates are blocked on your calendar. Add a quote later if you want Asteria to track payments.</p>
         </div>
       )}
       <div className={s.sticky}><button className={s.btn} disabled={!valid} onClick={save}>{withQuote ? (g.contract ? 'Create booking & send contract' : 'Create booking') : 'Create booking'}</button>{!valid && <span className={s.muted} style={{ textAlign: 'center', fontSize: '.78rem' }}>First and last name are required</span>}</div>
@@ -658,7 +664,7 @@ function Listing({ persona, onSwitch }: { persona: Persona; onSwitch: () => void
   const stats = [['Profile views', views.toLocaleString('en-GB'), 'this month'], ['Saved by couples', String(Math.round(views / 11)), 'tapped ♥ this month'], ['Enquiries', String(Math.round(views / 48)), 'this month']];
   return (
     <>
-      <Top title="Your listing" right={web ? <span className={s.tag}>Live on Everly</span> : undefined} />
+      <Top title="Your listing" right={web ? <span className={s.tag}>Live on Asteria</span> : undefined} />
       <div className={`${s.body} ${s.listGrid}`}>
         <div className={s.listMain}>
           <div className={s.card} style={{ padding: 0, overflow: 'hidden' }}>
@@ -668,7 +674,7 @@ function Listing({ persona, onSwitch }: { persona: Persona; onSwitch: () => void
               <b className={s.h3}>{sup.name}</b>
               <span className={s.muted}>{sup.category} · {sup.town}, {sup.region} · <span className={s.stars}>★ {sup.rating}</span> ({sup.reviews})</span>
               <p style={{ fontSize: '.9rem' }}>{sup.about}</p>
-              {!web && <span className={s.tag}>Live on Everly</span>}
+              {!web && <span className={s.tag}>Live on Asteria</span>}
             </div>
           </div>
           <div className={s.kpis} style={{ gridTemplateColumns: 'repeat(3, minmax(0,1fr))' }}>

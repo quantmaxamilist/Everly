@@ -92,7 +92,7 @@
 /* quote */
 .quote { position: relative; min-height: clamp(340px, 50vw, 560px); display: grid; align-items: center; overflow: hidden; }
 .quote img { object-fit: cover; }
-.quote::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(47, 58, 32, .72), rgba(47, 58, 32, .15) 70%); }
+.quote::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(36, 36, 26, .72), rgba(36, 36, 26, .15) 70%); }
 .quoteIn { position: relative; z-index: 1; }
 .quoteT { font-family: var(--f-display); color: #fff; font-size: clamp(2rem, 1.4rem + 2.8vw, 3.8rem); line-height: 1.12; max-width: 16ch; }
 

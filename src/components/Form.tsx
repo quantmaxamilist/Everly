@@ -20,7 +20,7 @@ export default function Form({ kind }: { kind: Kind }) {
     try {
       const r = await fetch('https://api.web3forms.com/submit', {
         method: 'POST', headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
-        body: JSON.stringify({ access_key: KEY, subject: kind === 'signup' ? `Everly early access — ${role}` : 'Everly website enquiry', from_name: 'Everly website', role, ...data }),
+        body: JSON.stringify({ access_key: KEY, subject: kind === 'signup' ? `Asteria early access — ${role}` : 'Asteria website enquiry', from_name: 'Asteria website', role, ...data }),
       });
       setState(r.ok ? 'done' : 'error');
     } catch { setState('error'); }
@@ -31,7 +31,7 @@ export default function Form({ kind }: { kind: Kind }) {
       <div className={s.done} role="status">
         <span><Icon name="check" /></span>
         <h2>{kind === 'login' ? 'Accounts open at launch' : kind === 'signup' ? 'You’re on the list' : 'Thanks — message sent'}</h2>
-        <p>{kind === 'login' ? 'Everly is opening soon. Register for early access and we’ll let you know when you can log in.' : kind === 'signup' ? 'We’ll email you as soon as Everly opens, so you can start building.' : 'We’ll get back to you as soon as we can.'}</p>
+        <p>{kind === 'login' ? 'Asteria is opening soon. Register for early access and we’ll let you know when you can log in.' : kind === 'signup' ? 'We’ll email you as soon as Asteria opens, so you can start building.' : 'We’ll get back to you as soon as we can.'}</p>
       </div>
     );
   }

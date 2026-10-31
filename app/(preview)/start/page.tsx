@@ -10,7 +10,7 @@ export default function Start() {
     <main className={s.wrap}>
       <A to="/" className={s.home} aria-label={`${BRAND} home`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={asset('/brand/everly-logo-white.png')} alt={BRAND} width={120} height={50} />
+        <img src={asset('/brand/asteria-logo-white.svg')} alt={BRAND} width={208} height={46} />
       </A>
       <div className={s.center}>
         <h1 className={s.q}>Are you<em>…</em></h1>

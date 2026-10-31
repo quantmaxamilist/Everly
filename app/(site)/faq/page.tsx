@@ -5,13 +5,13 @@ import Icon from '@/components/Icon';
 import { faqs } from '@/lib/site';
 import s from '../inner.module.css';
 
-export const metadata: Metadata = { title: 'FAQs', description: 'Answers to common questions about Everly for couples and suppliers.' };
+export const metadata: Metadata = { title: 'FAQs', description: 'Answers to common questions about Asteria for couples and suppliers.' };
 
 export default function Page() {
   const ld = { '@context': 'https://schema.org', '@type': 'FAQPage', mainEntity: faqs.map((f) => ({ '@type': 'Question', name: f.q, acceptedAnswer: { '@type': 'Answer', text: f.a } })) };
   return (
     <>
-      <PageHero eyebrow="FAQs" title={<>Questions, <em>answered</em></>} lead="Everything you might want to know about building your wedding on Everly. Can't find it? Get in touch." />
+      <PageHero eyebrow="FAQs" title={<>Questions, <em>answered</em></>} lead="Everything you might want to know about building your wedding on Asteria. Can't find it? Get in touch." />
       <section className="section" style={{ paddingTop: 0 }}>
         <div className={`container ${s.narrow}`}>
           <div style={{ borderTop: '1px solid var(--line)' }}>

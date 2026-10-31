@@ -11,7 +11,7 @@ const steps = [
   { icon: 'user', t: 'Tell us about your day', d: 'Add your date, location, guest numbers and style. A budget is optional.' },
   { icon: 'layers', t: 'Build your wedding', d: 'Choose a venue, add suppliers and packages, and watch your total update live.' },
   { icon: 'compare', t: 'Compare your builds', d: 'Save different versions and compare them side by side until one feels right.' },
-  { icon: 'card', t: 'Book & pay in one place', d: 'Request bookings, sign contracts and pay deposits securely through Everly.' },
+  { icon: 'card', t: 'Book & pay in one place', d: 'Request bookings, sign contracts and pay deposits securely through Asteria.' },
 ];
 
 const wedding = [
@@ -92,7 +92,7 @@ export default function Home() {
           <div className={`sh ${s.bHead}`}>
             <p className="eyebrow">The Wedding Builder</p>
             <h2 className="rv">Build it like you&rsquo;re <em>speccing a dream car.</em></h2>
-            <p className="lead">Pick a venue, add the extras, and see exactly what it costs. Have a play — this is how building works on Everly.</p>
+            <p className="lead">Pick a venue, add the extras, and see exactly what it costs. Have a play — this is how building works on Asteria.</p>
           </div>
           <div className="rv"><Builder /></div>
           <p className={s.note}>Example venues and prices for illustration.</p>

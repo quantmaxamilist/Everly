@@ -13,7 +13,7 @@ export default function Footer() {
         </div>
         <div className={s.cols}>
           <div>
-            <p className={s.h}>Everly</p>
+            <p className={s.h}>Asteria</p>
             <ul>{nav.map((n) => <li key={n.path}><A to={n.path}>{n.label}</A></li>)}<li><A to="/contact">Contact</A></li></ul>
           </div>
           <div>
@@ -31,7 +31,7 @@ export default function Footer() {
         </div>
       </div>
       <div className={`container ${s.bot}`}>
-        <p>© {new Date().getFullYear()} Everly. All rights reserved.</p>
+        <p>© {new Date().getFullYear()} Asteria. All rights reserved.</p>
         <p><A to="/privacy">Privacy</A> · <A to="/terms">Terms</A></p>
       </div>
     </footer>
