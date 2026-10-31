@@ -17,7 +17,7 @@
 .venues { display: grid; gap: .8rem; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); }
 .venue { position: relative; display: grid; gap: .15rem; padding: .55rem .55rem .9rem; border-radius: var(--r-md); border: 1.5px solid var(--line); cursor: pointer; transition: border-color .25s, box-shadow .25s, transform .25s var(--ease); background: #fff; }
 .venue:hover { transform: translateY(-2px); box-shadow: var(--shadow); }
-.venue.on { border-color: var(--olive); box-shadow: 0 0 0 3px rgba(60, 59, 39, .15); }
+.venue.on { border-color: var(--olive); box-shadow: 0 0 0 3px rgba(88, 88, 63, .15); }
 .venue:has(input:focus-visible) { outline: 2px solid var(--olive); outline-offset: 3px; }
 .vimg { position: relative; display: block; aspect-ratio: 4 / 3; border-radius: 12px; overflow: hidden; margin-bottom: .55rem; background: var(--sand); }
 .vimg img { object-fit: cover; }
@@ -31,7 +31,7 @@
 .gname { font-size: .74rem; letter-spacing: .2em; text-transform: uppercase; color: var(--olive); font-weight: 500; }
 .opt2 { display: grid; grid-template-columns: auto 1fr auto; gap: .8rem; align-items: center; padding: .8rem .9rem; border-radius: 14px; border: 1px solid var(--line); cursor: pointer; transition: background .2s, border-color .2s; }
 .opt2:hover { background: var(--off); }
-.opt2.on { background: var(--sage); border-color: rgba(60, 59, 39, .45); }
+.opt2.on { background: var(--sage); border-color: rgba(88, 88, 63, .45); }
 .opt2:has(input:focus-visible) { outline: 2px solid var(--olive); outline-offset: 2px; }
 .box { width: 22px; height: 22px; border-radius: 7px; border: 1.5px solid #cfc6b8; display: grid; place-items: center; background: #fff; color: #fff; transition: .2s; }
 .on .box { background: var(--olive); border-color: var(--olive); }

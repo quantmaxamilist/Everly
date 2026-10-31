@@ -6,7 +6,7 @@ import { Shell, Top, Sheet, Toast, Stars, loadEnquiry, useWeb } from './ui';
 import type { EnquiryPayload } from './CoupleApp';
 import {
   suppliers, personaFor, featuredPersonas, categories, catOne, PREVIEW_MONTHS, monthLabel, dayPrice, shortPrice, shortGbp, gbp, fmtDate, supById, addDays, daysBetween, paymentsDue, depositAmt, isBooked, blocksDate,
-  FEE, FEE_LABEL, PROC_LABEL, txCount, processingFee, gbp2, TODAY, BALANCE_DAYS, CONTRACT_DAYS, STATUS_LABEL, pkgTotal, type Job, type JobStatus, type Persona, type Supplier, type Due,
+  PLANS, planById, pct, planYear, breakEven, PROC_LABEL, txCount, processingFee, gbp2, TODAY, BALANCE_DAYS, CONTRACT_DAYS, STATUS_LABEL, pkgTotal, type Job, type JobStatus, type Persona, type Supplier, type Due, type PlanId, type SubPlan,
 } from './data';
 import s from './app.module.css';
 import c from './calendar.module.css';
@@ -26,7 +26,9 @@ export default function SupplierApp() {
   const [tab, setTab] = useState<Tab>('enq');
   const [month, setMonth] = useState('2027-06');
   const [toast, setToast] = useState('');
-  const [seen, setSeen] = useState({ opened: false, held: false, deposit: false, filtered: false, calendar: false, switched: false });
+  const [seen, setSeen] = useState({ opened: false, held: false, deposit: false, filtered: false, plan: false, calendar: false, switched: false });
+  const [planId, setPlanId] = useState<PlanId>('starter');
+  const plan = planById(planId);
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [closed, setClosed] = useState<Record<string, string>>({});
   const [asOpen, setAsOpen] = useState(false);
@@ -76,6 +78,7 @@ export default function SupplierApp() {
     { label: 'Hold the date & send the contract', done: seen.held },
     { label: 'Mark the contract signed & deposit paid', done: seen.deposit },
     { label: 'Filter the dashboard by month, year or dates', done: seen.filtered },
+    { label: 'Check which Asteria plan suits your takings', done: seen.plan },
     { label: 'Add a direct booking or close dates on the calendar', done: seen.calendar },
     { label: 'Preview as a different type of supplier', done: seen.switched },
   ];
@@ -91,11 +94,11 @@ export default function SupplierApp() {
       extra={<PreviewAs pid={pid} onChange={switchTo} />}
       nav={{ items: [{ id: 'dash', label: 'Dashboard', icon: 'grid' }, { id: 'enq', label: 'Enquiries', icon: 'inbox', count: newCount || undefined }, { id: 'cal', label: 'Calendar', icon: 'calendar' }, { id: 'list', label: 'Listing', icon: 'layers' }], active: tab, onChange: go }}
     >
-      {tab === 'dash' && <Dashboard persona={persona} jobs={jobs} onOpen={open} avatar={avatarBtn} onFilter={() => setSeen((x) => ({ ...x, filtered: true }))} />}
-      {tab === 'enq' && <Inbox jobs={jobs} sup={sup} selId={selId} onOpen={open} act={act} avatar={avatarBtn} />}
+      {tab === 'dash' && <Dashboard persona={persona} jobs={jobs} onOpen={open} avatar={avatarBtn} onFilter={() => setSeen((x) => ({ ...x, filtered: true }))} plan={plan} setPlan={(id) => { setPlanId(id); setToast(`Switched to ${planById(id).name} — ${pct(planById(id).rate)} commission`); }} onPlanSeen={() => setSeen((x) => ({ ...x, plan: true }))} />}
+      {tab === 'enq' && <Inbox jobs={jobs} sup={sup} selId={selId} onOpen={open} act={act} avatar={avatarBtn} plan={plan} />}
       {tab === 'cal' && <Calendar sup={sup} jobs={jobs} month={month} setMonth={setMonth} prices={prices} setPrices={(d, p) => { setPrices((x) => { const n = { ...x }; d.forEach((k) => { n[k] = p; }); return n; }); setSeen((x) => ({ ...x, calendar: true })); setToast(`Price set to ${shortPrice(sup, p)} for ${d.length} day${d.length > 1 ? 's' : ''}`); }} closed={closed} setClosed={(d, reason) => { setClosed((x) => { const n = { ...x }; d.forEach((k) => { if (reason) n[k] = reason; else delete n[k]; }); return n; }); setSeen((x) => ({ ...x, calendar: true })); setToast(reason ? `${d.length} day${d.length > 1 ? 's' : ''} closed — ${reason}` : 'Dates re-opened'); }} onJob={(j) => open(j.id)} addJob={addJob} />}
       {tab === 'list' && <Listing persona={persona} onSwitch={() => setAsOpen(true)} />}
-      {openJob && <Sheet title={openJob.received ? `Enquiry ${openJob.id}` : `Booking ${openJob.id}`} onClose={() => setOpenId(null)}><JobDetail j={openJob} sup={sup} act={act} jobs={jobs} /></Sheet>}
+      {openJob && <Sheet title={openJob.received ? `Enquiry ${openJob.id}` : `Booking ${openJob.id}`} onClose={() => setOpenId(null)}><JobDetail j={openJob} sup={sup} act={act} jobs={jobs} plan={plan} /></Sheet>}
       {asOpen && (
         <Sheet title="Preview as…" onClose={() => setAsOpen(false)}>
           <p className={s.muted}>See the platform as a different supplier. All figures are sample data.</p>
@@ -139,7 +142,7 @@ function Badge({ j }: { j: Job }) {
 }
 
 /* ---------------- enquiries & bookings ---------------- */
-function Inbox({ jobs, sup, selId, onOpen, act, avatar }: { jobs: Job[]; sup: Supplier; selId: string | null; onOpen: (id: string) => void; act: Acts; avatar: React.ReactNode }) {
+function Inbox({ jobs, sup, selId, onOpen, act, avatar, plan }: { jobs: Job[]; sup: Supplier; selId: string | null; onOpen: (id: string) => void; act: Acts; avatar: React.ReactNode; plan: SubPlan }) {
   const web = useWeb();
   const [filter, setFilter] = useState<'enq' | 'booked' | 'closed'>('enq');
   const lists = {
@@ -169,7 +172,7 @@ function Inbox({ jobs, sup, selId, onOpen, act, avatar }: { jobs: Job[]; sup: Su
         <Top title="Enquiries & bookings" kicker={`${jobs.filter((j) => j.status === 'new').length} new · ${jobs.filter((j) => j.status === 'held').length} waiting for signature`} right={seg} />
         <div className={s.inbox}>
           <div className={s.inboxList}>{shown.map(item)}{!shown.length && <p className={s.muted}>Nothing here.</p>}</div>
-          {sel && <div className={`${s.card} ${s.inboxPane}`}><JobDetail j={sel} sup={sup} act={act} jobs={jobs} /></div>}
+          {sel && <div className={`${s.card} ${s.inboxPane}`}><JobDetail j={sel} sup={sup} act={act} jobs={jobs} plan={plan} /></div>}
         </div>
       </>
     );
@@ -188,12 +191,12 @@ function Inbox({ jobs, sup, selId, onOpen, act, avatar }: { jobs: Job[]; sup: Su
 
 const PIPE: [JobStatus, string, string][] = [['new', 'New enquiry', 'Couple asks'], ['held', 'Date held', 'Contract sent'], ['deposit', 'Deposit paid', 'Contract signed'], ['paid', 'Fully paid', 'Balance received']];
 
-function JobDetail({ j, sup, act, jobs }: { j: Job; sup: Supplier; act: Acts; jobs: Job[] }) {
+function JobDetail({ j, sup, act, jobs, plan }: { j: Job; sup: Supplier; act: Acts; jobs: Job[]; plan: SubPlan }) {
   const web = useWeb();
   const [confirm, setConfirm] = useState(false);
   useEffect(() => setConfirm(false), [j.id, j.status]);
   const dep = depositAmt(j);
-  const fee = j.source === 'Asteria' ? Math.round(j.total * FEE) : 0;
+  const fee = j.source === 'Asteria' ? Math.round(j.total * plan.rate) : 0;
   const proc = processingFee(j);
   const balanceDue = addDays(j.date, -(j.balanceDays ?? BALANCE_DAYS));
   const stage = PIPE.findIndex(([st]) => st === j.status);
@@ -252,7 +255,7 @@ function JobDetail({ j, sup, act, jobs }: { j: Job; sup: Supplier; act: Acts; jo
             <b className={s.h3}>Quote</b>
             <ul className={s.lines}>
               <li><span>{j.pkg}</span><span>{gbp(j.total)}</span></li>
-              {fee ? <li className={s.muted}><span>Asteria fee ({FEE_LABEL})</span><span>−{gbp(fee)}</span></li> : <li className={s.muted}><span>Direct booking — no Asteria fee</span><span>£0</span></li>}
+              {fee ? <li className={s.muted}><span>Asteria commission ({plan.name}, {pct(plan.rate)})</span><span>−{gbp(fee)}</span></li> : <li className={s.muted}><span>Direct booking — no Asteria fee</span><span>£0</span></li>}
               <li className={s.muted}><span>Processing fees (1.5% + 20p × {txCount(j)} payment{txCount(j) > 1 ? 's' : ''})</span><span>−{gbp2(proc)}</span></li>
               <li><b>You receive</b><b>{gbp2(j.total - fee - proc)}</b></li>
             </ul>
@@ -289,7 +292,7 @@ const periodRange = (p: Period): [string, string] => {
 };
 const periodName = (p: Period) => (p.mode === 'month' ? monthLabel(p.month, true) : p.mode === 'year' ? p.year : `${fmtDate(periodRange(p)[0], { day: 'numeric', month: 'short', year: 'numeric' })} – ${fmtDate(periodRange(p)[1], { day: 'numeric', month: 'short', year: 'numeric' })}`);
 
-function Dashboard({ persona, jobs, onOpen, avatar, onFilter }: { persona: Persona; jobs: Job[]; onOpen: (id: string) => void; avatar: React.ReactNode; onFilter: () => void }) {
+function Dashboard({ persona, jobs, onOpen, avatar, onFilter, plan, setPlan, onPlanSeen }: { persona: Persona; jobs: Job[]; onOpen: (id: string) => void; avatar: React.ReactNode; onFilter: () => void; plan: SubPlan; setPlan: (id: PlanId) => void; onPlanSeen: () => void }) {
   const web = useWeb();
   const sup = persona.sup;
   const [p, setP] = useState<Period>({ mode: 'year', month: '2027-06', year: '2027', from: '2027-05-01', to: '2027-08-31' });
@@ -302,16 +305,17 @@ function Dashboard({ persona, jobs, onOpen, avatar, onFilter }: { persona: Perso
   const cur = inP(from, to); const prev = inP(prevFrom, prevTo);
   const sum = (l: Job[], k: 'total' | 'paid') => l.reduce((t, j) => t + j[k], 0);
   const value = sum(cur, 'total'); const prevValue = sum(prev, 'total');
-  const fees = Math.round(cur.filter((j) => j.source === 'Asteria').reduce((t, j) => t + j.total, 0) * FEE);
+  const fees = Math.round(cur.filter((j) => j.source === 'Asteria').reduce((t, j) => t + j.total, 0) * plan.rate);
+  const takings = jobs.filter((j) => isBooked(j) && !j.noQuote && j.source === 'Asteria' && j.date > addDays(TODAY, -365) && j.date <= TODAY).reduce((t, j) => t + j.total, 0);
   const proc = Math.round(cur.reduce((t, j) => t + processingFee(j), 0) * 100) / 100;
   const tx = cur.reduce((t, j) => t + txCount(j), 0);
   const keep = value - fees - proc;
   const received = sum(cur, 'paid');
-  const pct = (a: number, b: number) => (b ? Math.round(((a - b) / b) * 100) : a ? 100 : 0);
-  const d1 = pct(value, prevValue); const d2 = cur.length - prev.length;
+  const chg = (a: number, b: number) => (b ? Math.round(((a - b) / b) * 100) : a ? 100 : 0);
+  const d1 = chg(value, prevValue); const d2 = cur.length - prev.length;
   const kpis = [
     { l: 'Bookings value', v: gbp(value), d: `${d1 >= 0 ? '+' : ''}${d1}%`, up: d1 >= 0 },
-    { l: 'You keep', v: gbp(keep), d: 'after Asteria & processing fees', up: true, plain: true },
+    { l: 'You keep', v: gbp(keep), d: 'after commission & processing fees', up: true, plain: true },
     { l: 'Weddings booked', v: String(cur.length), d: `${d2 >= 0 ? '+' : ''}${d2}`, up: d2 >= 0 },
     { l: 'Received so far', v: gbp(received), d: value ? `${Math.round((received / value) * 100)}% of value` : '—', up: true, plain: true },
   ];
@@ -355,6 +359,7 @@ function Dashboard({ persona, jobs, onOpen, avatar, onFilter }: { persona: Perso
             </div>
           ))}
         </div>
+        <PlanAdvisor takings={takings} plan={plan} setPlan={setPlan} onSeen={onPlanSeen} />
         <div className={s.dashGrid}>
           <div className={`${s.card} ${s.span2}`}>
             <div className={s.rowBetween}><b className={s.h3}>Bookings by {len <= 45 ? 'week' : 'month'}</b><span className={s.muted}>{periodName(p)}</span></div>
@@ -372,7 +377,7 @@ function Dashboard({ persona, jobs, onOpen, avatar, onFilter }: { persona: Perso
             <b className={s.h3}>Profit breakdown</b>
             <ul className={s.lines}>
               <li><span>Bookings value</span><span>{gbp2(value)}</span></li>
-              <li className={s.muted}><span>Asteria fee ({FEE_LABEL}, Asteria bookings only)</span><span>−{gbp2(fees)}</span></li>
+              <li className={s.muted}><span>Asteria commission ({plan.name}, {pct(plan.rate)} · Asteria bookings only)</span><span>−{gbp2(fees)}</span></li>
               <li className={s.muted}><span>Processing fees ({PROC_LABEL})<br /><small>{tx} card payment{tx === 1 ? '' : 's'}</small></span><span>−{gbp2(proc)}</span></li>
               <li><b>You keep</b><b>{gbp2(keep)}</b></li>
             </ul>
@@ -426,6 +431,73 @@ function Dashboard({ persona, jobs, onOpen, avatar, onFilter }: { persona: Perso
         </div>
       </div>
     </>
+  );
+}
+
+/* ---------------- plan advisor ---------------- */
+function PlanAdvisor({ takings, plan, setPlan, onSeen }: { takings: number; plan: SubPlan; setPlan: (id: PlanId) => void; onSeen: () => void }) {
+  const web = useWeb();
+  const [billing, setBilling] = useState<'annual' | 'monthly'>('annual');
+  const [amt, setAmt] = useState(Math.round(takings / 1000) * 1000);
+  useEffect(() => { setAmt(Math.round(takings / 1000) * 1000); }, [takings]);
+  const paid = PLANS.filter((p) => p.id !== 'founding');
+  const rows = paid.map((p) => ({ p, sub: billing === 'annual' ? p.annual : p.monthly * 12, com: p.rate * amt, total: planYear(p, amt, billing) }));
+  const best = rows.reduce((a, b) => (b.total < a.total ? b : a));
+  const curRow = rows.find((r) => r.p.id === plan.id);
+  const saving = curRow ? curRow.total - best.total : 0;
+  const max = Math.max(...rows.map((r) => r.total), 1);
+  const touch = (fn: () => void) => { fn(); onSeen(); };
+  const fmtK = (n: number) => `£${Math.round(n / 1000)}k`;
+  const steps = paid.slice(1).map((p, i) => ({ from: paid[i], to: p, at: breakEven(paid[i], p, billing) }));
+  const founding = planById('founding');
+  return (
+    <div className={`${s.card} ${s.planAdv}`}>
+      <div className={s.rowBetween} style={{ alignItems: 'flex-start', flexWrap: 'wrap' }}>
+        <div>
+          <span className={s.muted}>Your Asteria plan</span>
+          <b className={s.h3} style={{ display: 'block', fontSize: '1.35rem' }}>{plan.name} · {pct(plan.rate)} commission</b>
+        </div>
+        <div className={s.seg} style={{ minWidth: 220 }}>
+          <button className={billing === 'annual' ? s.on : ''} onClick={() => touch(() => setBilling('annual'))}>Pay yearly</button>
+          <button className={billing === 'monthly' ? s.on : ''} onClick={() => touch(() => setBilling('monthly'))}>Pay monthly</button>
+        </div>
+      </div>
+      <div className={`${s.advVerdict} ${saving > 0 ? s.advUp : ''}`}>
+        <Icon name={saving > 0 ? 'up' : 'check'} size={18} />
+        <p>{saving > 0
+          ? <>At <b>{gbp(amt)}</b> a year through Asteria, <b>{best.p.name}</b> would cost you <b>{gbp(best.total)}</b> a year — <b>{gbp(saving)} less</b> than {plan.name}.</>
+          : curRow ? <>At <b>{gbp(amt)}</b> a year through Asteria, <b>{plan.name}</b> is already your cheapest plan.</>
+            : <>At <b>{gbp(amt)}</b> a year through Asteria, the best paid plan after your free year is <b>{best.p.name}</b> ({gbp(best.total)} a year).</>}</p>
+        {saving > 0 && <button className={`${s.btn} ${s.btnSm}`} style={{ width: 'auto' }} onClick={() => touch(() => setPlan(best.p.id))}>Switch to {best.p.name}</button>}
+      </div>
+      <div className={s.field}>
+        <label htmlFor="tk">Bookings through Asteria per year: <b>{gbp(amt)}</b> <span className={s.muted}>· last 12 months: {gbp(takings)}</span></label>
+        <input id="tk" type="range" className={s.range} min={0} max={200000} step={1000} value={amt} onChange={(e) => touch(() => setAmt(+e.target.value))} />
+      </div>
+      <div className={s.advTable} role="table">
+        {web && <div className={`${s.advRow} ${s.advHead}`} role="row"><span>Plan</span><span>Subscription</span><span>Commission</span><span>Commission on {fmtK(amt)}</span><span>Total per year</span><span /></div>}
+        {rows.map((r) => {
+          const isBest = r.p.id === best.p.id; const isCur = r.p.id === plan.id;
+          return (
+            <div key={r.p.id} role="row" className={`${s.advRow} ${isBest ? s.advBest : ''} ${isCur ? s.advCur : ''}`}>
+              <span className={s.advName}><b>{r.p.name}</b>{isBest && <i className={s.tag}>Best for you</i>}{isCur && <i className={`${s.tag} ${s.tagCur}`}>Your plan</i>}</span>
+              <span>{billing === 'annual' ? `${gbp(r.p.annual)}/yr` : `${gbp(r.p.monthly)}/mo`}</span>
+              <span>{pct(r.p.rate)}</span>
+              <span>{gbp(r.com)}</span>
+              <span className={s.advTotal}><b>{gbp(r.total)}</b><em><i style={{ width: `${(r.total / max) * 100}%` }} /></em><small>{amt ? `${pct(r.total / amt)} of takings` : ''}</small></span>
+              <span>{isCur ? <span className={s.muted}>Current</span> : <button className={`${s.btn} ${s.btnSm} ${s.btnGhost}`} onClick={() => touch(() => setPlan(r.p.id))}>Choose</button>}</span>
+            </div>
+          );
+        })}
+      </div>
+      <div className={s.advFoot}>
+        <span className={s.muted}>When it pays to move up {billing === 'annual' ? '(yearly billing)' : '(monthly billing)'}:</span>
+        <div className={s.chips} style={{ flexWrap: 'wrap', margin: 0, padding: 0 }}>
+          {steps.map((x) => <span key={x.to.id} className={`${s.chip} ${amt >= x.at ? s.chipOn : ''}`}>{x.to.name} beats {x.from.name} from {fmtK(x.at)}</span>)}
+        </div>
+        <p className={s.muted} style={{ fontSize: '.78rem' }}><b>{founding.name}:</b> free for 12 months with {pct(founding.rate)} commission — for launch partners only{plan.id === 'founding' ? ' (your current plan)' : ''}. {plan.id !== 'founding' && <button className={s.link} style={{ fontSize: '.78rem' }} onClick={() => touch(() => setPlan('founding'))}>Preview as a Founding Partner</button>}</p>
+      </div>
+    </div>
   );
 }
 

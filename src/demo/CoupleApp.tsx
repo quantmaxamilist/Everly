@@ -1,5 +1,5 @@
 'use client';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Icon from '@/components/Icon';
 import A from '@/components/A';
 import { asset } from '@/lib/site';
@@ -126,6 +126,7 @@ export default function CoupleApp() {
       search="Search venues, photographers, florists…"
       account={{ initials: created ? initials : '·', name: created ? w.names : 'New wedding', sub: created ? fmtDate(w.date, { day: 'numeric', month: 'short', year: 'numeric' }) : undefined }}
       toolbar={created ? <GuestSlider value={w.guests} onChange={(g) => setW({ ...w, guests: g })} /> : undefined}
+      tracker={created && !sent ? <Tracker plan={plan} plans={plans} total={total} budget={w.budget} setActive={setActivePlan} onOpen={() => goTab('plan')} /> : undefined}
       nav={{
         items: [
           { id: 'home', label: 'Home', icon: 'home' },
@@ -180,6 +181,48 @@ export default function CoupleApp() {
       }} />}
       {toast && <Toast msg={toast} onDone={() => setToast('')} />}
     </Shell>
+  );
+}
+
+/* ---------------- price tracker (every screen) ---------------- */
+function Tracker({ plan, plans, total, budget, setActive, onOpen }: { plan: Plan; plans: Plan[]; total: number; budget: number; setActive: (id: string) => void; onOpen: () => void }) {
+  const web = useWeb();
+  const prev = useRef({ id: plan.id, total });
+  const [delta, setDelta] = useState<{ v: number; k: number } | null>(null);
+  useEffect(() => {
+    const p = prev.current; prev.current = { id: plan.id, total };
+    if (p.id !== plan.id || p.total === total) return;
+    setDelta({ v: total - p.total, k: Date.now() });
+    const t = setTimeout(() => setDelta(null), 2600);
+    return () => clearTimeout(t);
+  }, [plan.id, total]);
+  const over = total > budget;
+  const have = new Set(plan.items.map((i) => find(i).sup.category));
+  const pctUsed = Math.min(100, (total / Math.max(1, budget)) * 100);
+  const name = plans.length > 1
+    ? <select className={s.trkSelect} value={plan.id} onChange={(e) => setActive(e.target.value)} aria-label="Plan">{plans.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select>
+    : <b className={s.trkName}>{plan.name}</b>;
+  const pill = delta && <span key={delta.k} className={`${s.trkDelta} ${delta.v > 0 ? s.trkUp : s.trkDown}`}>{delta.v > 0 ? '+' : '−'}{gbp(Math.abs(delta.v))}</span>;
+  if (!web) {
+    return (
+      <button className={`${s.trkApp} ${over ? s.trkOver : ''}`} onClick={onOpen}>
+        <span className={s.trkRow}><span className={s.trkName}>{plan.name}<small> · {plan.items.length}/{categories.length}</small></span><span className={s.trkAmt}>{pill}<b>{gbp(total)}</b><small> / {gbp(budget)}</small></span></span>
+        <span className={`${s.bar} ${over ? s.barOver : ''}`}><span style={{ width: `${pctUsed}%` }} /></span>
+      </button>
+    );
+  }
+  return (
+    <div className={`${s.trk} ${over ? s.trkOver : ''}`}>
+      <span className={s.trkLabel}><Icon name="checkbox" size={16} />Price tracker</span>
+      {name}
+      <span className={s.trkCats} aria-label={`${plan.items.length} of ${categories.length} suppliers chosen`}>
+        {categories.map((c) => <i key={c} className={have.has(c) ? s.trkCatOn : ''} title={c}><Icon name={catIcon[c]} size={13} /></i>)}
+      </span>
+      <span className={s.trkBarWrap}><span className={`${s.bar} ${over ? s.barOver : ''}`}><span style={{ width: `${pctUsed}%` }} /></span></span>
+      <span className={s.trkAmt}>{pill}<b>{gbp(total)}</b><small> of {gbp(budget)}</small></span>
+      <span className={over ? s.trkOverTxt : s.trkLeft}>{over ? `${gbp(total - budget)} over` : `${gbp(budget - total)} left`}</span>
+      <button className={s.link} onClick={onOpen}>View plan →</button>
+    </div>
   );
 }
 

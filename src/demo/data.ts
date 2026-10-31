@@ -459,9 +459,22 @@ export function reviewsFor(sup: Supplier, n = 3): Review[] {
 }
 
 /* ---------------- supplier side ---------------- */
-/** Platform fee — the most Asteria will take. */
-export const FEE = 0.03;
-export const FEE_LABEL = '3%';
+/** Supplier subscription plans — commission falls as the plan goes up. */
+export type PlanId = 'founding' | 'starter' | 'growth' | 'pro' | 'elite';
+export type SubPlan = { id: PlanId; name: string; monthly: number; annual: number; rate: number; note?: string };
+export const PLANS: SubPlan[] = [
+  { id: 'founding', name: 'Founding Partner', monthly: 0, annual: 0, rate: 0.03, note: 'Free for 12 months · launch partners only' },
+  { id: 'starter', name: 'Starter', monthly: 29, annual: 290, rate: 0.05 },
+  { id: 'growth', name: 'Growth', monthly: 59, annual: 590, rate: 0.04 },
+  { id: 'pro', name: 'Pro', monthly: 99, annual: 990, rate: 0.03 },
+  { id: 'elite', name: 'Elite', monthly: 199, annual: 1990, rate: 0.02 },
+];
+export const planById = (id: PlanId) => PLANS.find((p) => p.id === id)!;
+export const pct = (r: number) => `${+(r * 100).toFixed(1)}%`;
+/** a year on a plan: subscription + commission on bookings taken through Asteria */
+export const planYear = (p: SubPlan, takings: number, billing: 'annual' | 'monthly') => (billing === 'annual' ? p.annual : p.monthly * 12) + p.rate * takings;
+/** takings at which plan b becomes cheaper than plan a */
+export const breakEven = (a: SubPlan, b: SubPlan, billing: 'annual' | 'monthly') => { const fa = billing === 'annual' ? a.annual : a.monthly * 12; const fb = billing === 'annual' ? b.annual : b.monthly * 12; return (fb - fa) / (a.rate - b.rate); };
 /** "Today" for the preview, so countdowns and due dates read the same for everyone. */
 export const TODAY = '2026-10-29';
 /** Final balance is due this many days before the wedding (default policy). */

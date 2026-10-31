@@ -1,17 +1,17 @@
 :root {
-  /* Asteria brand palette */
-  --olive: #3c3b27;        /* deep olive — primary */
-  --olive-dark: #2a291b;
-  --olive-ink: #24241a;    /* headings */
-  --accent: #8a8773;       /* sage grey */
-  --taupe: #c5b6a3;
-  --sage: #e5ddd2;         /* stone — light tint */
-  --off: #f3eee8;          /* cream — page */
+  /* Asteria brand palette (pack 2 swatches) */
+  --olive: #58583f;        /* olive — primary */
+  --olive-dark: #43432f;
+  --olive-ink: #2a2a1e;    /* headings */
+  --accent: #858565;       /* sage green */
+  --taupe: #cab79f;
+  --sage: #e4e4d5;         /* light sage tint */
+  --off: #f4efe8;          /* cream — page */
   --champagne: #e2c9a5;
-  --sand: #ece5da;
+  --sand: #eae1d5;         /* stone */
   --ink: #1c1c1c;
-  --muted: #6e6a5e;
-  --line: #ded5c8;
+  --muted: #6b6a5c;
+  --line: #ddd6c8;
   --white: #fff;
 
   --f-display: 'Playfair Display', Georgia, serif;
@@ -105,7 +105,7 @@ p { margin: 0; text-wrap: pretty; }
 .field { display: grid; gap: .4rem; }
 .field label { font-size: .86rem; font-weight: 500; color: var(--olive-ink); }
 .input { width: 100%; min-height: 50px; padding: .75rem 1rem; border-radius: var(--r-sm); border: 1px solid var(--line); background: var(--off); transition: border-color .2s, background .2s; }
-.input:focus { outline: none; border-color: var(--olive); background: #fff; box-shadow: 0 0 0 3px rgba(60, 59, 39, .18); }
+.input:focus { outline: none; border-color: var(--olive); background: #fff; box-shadow: 0 0 0 3px rgba(88, 88, 63, .18); }
 textarea.input { min-height: 140px; resize: vertical; }
 
 /* FAQ accordion */

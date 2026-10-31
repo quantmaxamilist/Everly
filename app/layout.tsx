@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   openGraph: { type: 'website', siteName: 'Asteria', locale: 'en_GB', images: ['/images/hero.jpg'] },
   twitter: { card: 'summary_large_image' },
 };
-export const viewport: Viewport = { themeColor: '#F3EEE8', width: 'device-width', initialScale: 1 };
+export const viewport: Viewport = { themeColor: '#F4EFE8', width: 'device-width', initialScale: 1 };
 
 const jsonLd = {
   '@context': 'https://schema.org',

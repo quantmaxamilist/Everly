@@ -29,6 +29,8 @@ type ShellProps<T extends string> = {
   extra?: React.ReactNode;
   /** always-visible control (e.g. guest slider): web top bar / app strip above the tabs */
   toolbar?: React.ReactNode;
+  /** running price tracker shown on every screen (couple side) */
+  tracker?: React.ReactNode;
   children: React.ReactNode;
 };
 
@@ -36,7 +38,7 @@ type ShellProps<T extends string> = {
  * Laptop/desktop: the web platform by default, with a small Web / App toggle.
  * Phones: always the app.
  */
-export function Shell<T extends string>({ side, title, intro, steps, other, nav, account, search, extra, toolbar, children }: ShellProps<T>) {
+export function Shell<T extends string>({ side, title, intro, steps, other, nav, account, search, extra, toolbar, tracker, children }: ShellProps<T>) {
   const [wide, setWide] = useState<boolean | null>(null);
   const [pref, setPref] = useState<Mode>('web');
 
@@ -91,6 +93,7 @@ export function Shell<T extends string>({ side, title, intro, steps, other, nav,
                 <span><b>{account.name}</b>{account.sub && <small>{account.sub}</small>}</span>
               </span>
             </header>
+            {tracker && <div className={s.wTracker}>{tracker}</div>}
             <div className={s.wContent}>{children}</div>
           </div>
         </div>
@@ -112,7 +115,7 @@ export function Shell<T extends string>({ side, title, intro, steps, other, nav,
         </aside>
         <div className={s.app}>
           {children}
-          {toolbar && !nav.hideInApp && <div className={s.appStrip}>{toolbar}</div>}
+          {(toolbar || tracker) && !nav.hideInApp && <div className={s.appStrip}>{tracker}{toolbar}</div>}
           {!nav.hideInApp && <Tabs<T> items={nav.items.filter((x) => !x.appHidden)} active={nav.active} onChange={nav.onChange} />}
         </div>
         <div className={s.side} aria-hidden="true">
