@@ -12,7 +12,8 @@
 .blocked { background: repeating-linear-gradient(135deg, #f1ede5 0 6px, #e7e2d7 6px 12px); }
 .blocked .p { color: #9a4a2c; text-decoration: none; }
 .pill { position: absolute; bottom: 6px; height: 24px; border-radius: 99px; border: 0; display: flex; align-items: center; gap: 5px; padding: 0 6px 0 3px; cursor: pointer; overflow: hidden; z-index: 1; box-shadow: 0 4px 10px -4px rgba(28, 28, 20,.4); }
-.pill_held { background: #a68d6b; color: #fff; }
+.pill_held { background: repeating-linear-gradient(135deg, #fff 0 6px, #f3ece1 6px 12px); color: #6e5536; border: 1.5px dashed #a68d6b; box-shadow: none; }
+.pill_held .src { background: #a68d6b; color: #fff; }
 .pill_new { background: #fff; color: var(--olive-ink); border: 1.5px dashed var(--champagne); }
 .pill_deposit { background: var(--accent); color: #fff; }
 .pill_paid { background: var(--olive); color: #fff; }
@@ -22,7 +23,7 @@
 .legend { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: .7rem; color: var(--muted); padding: 6px 4px 0; }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
 .lgBooked { background: var(--olive); }
-.lgHeld { background: #a68d6b; }
+.lgHeld { border: 1.5px dashed #a68d6b; background: repeating-linear-gradient(135deg, #fff 0 3px, #f3ece1 3px 6px); }
 .lgEnq { border: 1.5px dashed var(--champagne); }
 
 /* web platform: bigger month grid */

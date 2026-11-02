@@ -6,7 +6,7 @@ import { Shell, Top, Sheet, Toast, Stars, loadEnquiry, useWeb } from './ui';
 import type { EnquiryPayload } from './CoupleApp';
 import {
   suppliers, personaFor, featuredPersonas, categories, catOne, PREVIEW_MONTHS, monthLabel, dayPrice, shortPrice, shortGbp, gbp, fmtDate, supById, addDays, daysBetween, paymentsDue, depositAmt, isBooked, blocksDate,
-  PLANS, planById, pct, planYear, breakEven, PROC_LABEL, txCount, processingFee, gbp2, TODAY, BALANCE_DAYS, CONTRACT_DAYS, STATUS_LABEL, pkgTotal, type Job, type JobStatus, type Persona, type Supplier, type Due, type PlanId, type SubPlan,
+  PLANS, planById, pct, planYear, breakEven, isTentative, PROC_LABEL, txCount, processingFee, gbp2, TODAY, BALANCE_DAYS, CONTRACT_DAYS, STATUS_LABEL, pkgTotal, type Job, type JobStatus, type Persona, type Supplier, type Due, type PlanId, type SubPlan,
 } from './data';
 import s from './app.module.css';
 import c from './calendar.module.css';
@@ -28,6 +28,10 @@ export default function SupplierApp() {
   const [toast, setToast] = useState('');
   const [seen, setSeen] = useState({ opened: false, held: false, deposit: false, filtered: false, plan: false, calendar: false, switched: false });
   const [planId, setPlanId] = useState<PlanId>('starter');
+  const [autoPlan, setAutoPlan] = useState(true);
+  const [addons, setAddons] = useState({ featured: false, spotlight: false });
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [brochure, setBrochure] = useState<{ name: string; size: number } | null>({ name: 'Brochure 2027.pdf', size: 2_400_000 });
   const plan = planById(planId);
   const [prices, setPrices] = useState<Record<string, number>>({});
   const [closed, setClosed] = useState<Record<string, string>>({});
@@ -42,6 +46,9 @@ export default function SupplierApp() {
     const first = all.find((j) => j.status === 'new');
     setPid(id); setJobs(all); setSelId(first?.id ?? null); setOpenId(null);
     setPrices({}); setClosed({});
+    setPlanId(cheapestPlan(asteriaTakings(all)).id);
+    setNotes(seedNotes(all));
+    setBrochure({ name: `${supById(id)!.name} brochure 2027.pdf`, size: 1_800_000 + (id.length % 7) * 300_000 });
     setMonth(first && PREVIEW_MONTHS.includes(monthOf(first.date)) ? monthOf(first.date) : '2027-06');
   };
 
@@ -57,10 +64,19 @@ export default function SupplierApp() {
 
   const switchTo = (id: string) => { load(id, coupleJob); setSeen((x) => ({ ...x, switched: true })); setAsOpen(false); setToast(`Now previewing as ${supById(id)!.name}`); };
   const update = (id: string, patch: Partial<Job>, msg: string) => { setJobs((l) => l.map((j) => (j.id === id ? { ...j, ...patch } : j))); setToast(msg); };
+  const notify = (j: Job, text: string, kind: Note['kind']) => setNotes((n) => [{ id: `${j.id}-${kind}-${n.length}`, jobId: j.id, text, kind, at: 'Just now' }, ...n]);
   const act = {
-    hold: (j: Job) => { update(j.id, { status: 'held', contractDaysAgo: 0 }, `Date held — contract sent to ${j.couple}`); setSeen((x) => ({ ...x, held: true })); },
-    deposit: (j: Job) => { update(j.id, { status: 'deposit', paid: depositAmt(j) }, `Contract signed — ${gbp(depositAmt(j))} deposit received`); setSeen((x) => ({ ...x, deposit: true })); },
-    paid: (j: Job) => update(j.id, { status: 'paid', paid: j.total }, `Final payment received — ${j.couple} fully paid`),
+    hold: (j: Job) => { update(j.id, { status: 'held', contractDaysAgo: 0 }, `Contract sent to ${j.couple} — the date stays open until they pay the deposit`); notify(j, `Contract sent to ${j.couple}`, 'contract'); setSeen((x) => ({ ...x, held: true })); },
+    deposit: (j: Job) => {
+      update(j.id, { status: 'deposit', paid: depositAmt(j) }, `Automatic: ${j.couple} signed & paid ${gbp(depositAmt(j))} — date now held`);
+      notify(j, `${j.couple} signed the contract and paid the ${gbp(depositAmt(j))} deposit. ${fmtDate(j.date, { day: 'numeric', month: 'short', year: 'numeric' })} is now held.`, 'deposit');
+      setSeen((x) => ({ ...x, deposit: true }));
+    },
+    paid: (j: Job) => {
+      const owed = j.total - j.paid; const inst = j.instalment && j.paid < depositAmt(j) + j.instalment.amount ? j.instalment.amount : 0;
+      if (inst && inst < owed) { update(j.id, { paid: j.paid + inst }, `Automatic: ${gbp(inst)} instalment received from ${j.couple}`); notify(j, `${j.couple} paid their ${gbp(inst)} instalment.`, 'payment'); return; }
+      update(j.id, { status: 'paid', paid: j.total }, `Automatic: final payment received — ${j.couple} fully paid`); notify(j, `${j.couple} paid the final ${gbp(owed)}. Fully paid ✓`, 'payment');
+    },
     decline: (j: Job) => update(j.id, { status: 'declined' }, 'Enquiry declined'),
     release: (j: Job) => update(j.id, { status: 'declined' }, 'Date released — contract withdrawn'),
     resend: (j: Job) => update(j.id, { contractDaysAgo: 0 }, `Contract re-sent to ${j.couple}`),
@@ -75,10 +91,10 @@ export default function SupplierApp() {
   const newCount = jobs.filter((j) => j.status === 'new').length;
   const steps = [
     { label: featured ? `Open ${featured.couple}'s new enquiry` : 'Open a new enquiry', done: seen.opened },
-    { label: 'Hold the date & send the contract', done: seen.held },
-    { label: 'Mark the contract signed & deposit paid', done: seen.deposit },
+    { label: 'Send the contract (date stays open until the deposit)', done: seen.held },
+    { label: 'Watch the deposit arrive automatically', done: seen.deposit },
     { label: 'Filter the dashboard by month, year or dates', done: seen.filtered },
-    { label: 'Check which Asteria plan suits your takings', done: seen.plan },
+    { label: 'Check your plan & add-ons (Featured, Spotlight)', done: seen.plan },
     { label: 'Add a direct booking or close dates on the calendar', done: seen.calendar },
     { label: 'Preview as a different type of supplier', done: seen.switched },
   ];
@@ -94,10 +110,12 @@ export default function SupplierApp() {
       extra={<PreviewAs pid={pid} onChange={switchTo} />}
       nav={{ items: [{ id: 'dash', label: 'Dashboard', icon: 'grid' }, { id: 'enq', label: 'Enquiries', icon: 'inbox', count: newCount || undefined }, { id: 'cal', label: 'Calendar', icon: 'calendar' }, { id: 'list', label: 'Listing', icon: 'layers' }], active: tab, onChange: go }}
     >
-      {tab === 'dash' && <Dashboard persona={persona} jobs={jobs} onOpen={open} avatar={avatarBtn} onFilter={() => setSeen((x) => ({ ...x, filtered: true }))} plan={plan} setPlan={(id) => { setPlanId(id); setToast(`Switched to ${planById(id).name} — ${pct(planById(id).rate)} commission`); }} onPlanSeen={() => setSeen((x) => ({ ...x, plan: true }))} />}
-      {tab === 'enq' && <Inbox jobs={jobs} sup={sup} selId={selId} onOpen={open} act={act} avatar={avatarBtn} plan={plan} />}
+      {tab === 'dash' && <Dashboard persona={persona} jobs={jobs} onOpen={open} avatar={avatarBtn} onFilter={() => setSeen((x) => ({ ...x, filtered: true }))} plan={plan} setPlan={(id) => { setPlanId(id); setToast(`Switched to ${planById(id).name} — ${pct(planById(id).rate)} commission`); }} onPlanSeen={() => setSeen((x) => ({ ...x, plan: true }))}
+        autoPlan={autoPlan} setAutoPlan={(v) => { setAutoPlan(v); if (v) { const best = cheapestPlan(asteriaTakings(jobs)); setPlanId(best.id); setToast(`Auto-switch on — you're on ${best.name}, the cheapest plan for your Asteria bookings`); } else setToast('Auto-switch off — you stay on your chosen plan'); }}
+        notes={notes} addons={addons} setAddon={(k, v) => { setAddons((a) => ({ ...a, [k]: v })); setSeen((x) => ({ ...x, plan: true })); setToast(v ? `${k === 'featured' ? 'Featured' : 'Spotlight'} turned on (preview — nothing charged)` : `${k === 'featured' ? 'Featured' : 'Spotlight'} turned off`); }} />}
+      {tab === 'enq' && <Inbox jobs={jobs} sup={sup} selId={selId} onOpen={open} onSelect={(id) => { setSelId(id); setSeen((x) => ({ ...x, opened: true })); }} act={act} avatar={avatarBtn} plan={plan} />}
       {tab === 'cal' && <Calendar sup={sup} jobs={jobs} month={month} setMonth={setMonth} prices={prices} setPrices={(d, p) => { setPrices((x) => { const n = { ...x }; d.forEach((k) => { n[k] = p; }); return n; }); setSeen((x) => ({ ...x, calendar: true })); setToast(`Price set to ${shortPrice(sup, p)} for ${d.length} day${d.length > 1 ? 's' : ''}`); }} closed={closed} setClosed={(d, reason) => { setClosed((x) => { const n = { ...x }; d.forEach((k) => { if (reason) n[k] = reason; else delete n[k]; }); return n; }); setSeen((x) => ({ ...x, calendar: true })); setToast(reason ? `${d.length} day${d.length > 1 ? 's' : ''} closed — ${reason}` : 'Dates re-opened'); }} onJob={(j) => open(j.id)} addJob={addJob} />}
-      {tab === 'list' && <Listing persona={persona} onSwitch={() => setAsOpen(true)} />}
+      {tab === 'list' && <Listing persona={persona} onSwitch={() => setAsOpen(true)} brochure={brochure} setBrochure={(b) => { setBrochure(b); setToast(b ? `${b.name} uploaded — couples can download it from your listing` : 'Brochure removed'); }} addons={addons} />}
       {openJob && <Sheet title={openJob.received ? `Enquiry ${openJob.id}` : `Booking ${openJob.id}`} onClose={() => setOpenId(null)}><JobDetail j={openJob} sup={sup} act={act} jobs={jobs} plan={plan} /></Sheet>}
       {asOpen && (
         <Sheet title="Preview as…" onClose={() => setAsOpen(false)}>
@@ -120,6 +138,26 @@ export default function SupplierApp() {
 }
 
 type Acts = Record<'hold' | 'deposit' | 'paid' | 'decline' | 'release' | 'resend' | 'cancel' | 'restore', (j: Job) => void>;
+type Note = { id: string; jobId: string; text: string; kind: 'contract' | 'deposit' | 'payment' | 'reminder'; at: string };
+type Addons = { featured: boolean; spotlight: boolean };
+const ADDONS: { k: keyof Addons; name: string; price: number; what: string; badge: boolean }[] = [
+  { k: 'featured', name: 'Featured', price: 29, what: 'A Featured badge and a place at the top of your category when couples search your area.', badge: true },
+  { k: 'spotlight', name: 'Spotlight', price: 49, what: 'Shown in the matching Inspiration mood boards (e.g. Country, Rustic barn). No badge.', badge: false },
+];
+/** Asteria-only income from weddings in the last 12 months (direct bookings don't count) */
+const asteriaTakings = (jobs: Job[]) => jobs.filter((j) => isBooked(j) && !j.noQuote && j.source === 'Asteria' && j.date > addDays(TODAY, -365) && j.date <= TODAY).reduce((t, j) => t + j.total, 0);
+const cheapestPlan = (takings: number, billing: 'annual' | 'monthly' = 'annual') => PLANS.filter((p) => p.id !== 'founding').reduce((a, b) => (planYear(b, takings, billing) < planYear(a, takings, billing) ? b : a));
+const NOTE_IC: Record<Note['kind'], string> = { contract: 'sign', deposit: 'check', payment: 'card', reminder: 'bell' };
+function seedNotes(jobs: Job[]): Note[] {
+  const out: Note[] = [];
+  const dep = jobs.filter((j) => j.status === 'deposit' && j.source === 'Asteria').slice(-2);
+  const held = jobs.filter((j) => j.status === 'held').slice(0, 1);
+  const due = paymentsDue(jobs).filter((d) => d.inDays >= 0 && d.inDays <= 14).slice(0, 1);
+  held.forEach((j) => out.push({ id: `${j.id}-r`, jobId: j.id, kind: 'reminder', at: 'Today', text: `Reminder sent to ${j.couple}: contract & deposit ${dueText(CONTRACT_DAYS - (j.contractDaysAgo ?? 0))}.` }));
+  due.forEach((d) => out.push({ id: `${d.job.id}-d`, jobId: d.job.id, kind: 'reminder', at: 'Today', text: `${d.kind} of ${gbp(d.amount)} from ${d.job.couple} ${dueText(d.inDays)} — they've been reminded.` }));
+  dep.forEach((j, i) => out.push({ id: `${j.id}-s`, jobId: j.id, kind: 'deposit', at: i ? '3 days ago' : 'Yesterday', text: `${j.couple} signed and paid the ${gbp(depositAmt(j))} deposit. Date held.` }));
+  return out;
+}
 
 function PreviewAs({ pid, onChange }: { pid: string; onChange: (id: string) => void }) {
   return (
@@ -142,7 +180,7 @@ function Badge({ j }: { j: Job }) {
 }
 
 /* ---------------- enquiries & bookings ---------------- */
-function Inbox({ jobs, sup, selId, onOpen, act, avatar, plan }: { jobs: Job[]; sup: Supplier; selId: string | null; onOpen: (id: string) => void; act: Acts; avatar: React.ReactNode; plan: SubPlan }) {
+function Inbox({ jobs, sup, selId, onOpen, onSelect, act, avatar, plan }: { jobs: Job[]; sup: Supplier; selId: string | null; onOpen: (id: string) => void; onSelect: (id: string) => void; act: Acts; avatar: React.ReactNode; plan: SubPlan }) {
   const web = useWeb();
   const [filter, setFilter] = useState<'enq' | 'booked' | 'closed'>('enq');
   const lists = {
@@ -157,19 +195,19 @@ function Inbox({ jobs, sup, selId, onOpen, act, avatar, plan }: { jobs: Job[]; s
     </div>
   );
   const item = (j: Job) => (
-    <button key={j.id} className={`${s.card} ${s.enqItem} ${(web ? selId === j.id : j.status === 'new') ? s.enqOn : ''}`} onClick={() => onOpen(j.id)}>
+    <button key={j.id} className={`${s.card} ${s.enqItem} ${(web ? selId === j.id : j.status === 'new') ? s.enqOn : ''}`} onClick={() => (web ? onSelect(j.id) : onOpen(j.id))}>
       <div className={s.rowBetween}><Badge j={j} /><span className={s.muted}>{j.received || j.source}</span></div>
       <b className={s.h3}>{j.couple}{j.fromCouplePreview && <span className={s.tag} style={{ marginLeft: 8, verticalAlign: 'middle' }}>From your couple preview</span>}</b>
       <span className={s.muted}>{fmtDate(j.date)} · {j.guests} guests</span>
       <div className={s.rowBetween}><span>{j.pkg}</span><b className={s.price}>{j.noQuote ? '—' : gbp(j.total)}</b></div>
-      {j.status === 'held' && <span className={s.muted} style={{ fontSize: '.78rem' }}>Contract sent · deposit {dueText(CONTRACT_DAYS - (j.contractDaysAgo ?? 0))}</span>}
+      {j.status === 'held' && <span className={s.muted} style={{ fontSize: '.78rem' }}>Tentative — date not held until the deposit · {dueText(CONTRACT_DAYS - (j.contractDaysAgo ?? 0))}</span>}
     </button>
   );
   if (web) {
     const sel = jobs.find((j) => j.id === selId) || shown[0];
     return (
       <>
-        <Top title="Enquiries & bookings" kicker={`${jobs.filter((j) => j.status === 'new').length} new · ${jobs.filter((j) => j.status === 'held').length} waiting for signature`} right={seg} />
+        <Top title="Enquiries & bookings" kicker={`${jobs.filter((j) => j.status === 'new').length} new · ${jobs.filter(isTentative).length} contracts out (tentative)`} right={seg} />
         <div className={s.inbox}>
           <div className={s.inboxList}>{shown.map(item)}{!shown.length && <p className={s.muted}>Nothing here.</p>}</div>
           {sel && <div className={`${s.card} ${s.inboxPane}`}><JobDetail j={sel} sup={sup} act={act} jobs={jobs} plan={plan} /></div>}
@@ -189,7 +227,7 @@ function Inbox({ jobs, sup, selId, onOpen, act, avatar, plan }: { jobs: Job[]; s
   );
 }
 
-const PIPE: [JobStatus, string, string][] = [['new', 'New enquiry', 'Couple asks'], ['held', 'Date held', 'Contract sent'], ['deposit', 'Deposit paid', 'Contract signed'], ['paid', 'Fully paid', 'Balance received']];
+const PIPE: [JobStatus, string, string][] = [['new', 'New enquiry', 'Couple asks'], ['held', 'Contract sent', 'Tentative'], ['deposit', 'Deposit paid', 'Date held'], ['paid', 'Fully paid', 'Balance received']];
 
 function JobDetail({ j, sup, act, jobs, plan }: { j: Job; sup: Supplier; act: Acts; jobs: Job[]; plan: SubPlan }) {
   const web = useWeb();
@@ -215,11 +253,22 @@ function JobDetail({ j, sup, act, jobs, plan }: { j: Job; sup: Supplier; act: Ac
       </div>
     );
   } else if (j.status === 'new') {
-    actions = <div className={s.actRow}><button className={s.btn} onClick={() => act.hold(j)}>Hold date & send contract</button><button className={ghost} onClick={() => act.decline(j)}>Decline</button></div>;
+    actions = <div className={s.actRow}><button className={s.btn} onClick={() => act.hold(j)}>Send contract</button><button className={ghost} onClick={() => act.decline(j)}>Decline</button></div>;
   } else if (j.status === 'held') {
-    actions = <div className={s.actRow}><button className={s.btn} onClick={() => act.deposit(j)}>Contract signed & deposit paid</button><button className={ghost} onClick={() => act.resend(j)}>Resend contract</button><button className={ghost} onClick={() => act.release(j)}>Release date</button></div>;
+    actions = (
+      <>
+        <div className={s.autoNote}><Icon name="clock" size={16} /><span>Waiting for {firstName(j.couple)} to sign &amp; pay the deposit. The booking updates by itself — and the date is held — the moment they pay.</span></div>
+        <div className={s.actRow}>{j.source === 'Asteria' ? <button className={`${s.btn} ${s.btnSim}`} onClick={() => act.deposit(j)}><Icon name="sparkle" />Simulate: couple signs &amp; pays deposit</button> : <button className={s.btn} onClick={() => act.deposit(j)}>Record deposit received</button>}<button className={ghost} onClick={() => act.resend(j)}>Resend contract</button><button className={ghost} onClick={() => act.release(j)}>Withdraw contract</button></div>
+      </>
+    );
   } else if (j.status === 'deposit') {
-    actions = <div className={s.actRow}>{!j.noQuote && <button className={s.btn} onClick={() => act.paid(j)}>Mark final payment received</button>}<button className={ghost}><Icon name="message" />Message {firstName(j.couple)}</button><button className={`${ghost} ${s.btnDangerGhost}`} onClick={() => setConfirm(true)}>Cancel booking</button></div>;
+    const nextKind = j.instalment && j.paid < dep + j.instalment.amount ? 'instalment' : 'balance';
+    actions = (
+      <>
+        {!j.noQuote && j.source === 'Asteria' && <div className={s.autoNote}><Icon name="bell" size={16} /><span>Asteria reminds {firstName(j.couple)} before each payment is due and updates this booking automatically when they pay.</span></div>}
+        <div className={s.actRow}>{!j.noQuote && (j.source === 'Asteria' ? <button className={`${s.btn} ${s.btnSim}`} onClick={() => act.paid(j)}><Icon name="sparkle" />Simulate: couple pays {nextKind}</button> : <button className={s.btn} onClick={() => act.paid(j)}>Record {nextKind} received</button>)}<button className={ghost}><Icon name="message" />Message {firstName(j.couple)}</button><button className={`${ghost} ${s.btnDangerGhost}`} onClick={() => setConfirm(true)}>Cancel booking</button></div>
+      </>
+    );
   } else if (j.status === 'paid') {
     actions = <div className={s.actRow}><button className={ghost}><Icon name="message" />Message {firstName(j.couple)}</button><button className={`${ghost} ${s.btnDangerGhost}`} onClick={() => setConfirm(true)}>Cancel booking</button></div>;
   } else {
@@ -243,7 +292,7 @@ function JobDetail({ j, sup, act, jobs, plan }: { j: Job; sup: Supplier; act: Ac
           <img src={asset(sup.img)} alt="" style={{ width: 56, height: 56, objectFit: 'cover', borderRadius: 12 }} />
         </div>
         <div className={s.card} style={{ gridTemplateColumns: '1fr 1fr', ...bg }}>
-          <div><b>{fmtDate(j.date, { weekday: 'long' })}</b><p>{fmtDate(j.date, { day: 'numeric', month: 'short', year: 'numeric' })}{j.endDate ? ` – ${fmtDate(j.endDate, { day: 'numeric', month: 'short' })}` : ''}</p><p className={s.muted}>{j.status === 'new' ? (clash ? 'Clashes with a booking' : 'Date is free') : `${Math.max(0, daysBetween(TODAY, j.date))} days away`}</p></div>
+          <div><b>{fmtDate(j.date, { weekday: 'long' })}</b><p>{fmtDate(j.date, { day: 'numeric', month: 'short', year: 'numeric' })}{j.endDate ? ` – ${fmtDate(j.endDate, { day: 'numeric', month: 'short' })}` : ''}</p><p className={s.muted}>{j.status === 'new' || j.status === 'held' ? (clash ? 'Clashes with a booking' : j.status === 'held' ? 'Tentative — not held yet' : 'Date is free') : `${Math.max(0, daysBetween(TODAY, j.date))} days away`}</p></div>
           <div><b>{j.guests}</b><p>guests</p><p className={s.muted}>{sup.capacity ? `Capacity ${sup.capacity}` : catOne[sup.category]}</p></div>
         </div>
       </div>
@@ -264,7 +313,8 @@ function JobDetail({ j, sup, act, jobs, plan }: { j: Job; sup: Supplier; act: Ac
             <b className={s.h3}>Payments</b>
             <ul className={s.lines}>
               <li><span>Deposit {j.deposit}% · {gbp(dep)}</span><span className={j.paid >= dep ? s.okTxt : s.muted}>{depositLine}</span></li>
-              <li><span>Final payment · {gbp(j.total - dep)}</span><span className={j.paid >= j.total ? s.okTxt : s.muted}>{balanceLine}</span></li>
+              {j.instalment && <li><span>Instalment · {gbp(j.instalment.amount)}</span><span className={j.paid >= dep + j.instalment.amount ? s.okTxt : s.muted}>{j.paid >= dep + j.instalment.amount ? 'Paid ✓' : `${fmtDate(j.instalment.due, { day: 'numeric', month: 'short', year: 'numeric' })} · ${dueText(daysBetween(TODAY, j.instalment.due))}`}</span></li>}
+              <li><span>Final payment · {gbp(j.total - dep - (j.instalment?.amount ?? 0))}</span><span className={j.paid >= j.total ? s.okTxt : s.muted}>{balanceLine}</span></li>
               <li><b>Received so far</b><b>{gbp(j.paid)}</b></li>
             </ul>
           </div>
@@ -273,7 +323,8 @@ function JobDetail({ j, sup, act, jobs, plan }: { j: Job; sup: Supplier; act: Ac
       {!j.noQuote && (
         <div className={s.card} style={bg}>
           <b className={s.h3}>Policy</b>
-          <p className={s.muted}><b>Payment:</b> {j.deposit}% due when the contract is signed; the rest {Math.round((j.balanceDays ?? BALANCE_DAYS) / 7)} weeks before the date.</p>
+          <p className={s.muted}><b>Payment:</b> {j.deposit}% due when the contract is signed{j.instalment ? `, an instalment on ${fmtDate(j.instalment.due, { day: 'numeric', month: 'short', year: 'numeric' })}` : ''}; the rest {Math.round((j.balanceDays ?? BALANCE_DAYS) / 7)} weeks before the date.</p>
+          <p className={s.muted}><b>Date hold:</b> the date is only held once the deposit is paid. Until then it shows as tentative on your calendar and other couples can still book it.</p>
           <p className={s.muted}><b>Cancellation:</b> {j.cancelPolicy || 'Deposit is non-refundable. Other payments are refundable if cancelled more than 12 weeks before the date.'}</p>
           <p className={s.muted}><b>Security deposit:</b> {j.securityDeposit ? `${gbp(j.securityDeposit)}, returned after the event` : 'None'}</p>
         </div>
@@ -292,7 +343,7 @@ const periodRange = (p: Period): [string, string] => {
 };
 const periodName = (p: Period) => (p.mode === 'month' ? monthLabel(p.month, true) : p.mode === 'year' ? p.year : `${fmtDate(periodRange(p)[0], { day: 'numeric', month: 'short', year: 'numeric' })} – ${fmtDate(periodRange(p)[1], { day: 'numeric', month: 'short', year: 'numeric' })}`);
 
-function Dashboard({ persona, jobs, onOpen, avatar, onFilter, plan, setPlan, onPlanSeen }: { persona: Persona; jobs: Job[]; onOpen: (id: string) => void; avatar: React.ReactNode; onFilter: () => void; plan: SubPlan; setPlan: (id: PlanId) => void; onPlanSeen: () => void }) {
+function Dashboard({ persona, jobs, onOpen, avatar, onFilter, plan, setPlan, onPlanSeen, autoPlan, setAutoPlan, notes, addons, setAddon }: { persona: Persona; jobs: Job[]; onOpen: (id: string) => void; avatar: React.ReactNode; onFilter: () => void; plan: SubPlan; setPlan: (id: PlanId) => void; onPlanSeen: () => void; autoPlan: boolean; setAutoPlan: (v: boolean) => void; notes: Note[]; addons: Addons; setAddon: (k: keyof Addons, v: boolean) => void }) {
   const web = useWeb();
   const sup = persona.sup;
   const [p, setP] = useState<Period>({ mode: 'year', month: '2027-06', year: '2027', from: '2027-05-01', to: '2027-08-31' });
@@ -306,7 +357,7 @@ function Dashboard({ persona, jobs, onOpen, avatar, onFilter, plan, setPlan, onP
   const sum = (l: Job[], k: 'total' | 'paid') => l.reduce((t, j) => t + j[k], 0);
   const value = sum(cur, 'total'); const prevValue = sum(prev, 'total');
   const fees = Math.round(cur.filter((j) => j.source === 'Asteria').reduce((t, j) => t + j.total, 0) * plan.rate);
-  const takings = jobs.filter((j) => isBooked(j) && !j.noQuote && j.source === 'Asteria' && j.date > addDays(TODAY, -365) && j.date <= TODAY).reduce((t, j) => t + j.total, 0);
+  const takings = asteriaTakings(jobs);
   const proc = Math.round(cur.reduce((t, j) => t + processingFee(j), 0) * 100) / 100;
   const tx = cur.reduce((t, j) => t + txCount(j), 0);
   const keep = value - fees - proc;
@@ -359,7 +410,9 @@ function Dashboard({ persona, jobs, onOpen, avatar, onFilter, plan, setPlan, onP
             </div>
           ))}
         </div>
-        <PlanAdvisor takings={takings} plan={plan} setPlan={setPlan} onSeen={onPlanSeen} />
+        <Updates notes={notes} onOpen={onOpen} />
+        <PlanAdvisor takings={takings} plan={plan} setPlan={(id) => { if (autoPlan) setAutoPlan(false); setPlan(id); }} onSeen={onPlanSeen} autoPlan={autoPlan} setAutoPlan={setAutoPlan} />
+        <AddOns addons={addons} setAddon={setAddon} />
         <div className={s.dashGrid}>
           <div className={`${s.card} ${s.span2}`}>
             <div className={s.rowBetween}><b className={s.h3}>Bookings by {len <= 45 ? 'week' : 'month'}</b><span className={s.muted}>{periodName(p)}</span></div>
@@ -384,9 +437,11 @@ function Dashboard({ persona, jobs, onOpen, avatar, onFilter, plan, setPlan, onP
             <p className={s.muted} style={{ fontSize: '.76rem' }}>{cur.filter((j) => j.source === 'Direct').length} direct bookings this period — no fee on those.</p>
           </div>
           <div className={`${s.card} ${s.dueBox}`}>
-            <span className={s.muted}>Due in the next 4 weeks</span>
+            <span className={s.muted}>Payments due in the next 4 weeks</span>
             <b className={s.big}>{gbp(next4Total)}</b>
-            <span className={s.muted}>{next4.length} payment{next4.length === 1 ? '' : 's'} · {next4.filter((x) => x.kind === 'Deposit').length} deposits, {next4.filter((x) => x.kind === 'Final payment').length} final payments</span>
+            <ul className={s.dueSplit}>
+              {(['Deposit', 'Instalment', 'Final payment'] as const).map((k) => { const l = next4.filter((x) => x.kind === k); return <li key={k}><span>{k === 'Deposit' ? 'Deposits' : k === 'Instalment' ? 'Instalments' : 'Final payments'} <small>· {l.length}</small></span><b>{gbp(l.reduce((t, x) => t + x.amount, 0))}</b></li>; })}
+            </ul>
           </div>
           <div className={`${s.card} ${s.span2}`}>
             <div className={s.rowBetween}><b className={s.h3}>Payments to collect</b><span className={s.muted}>Next {Math.min(6, dues.length)} of {dues.length}</span></div>
@@ -394,7 +449,7 @@ function Dashboard({ persona, jobs, onOpen, avatar, onFilter, plan, setPlan, onP
               {dues.slice(0, 6).map((x: Due) => (
                 <li key={x.job.id + x.kind}>
                   <button onClick={() => onOpen(x.job.id)}>
-                    <span><b>{x.job.couple}</b><small>{x.kind} {dueText(x.inDays)} · wedding {fmtDate(x.job.date, { day: 'numeric', month: 'short', year: 'numeric' })}</small></span>
+                    <span><b>{x.job.couple}</b><small><i className={`${s.kindTag} ${s['kind' + x.kind.split(' ')[0]]}`}>{x.kind}</i> {dueText(x.inDays)} · wedding {fmtDate(x.job.date, { day: 'numeric', month: 'short', year: 'numeric' })}</small></span>
                     <span className={s.dueAmt}><b>{gbp(x.amount)}</b><small className={x.inDays < 0 ? s.overTxt : x.inDays <= 7 ? s.soonTxt : ''}>{x.inDays < 0 ? 'Overdue' : fmtDate(x.due, { day: 'numeric', month: 'short' })}</small></span>
                   </button>
                 </li>
@@ -435,7 +490,7 @@ function Dashboard({ persona, jobs, onOpen, avatar, onFilter, plan, setPlan, onP
 }
 
 /* ---------------- plan advisor ---------------- */
-function PlanAdvisor({ takings, plan, setPlan, onSeen }: { takings: number; plan: SubPlan; setPlan: (id: PlanId) => void; onSeen: () => void }) {
+function PlanAdvisor({ takings, plan, setPlan, onSeen, autoPlan, setAutoPlan }: { takings: number; plan: SubPlan; setPlan: (id: PlanId) => void; onSeen: () => void; autoPlan: boolean; setAutoPlan: (v: boolean) => void }) {
   const web = useWeb();
   const [billing, setBilling] = useState<'annual' | 'monthly'>('annual');
   const [amt, setAmt] = useState(Math.round(takings / 1000) * 1000);
@@ -450,12 +505,14 @@ function PlanAdvisor({ takings, plan, setPlan, onSeen }: { takings: number; plan
   const fmtK = (n: number) => `£${Math.round(n / 1000)}k`;
   const steps = paid.slice(1).map((p, i) => ({ from: paid[i], to: p, at: breakEven(paid[i], p, billing) }));
   const founding = planById('founding');
+  const rec = cheapestPlan(takings, billing);
   return (
     <div className={`${s.card} ${s.planAdv}`}>
       <div className={s.rowBetween} style={{ alignItems: 'flex-start', flexWrap: 'wrap' }}>
         <div>
-          <span className={s.muted}>Your Asteria plan</span>
+          <span className={s.muted}>Your Asteria plan{autoPlan ? ' · picked automatically' : ''}</span>
           <b className={s.h3} style={{ display: 'block', fontSize: '1.35rem' }}>{plan.name} · {pct(plan.rate)} commission</b>
+          <span className={s.muted} style={{ fontSize: '.8rem' }}>Recommended from your <b>{gbp(takings)}</b> of Asteria bookings in the last 12 months: <b>{rec.name}</b>. Direct bookings don&rsquo;t count.</span>
         </div>
         <div className={s.seg} style={{ minWidth: 220 }}>
           <button className={billing === 'annual' ? s.on : ''} onClick={() => touch(() => setBilling('annual'))}>Pay yearly</button>
@@ -470,8 +527,12 @@ function PlanAdvisor({ takings, plan, setPlan, onSeen }: { takings: number; plan
             : <>At <b>{gbp(amt)}</b> a year through Asteria, the best paid plan after your free year is <b>{best.p.name}</b> ({gbp(best.total)} a year).</>}</p>
         {saving > 0 && <button className={`${s.btn} ${s.btnSm}`} style={{ width: 'auto' }} onClick={() => touch(() => setPlan(best.p.id))}>Switch to {best.p.name}</button>}
       </div>
+      <label className={s.autoRow}>
+        <input type="checkbox" className={s.check} checked={autoPlan} onChange={(e) => touch(() => setAutoPlan(e.target.checked))} />
+        <span><b>Auto-switch me to the cheapest plan</b><small>Each renewal we check your last 12 months of Asteria bookings and move you to whichever plan costs least. We&rsquo;ll email you before any change.</small></span>
+      </label>
       <div className={s.field}>
-        <label htmlFor="tk">Bookings through Asteria per year: <b>{gbp(amt)}</b> <span className={s.muted}>· last 12 months: {gbp(takings)}</span></label>
+        <label htmlFor="tk">What if you took this through Asteria per year: <b>{gbp(amt)}</b> <span className={s.muted}>· last 12 months: {gbp(takings)}</span></label>
         <input id="tk" type="range" className={s.range} min={0} max={200000} step={1000} value={amt} onChange={(e) => touch(() => setAmt(+e.target.value))} />
       </div>
       <div className={s.advTable} role="table">
@@ -497,6 +558,38 @@ function PlanAdvisor({ takings, plan, setPlan, onSeen }: { takings: number; plan
         </div>
         <p className={s.muted} style={{ fontSize: '.78rem' }}><b>{founding.name}:</b> free for 12 months with {pct(founding.rate)} commission — for launch partners only{plan.id === 'founding' ? ' (your current plan)' : ''}. {plan.id !== 'founding' && <button className={s.link} style={{ fontSize: '.78rem' }} onClick={() => touch(() => setPlan('founding'))}>Preview as a Founding Partner</button>}</p>
       </div>
+    </div>
+  );
+}
+
+/* ---------------- automatic updates ---------------- */
+function Updates({ notes, onOpen }: { notes: Note[]; onOpen: (id: string) => void }) {
+  return (
+    <div className={`${s.card} ${s.updates}`}>
+      <div className={s.rowBetween}><b className={s.h3}><Icon name="bell" size={18} /> Automatic updates</b><span className={s.muted} style={{ fontSize: '.76rem' }}>Contracts &amp; payments update themselves</span></div>
+      {notes.slice(0, 4).map((n) => (
+        <button key={n.id} className={s.noteRow} onClick={() => onOpen(n.jobId)}>
+          <span className={s.docIc}><Icon name={NOTE_IC[n.kind]} size={16} /></span>
+          <span><span>{n.text}</span><small className={s.muted}>{n.at}</small></span>
+        </button>
+      ))}
+      {!notes.length && <p className={s.muted}>Nothing new — you&rsquo;ll see signed contracts and payments here as they happen.</p>}
+    </div>
+  );
+}
+
+/* ---------------- add-on subscriptions ---------------- */
+function AddOns({ addons, setAddon }: { addons: Addons; setAddon: (k: keyof Addons, v: boolean) => void }) {
+  return (
+    <div className={s.addonGrid}>
+      {ADDONS.map((a) => (
+        <div key={a.k} className={`${s.card} ${s.addon} ${addons[a.k] ? s.addonOn : ''}`}>
+          <div className={s.rowBetween}><span className={s.tag}>Add-on</span><b className={s.price}>{gbp(a.price)}/month</b></div>
+          <b className={s.h3}>{a.name}{a.badge && <span className={s.featBadge}>★ Featured</span>}</b>
+          <p className={s.muted}>{a.what}</p>
+          <label className={s.rowBetween}><span>{addons[a.k] ? 'On — cancel any time' : 'Off'}</span><input type="checkbox" className={s.check} checked={addons[a.k]} onChange={(e) => setAddon(a.k, e.target.checked)} /></label>
+        </div>
+      ))}
     </div>
   );
 }
@@ -572,7 +665,7 @@ function Calendar({ sup, jobs, month, setMonth, prices, setPrices, closed, setCl
         );
       })}
       <div className={c.legend}>
-        <span><i className={c.lgEnq} />Enquiry</span><span><i className={c.lgHeld} />Date held</span><span><i className={c.lgDeposit} />Deposit paid</span><span><i className={c.lgBooked} />Fully paid</span><span><i className={c.lgClosed} />Closed</span><span><b>A</b> Asteria · <b>D</b> direct</span>
+        <span><i className={c.lgEnq} />Enquiry</span><span><i className={c.lgHeld} />Contract sent · tentative</span><span><i className={c.lgDeposit} />Deposit paid</span><span><i className={c.lgBooked} />Fully paid</span><span><i className={c.lgClosed} />Closed</span><span><b>A</b> Asteria · <b>D</b> direct</span>
       </div>
     </div>
   );
@@ -597,7 +690,7 @@ function Calendar({ sup, jobs, month, setMonth, prices, setPrices, closed, setCl
         <button disabled={selBusy} onClick={() => setForm('quote')}><Icon name="sign" size={18} />Create booking with quote</button>
         <button disabled={selBusy} onClick={() => setForm('noquote')}><Icon name="plus" size={18} />Create booking without quote</button>
       </div>
-      {selBusy && <p className={s.muted} style={{ fontSize: '.76rem' }}>Some of these dates are already held or booked.</p>}
+      {selBusy && <p className={s.muted} style={{ fontSize: '.76rem' }}>Some of these dates are already booked (deposit paid).</p>}
       {!web && <p className={s.muted} style={{ fontSize: '.74rem' }}>Tap another date to select a range.</p>}
     </div>
   );
@@ -712,7 +805,7 @@ function BookingForm({ sup, range, withQuote, onSave, onClose }: { sup: Supplier
             </div>
             <div className={s.field}><label htmlFor="p3">Cancellation policy</label><select id="p3" className={s.input} value={g.cancel} onChange={(e) => set({ cancel: e.target.value })}><option value="standard">Standard</option><option value="flexible">Flexible</option><option value="strict">Strict</option></select><span className={s.muted} style={{ fontSize: '.78rem' }}>{cancelText[g.cancel]}</span></div>
             <div className={s.field}><label htmlFor="p4">Security deposit</label><select id="p4" className={s.input} value={g.security} onChange={(e) => set({ security: +e.target.value })}><option value={0}>None</option><option value={250}>£250</option><option value={500}>£500</option><option value={1000}>£1,000</option></select></div>
-            <label className={s.rowBetween}><span>Send contract now (date held until signed)</span><input type="checkbox" checked={g.contract} onChange={(e) => set({ contract: e.target.checked })} className={s.check} /></label>
+            <label className={s.rowBetween}><span>Send contract now (date held once the deposit is paid)</span><input type="checkbox" checked={g.contract} onChange={(e) => set({ contract: e.target.checked })} className={s.check} /></label>
             {!g.contract && <p className={s.muted} style={{ fontSize: '.78rem' }}>Saved as <b>Deposit paid</b> — use this if they&rsquo;ve already signed and paid you directly.</p>}
           </div>
         </>
@@ -729,21 +822,21 @@ function BookingForm({ sup, range, withQuote, onSave, onClose }: { sup: Supplier
 }
 
 /* ---------------- listing ---------------- */
-function Listing({ persona, onSwitch }: { persona: Persona; onSwitch: () => void }) {
+function Listing({ persona, onSwitch, brochure, setBrochure, addons }: { persona: Persona; onSwitch: () => void; brochure: { name: string; size: number } | null; setBrochure: (b: { name: string; size: number } | null) => void; addons: Addons }) {
   const web = useWeb();
   const sup = persona.sup;
   const views = 600 + sup.reviews * 9;
   const stats = [['Profile views', views.toLocaleString('en-GB'), 'this month'], ['Saved by couples', String(Math.round(views / 11)), 'tapped ♥ this month'], ['Enquiries', String(Math.round(views / 48)), 'this month']];
   return (
     <>
-      <Top title="Your listing" right={web ? <span className={s.tag}>Live on Asteria</span> : undefined} />
+      <Top title="Your listing" right={web ? <span style={{ display: 'flex', gap: 6 }}>{addons.featured && <span className={`${s.tag} ${s.tagFeat}`}>★ Featured</span>}{addons.spotlight && <span className={`${s.tag} ${s.tagFeat}`}>Spotlight</span>}<span className={s.tag}>Live on Asteria</span></span> : undefined} />
       <div className={`${s.body} ${s.listGrid}`}>
         <div className={s.listMain}>
           <div className={s.card} style={{ padding: 0, overflow: 'hidden' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={asset(sup.img)} alt="" style={{ width: '100%', height: web ? 240 : 150, objectFit: 'cover' }} />
             <div style={{ padding: '0 16px 16px', display: 'grid', gap: 6 }}>
-              <b className={s.h3}>{sup.name}</b>
+              <b className={s.h3}>{sup.name}{addons.featured && <span className={s.featBadge}>★ Featured</span>}</b>
               <span className={s.muted}>{sup.category} · {sup.town}, {sup.region} · <span className={s.stars}>★ {sup.rating}</span> ({sup.reviews})</span>
               <p style={{ fontSize: '.9rem' }}>{sup.about}</p>
               {!web && <span className={s.tag}>Live on Asteria</span>}
@@ -751,6 +844,21 @@ function Listing({ persona, onSwitch }: { persona: Persona; onSwitch: () => void
           </div>
           <div className={s.kpis} style={{ gridTemplateColumns: 'repeat(3, minmax(0,1fr))' }}>
             {stats.map(([l, v, d]) => <div key={l} className={s.card} style={{ gap: 2, padding: 12 }}><span className={s.muted} style={{ fontSize: '.74rem' }}>{l}</span><b className={s.big} style={{ fontSize: '1.3rem' }}>{v}</b><span className={s.muted} style={{ fontSize: '.7rem' }}>{d}</span></div>)}
+          </div>
+          <div className={s.card}>
+            <div className={s.rowBetween}><b className={s.h3}>Brochure</b><span className={s.muted} style={{ fontSize: '.76rem' }}>PDF · up to 20 MB</span></div>
+            {brochure ? (
+              <div className={s.docRow} style={{ borderTop: 0, padding: 0 }}>
+                <span className={s.docIc}><Icon name="layers" size={18} /></span>
+                <span className={s.mgmtInfo}><b>{brochure.name}</b><small>{(brochure.size / 1_000_000).toFixed(1)} MB · couples can download it from your listing</small></span>
+                <button className={s.link} onClick={() => setBrochure(null)}>Remove</button>
+              </div>
+            ) : <p className={s.muted}>Add a brochure so couples can download your full prices and details.</p>}
+            <label className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} style={{ cursor: 'pointer' }}>
+              <Icon name="plus" />{brochure ? 'Replace brochure' : 'Upload brochure'}
+              <input type="file" accept="application/pdf" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) setBrochure({ name: f.name, size: f.size }); e.target.value = ''; }} />
+            </label>
+            <p className={s.muted} style={{ fontSize: '.74rem' }}>Preview — the file stays on your device and isn&rsquo;t uploaded.</p>
           </div>
           {!web && <button className={`${s.btn} ${s.btnGhost}`} onClick={onSwitch}><Icon name="users" />Preview as another supplier</button>}
         </div>

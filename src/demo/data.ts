@@ -41,11 +41,12 @@ export type Supplier = {
   about: string;
   fromPrice: number;
   booked?: string[];      // fixed booked dates (ISO) — more are generated on the supplier side
+  featured?: boolean;     // paid add-on (£29/mo): badge + top of results
   packages: Package[];
 };
 
 /* ---------------- sample weddings (couple side quick-start) ---------------- */
-export type Wedding = { names: string; date: string; region: string; guests: number; budget: number };
+export type Wedding = { names: string; date: string; region: string; guests: number; budget: number; place?: string };
 export const sampleWeddings: (Wedding & { blurb: string; img: string })[] = [
   { names: 'Sophie & James', date: '2027-06-12', region: 'Cotswolds', guests: 110, budget: 25000, blurb: 'Country-house summer wedding', img: '/images/villa.jpg' },
   { names: 'Aisha & Ravi', date: '2027-09-18', region: 'London', guests: 180, budget: 42000, blurb: 'Big city celebration', img: '/images/setting.jpg' },
@@ -69,7 +70,7 @@ export const suppliers: Supplier[] = [
     ],
   },
   {
-    id: 'avenue-house', name: 'Avenue House', category: 'Venues', region: 'Cotswolds', town: 'Stow-on-the-Wold', style: 'Classic',
+    id: 'avenue-house', featured: true, name: 'Avenue House', category: 'Venues', region: 'Cotswolds', town: 'Stow-on-the-Wold', style: 'Classic',
     rating: 4.8, reviews: 94, capacity: 180, img: '/images/avenue.jpg', gallery: ['/images/avenue.jpg', '/images/setting.jpg', '/images/aisle.jpg'],
     about: 'A Georgian manor at the end of a tree-lined avenue, with a ceremony room, formal lawns and a ballroom for up to 180.',
     fromPrice: 8200, booked: ['2027-06-12'],
@@ -98,7 +99,7 @@ export const suppliers: Supplier[] = [
     ],
   },
   {
-    id: 'harbour-light', name: 'Harbour Light Hotel', category: 'Venues', region: 'Cornwall', town: 'St Ives', style: 'Coastal',
+    id: 'harbour-light', featured: true, name: 'Harbour Light Hotel', category: 'Venues', region: 'Cornwall', town: 'St Ives', style: 'Coastal',
     rating: 4.8, reviews: 112, capacity: 90, img: '/images/aisle.jpg', gallery: ['/images/aisle.jpg', '/images/setting.jpg', '/images/table.jpg'],
     about: 'A whitewashed harbour-side hotel with a sea-view terrace for ceremonies and 24 bedrooms for guests.',
     fromPrice: 5400, booked: ['2027-05-22'],
@@ -127,7 +128,7 @@ export const suppliers: Supplier[] = [
     ],
   },
   {
-    id: 'langdale-hall', name: 'Langdale Hall', category: 'Venues', region: 'Lake District', town: 'Grasmere', style: 'Country house',
+    id: 'langdale-hall', featured: true, name: 'Langdale Hall', category: 'Venues', region: 'Lake District', town: 'Grasmere', style: 'Country house',
     rating: 4.7, reviews: 52, capacity: 160, img: '/images/hero.jpg', gallery: ['/images/hero.jpg', '/images/avenue.jpg', '/images/setting.jpg'],
     about: 'A Victorian country house with lakeside lawns, a panelled ceremony room and 18 bedrooms.',
     fromPrice: 6900,
@@ -146,7 +147,7 @@ export const suppliers: Supplier[] = [
     ],
   },
   {
-    id: 'glasshouse', name: 'The Glasshouse', category: 'Venues', region: 'London', town: 'Shoreditch', style: 'Modern',
+    id: 'glasshouse', featured: true, name: 'The Glasshouse', category: 'Venues', region: 'London', town: 'Shoreditch', style: 'Modern',
     rating: 4.7, reviews: 143, capacity: 200, img: '/images/setting.jpg', gallery: ['/images/setting.jpg', '/images/table.jpg', '/images/aisle.jpg'],
     about: 'A glass-roofed former print hall with a roof terrace — industrial-modern, made for big city parties.',
     fromPrice: 9500, booked: ['2027-09-18'],
@@ -215,7 +216,7 @@ export const suppliers: Supplier[] = [
     ],
   },
   {
-    id: 'north-pine', name: 'North & Pine', category: 'Photographers', region: 'Lake District', town: 'Keswick', style: 'Rustic', travels: true,
+    id: 'north-pine', featured: true, name: 'North & Pine', category: 'Photographers', region: 'Lake District', town: 'Keswick', style: 'Rustic', travels: true,
     rating: 4.9, reviews: 101, img: '/images/hills.jpg', gallery: ['/images/hills.jpg', '/images/field.jpg', '/images/couple.jpg'],
     about: 'Adventurous, moody landscapes and honest moments. Based in the Lakes, travelling UK-wide.',
     fromPrice: 1300,
@@ -247,7 +248,7 @@ export const suppliers: Supplier[] = [
     ],
   },
   {
-    id: 'smoke-ember', name: 'Smoke & Ember', category: 'Catering', region: 'Surrey', town: 'Guildford', style: 'Rustic', travels: true,
+    id: 'smoke-ember', featured: true, name: 'Smoke & Ember', category: 'Catering', region: 'Surrey', town: 'Guildford', style: 'Rustic', travels: true,
     rating: 4.8, reviews: 96, img: '/images/table.jpg', gallery: ['/images/table.jpg', '/images/table2.jpg'],
     about: 'Live-fire cooking — whole roasted lamb, flatbreads from the wood oven and big seasonal salads.',
     fromPrice: 49,
@@ -288,7 +289,7 @@ export const suppliers: Supplier[] = [
     ],
   },
   {
-    id: 'petal-stem', name: 'Petal & Stem', category: 'Florists', region: 'London', town: 'Columbia Road', style: 'Modern', travels: true,
+    id: 'petal-stem', featured: true, name: 'Petal & Stem', category: 'Florists', region: 'London', town: 'Columbia Road', style: 'Modern', travels: true,
     rating: 4.8, reviews: 133, img: '/images/bouquet2.jpg', gallery: ['/images/bouquet2.jpg', '/images/setting.jpg'],
     about: 'Sculptural, colour-led installations — hanging clouds, statement arches and bold bouquets.',
     fromPrice: 650,
@@ -339,7 +340,7 @@ export const suppliers: Supplier[] = [
     ],
   },
   {
-    id: 'night-shift', name: 'Night Shift DJs', category: 'Music', region: 'Yorkshire', town: 'Leeds', style: 'Modern', travels: true,
+    id: 'night-shift', featured: true, name: 'Night Shift DJs', category: 'Music', region: 'Yorkshire', town: 'Leeds', style: 'Modern', travels: true,
     rating: 4.7, reviews: 164, img: '/images/table.jpg', gallery: ['/images/table.jpg', '/images/setting.jpg'],
     about: 'Party DJs with a full light show and a no-cheese promise (unless you ask for it).',
     fromPrice: 650,
@@ -371,7 +372,7 @@ export const suppliers: Supplier[] = [
     ],
   },
   {
-    id: 'little-bake', name: 'The Little Bake House', category: 'Cakes', region: 'Devon', town: 'Dartmouth', style: 'Rustic', travels: true,
+    id: 'little-bake', featured: true, name: 'The Little Bake House', category: 'Cakes', region: 'Devon', town: 'Dartmouth', style: 'Rustic', travels: true,
     rating: 4.8, reviews: 52, img: '/images/table2.jpg', gallery: ['/images/table2.jpg', '/images/setting.jpg'],
     about: 'Semi-naked cakes, dessert tables and doughnut walls — posted tasting boxes UK-wide.',
     fromPrice: 290,
@@ -402,7 +403,7 @@ export const suppliers: Supplier[] = [
     ],
   },
   {
-    id: 'glow-studio', name: 'Glow Studio', category: 'Hair & make-up', region: 'London', town: 'Marylebone', style: 'Modern', travels: true,
+    id: 'glow-studio', featured: true, name: 'Glow Studio', category: 'Hair & make-up', region: 'London', town: 'Marylebone', style: 'Modern', travels: true,
     rating: 4.8, reviews: 91, img: '/images/bouquet2.jpg', gallery: ['/images/bouquet2.jpg', '/images/couple.jpg'],
     about: 'Editorial make-up and sleek styling — airbrush and lashes included.',
     fromPrice: 340,
@@ -420,6 +421,39 @@ export const suppliers: Supplier[] = [
       { id: 'cb-bride', name: 'Bride + Trial', price: 240, summary: 'Hair & make-up', includes: ['Trial session', 'Wedding-day hair & make-up'], deposit: 25 },
     ],
   },
+];
+
+/* ---------------- add-on extras (base price + extras) ---------------- */
+export type Extra = { id: string; name: string; price: number; perGuest?: boolean };
+const extraPool: Record<Category, Omit<Extra, 'id'>[]> = {
+  Venues: [{ name: 'Table decoration package', price: 450 }, { name: 'Unlimited drinks package', price: 35, perGuest: true }, { name: 'Late licence until 1am', price: 350 }, { name: 'Evening buffet', price: 12, perGuest: true }, { name: 'Bridal suite on the night', price: 220 }],
+  Photographers: [{ name: 'Second photographer', price: 350 }, { name: 'Printed wedding album', price: 420 }, { name: 'Engagement shoot', price: 250 }, { name: 'Drone coverage', price: 180 }],
+  Catering: [{ name: 'Drinks reception canapés', price: 8, perGuest: true }, { name: 'Evening food station', price: 10, perGuest: true }, { name: 'Wine with dinner', price: 14, perGuest: true }, { name: 'Cake cutting & serving', price: 120 }],
+  Florists: [{ name: 'Family buttonholes (6)', price: 90 }, { name: 'Extra centrepieces (6)', price: 240 }, { name: 'Flowers for the cake', price: 60 }, { name: 'Bridal hair flowers', price: 45 }],
+  Music: [{ name: 'Extra hour', price: 250 }, { name: 'Ceremony music', price: 300 }, { name: 'Learn your first-dance song', price: 120 }, { name: 'Venue uplighting', price: 180 }],
+  Cakes: [{ name: 'Extra tier', price: 120 }, { name: 'Dessert table', price: 280 }, { name: 'Cake stand hire', price: 35 }],
+  'Hair & make-up': [{ name: 'Extra bridesmaid', price: 85 }, { name: 'Mother of the bride', price: 85 }, { name: 'Second trial', price: 75 }, { name: 'On-call touch-ups', price: 150 }],
+};
+export const extrasFor = (sup: Supplier): Extra[] => extraPool[sup.category].map((x, i) => ({ ...x, id: `${sup.id}-x${i}` }));
+export const extraTotal = (sup: Supplier, ids: string[] = [], guests: number) => extrasFor(sup).filter((x) => ids.includes(x.id)).reduce((t, x) => t + (x.perGuest ? x.price * guests : x.price), 0);
+
+/* ---------------- places for the location search ---------------- */
+export const places: { name: string; region: string }[] = [
+  ...['Cheltenham', 'Cirencester', 'Stow-on-the-Wold', 'Chipping Campden', 'Burford', 'Moreton-in-Marsh', 'Tetbury', 'Painswick', 'Bourton-on-the-Water', 'Oxford'].map((n) => ({ name: n, region: 'Cotswolds' })),
+  ...['Exeter', 'Totnes', 'Plymouth', 'Dartmouth', 'Torquay', 'Ashburton', 'Salcombe'].map((n) => ({ name: n, region: 'Devon' })),
+  ...['Truro', 'St Ives', 'Falmouth', 'Newquay', 'Padstow', 'Penzance', 'Fowey'].map((n) => ({ name: n, region: 'Cornwall' })),
+  ...['Keswick', 'Ambleside', 'Windermere', 'Grasmere', 'Kendal', 'Coniston'].map((n) => ({ name: n, region: 'Lake District' })),
+  ...['York', 'Leeds', 'Harrogate', 'Helmsley', 'Sheffield', 'Whitby', 'Skipton'].map((n) => ({ name: n, region: 'Yorkshire' })),
+  ...['London', 'Shoreditch', 'Islington', 'Hackney', 'Greenwich', 'Bermondsey', 'Marylebone', 'Richmond'].map((n) => ({ name: n, region: 'London' })),
+  ...['Guildford', 'Dorking', 'Woking', 'Reigate', 'Farnham'].map((n) => ({ name: n, region: 'Surrey' })),
+  ...['Edinburgh', 'Glasgow', 'Aberfoyle', 'Stirling', 'Perth', 'Inverness', 'Aberdeen', 'Dundee', 'St Andrews', 'Fort William'].map((n) => ({ name: n, region: 'Scotland' })),
+  // wider towns & counties, matched to the nearest sample region
+  ...['Bath', 'Bristol', 'Gloucester', 'Gloucestershire', 'Oxfordshire', 'Stroud', 'Swindon', 'Wiltshire', 'Stratford-upon-Avon', 'Birmingham', 'Worcester', 'Somerset'].map((n) => ({ name: n, region: 'Cotswolds' })),
+  ...['Dorset', 'Bournemouth', 'Taunton', 'Barnstaple', 'Bideford'].map((n) => ({ name: n, region: 'Devon' })),
+  ...['Cumbria', 'Carlisle', 'Penrith', 'Lancaster', 'Lancashire', 'Manchester', 'Liverpool', 'Preston'].map((n) => ({ name: n, region: 'Lake District' })),
+  ...['North Yorkshire', 'Scarborough', 'Ripon', 'Bradford', 'Hull', 'Newcastle', 'Durham'].map((n) => ({ name: n, region: 'Yorkshire' })),
+  ...['Kent', 'Brighton', 'Sussex', 'Hertfordshire', 'Essex', 'Kensington', 'Notting Hill', 'Camden'].map((n) => ({ name: n, region: 'London' })),
+  ...['Kingston upon Thames', 'Epsom', 'Leatherhead', 'Hampshire', 'Winchester', 'Berkshire', 'Windsor'].map((n) => ({ name: n, region: 'Surrey' })),
 ];
 
 export const gbp = (n: number) => '£' + Math.round(n).toLocaleString('en-GB');
@@ -484,27 +518,32 @@ export const CONTRACT_DAYS = 7;
 
 /**
  * Booking journey:
- * new (enquiry) → held (date held, contract sent) → deposit (contract signed + deposit paid) → paid (fully paid)
- * plus declined / cancelled.
+ * new (enquiry) → held (contract sent — TENTATIVE: shows on the supplier calendar only, couples can still book the date)
+ * → deposit (contract signed + deposit paid — date now held) → paid (fully paid). Plus declined / cancelled.
+ * Contract signatures and payments update automatically (Stripe / e-sign webhooks in the real platform).
  */
 export type JobStatus = 'new' | 'held' | 'deposit' | 'paid' | 'declined' | 'cancelled';
-export const STATUS_LABEL: Record<JobStatus, string> = { new: 'New enquiry', held: 'Date held', deposit: 'Deposit paid', paid: 'Fully paid', declined: 'Declined', cancelled: 'Cancelled' };
+export const STATUS_LABEL: Record<JobStatus, string> = { new: 'New enquiry', held: 'Contract sent', deposit: 'Deposit paid', paid: 'Fully paid', declined: 'Declined', cancelled: 'Cancelled' };
 export type Job = {
   id: string; couple: string; date: string; endDate?: string; pkg: string; pid?: string; guests: number;
   total: number; deposit: number; paid: number; status: JobStatus; source: 'Asteria' | 'Direct';
   message?: string; phone?: string; email?: string; received?: string; contractDaysAgo?: number;
   fromCouplePreview?: boolean; noQuote?: boolean; note?: string; balanceDays?: number; cancelPolicy?: string; securityDeposit?: number;
+  /** optional mid-way instalment between deposit and final payment */
+  instalment?: { amount: number; due: string };
 };
 /** Card processing: 1.5% + 20p on every payment the couple makes (deposit and final payment). */
 export const PROC_PCT = 0.015;
 export const PROC_FIXED = 0.2;
 export const PROC_LABEL = '1.5% + 20p per transaction';
 /** number of card payments for a booking: deposit + final payment, or one if the deposit is the whole amount */
-export const txCount = (j: { total: number; deposit: number; noQuote?: boolean }) => (j.noQuote || !j.total ? 0 : j.deposit > 0 && j.deposit < 100 ? 2 : 1);
-export const processingFee = (j: { total: number; deposit: number; noQuote?: boolean }) => (txCount(j) ? Math.round((j.total * PROC_PCT + PROC_FIXED * txCount(j)) * 100) / 100 : 0);
+export const txCount = (j: { total: number; deposit: number; noQuote?: boolean; instalment?: unknown }) => (j.noQuote || !j.total ? 0 : j.deposit > 0 && j.deposit < 100 ? (j.instalment ? 3 : 2) : 1);
+export const processingFee = (j: { total: number; deposit: number; noQuote?: boolean; instalment?: unknown }) => (txCount(j) ? Math.round((j.total * PROC_PCT + PROC_FIXED * txCount(j)) * 100) / 100 : 0);
 export const gbp2 = (n: number) => '£' + n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 export const isBooked = (j: Job) => j.status === 'deposit' || j.status === 'paid';
-export const blocksDate = (j: Job) => j.status === 'held' || isBooked(j);
+/** only a paid deposit holds the date — contract-sent bookings are tentative */
+export const blocksDate = (j: Job) => isBooked(j);
+export const isTentative = (j: Job) => j.status === 'held';
 export const depositAmt = (j: Job) => Math.round((j.total * j.deposit) / 100);
 
 export type Persona = { sup: Supplier; initials: string; jobs: Job[]; conversion: number; reviews: Review[] };
@@ -549,7 +588,8 @@ export function shortPrice(sup: Supplier, n: number) {
 }
 
 /** payments a supplier is waiting on: deposits for held dates, balances for deposit-paid bookings */
-export type Due = { job: Job; kind: 'Deposit' | 'Final payment'; amount: number; due: string; inDays: number };
+export type DueKind = 'Deposit' | 'Instalment' | 'Final payment';
+export type Due = { job: Job; kind: DueKind; amount: number; due: string; inDays: number };
 export function paymentsDue(jobs: Job[], today = TODAY): Due[] {
   const out: Due[] = [];
   for (const j of jobs) {
@@ -558,8 +598,14 @@ export function paymentsDue(jobs: Job[], today = TODAY): Due[] {
       const due = addDays(today, CONTRACT_DAYS - (j.contractDaysAgo ?? 0));
       out.push({ job: j, kind: 'Deposit', amount: depositAmt(j), due, inDays: daysBetween(today, due) });
     } else if (j.status === 'deposit' && j.total > j.paid) {
+      let left = j.total - j.paid;
+      const inst = j.instalment;
+      if (inst && j.paid < depositAmt(j) + inst.amount) {
+        out.push({ job: j, kind: 'Instalment', amount: inst.amount, due: inst.due, inDays: daysBetween(today, inst.due) });
+        left -= inst.amount;
+      }
       const due = addDays(j.date, -(j.balanceDays ?? BALANCE_DAYS));
-      out.push({ job: j, kind: 'Final payment', amount: j.total - j.paid, due, inDays: daysBetween(today, due) });
+      if (left > 0) out.push({ job: j, kind: 'Final payment', amount: left, due, inDays: daysBetween(today, due) });
     }
   }
   return out.sort((a, b) => a.due.localeCompare(b.due));
@@ -591,9 +637,16 @@ export function personaFor(id: string): Persona {
     const end = multiDay(p) ? addDays(date, 2) : undefined;
     for (let i = 0; i <= (end ? 2 : 0); i++) used.add(addDays(date, i));
     const direct = r() > 0.72;
+    const dep = Math.round((total * p.deposit) / 100);
+    let instalment: Job['instalment'];
+    let paid = status === 'paid' ? total : status === 'deposit' ? dep : 0;
+    if (status === 'deposit' && daysBetween(TODAY, date) > 150 && r() < 0.5) {
+      instalment = { amount: Math.round((total - dep) / 2), due: addDays(date, -120) };
+      if (instalment.due < TODAY) paid += instalment.amount;
+    }
     jobs.push({
       id: (direct ? 'D-' : 'A-') + (19000 + Math.floor(r() * 2000)), couple: names[n++ % names.length], date, endDate: end, pkg: p.name, pid: p.id, guests, total, deposit: p.deposit,
-      paid: status === 'paid' ? total : status === 'deposit' ? Math.round((total * p.deposit) / 100) : 0, status, source: direct ? 'Direct' : 'Asteria',
+      paid, instalment, status, source: direct ? 'Direct' : 'Asteria',
       contractDaysAgo: status === 'held' ? 1 + Math.floor(r() * 5) : undefined,
     });
   };
@@ -643,7 +696,7 @@ export function personaFor(id: string): Persona {
   return persona;
 }
 
-/** dates a couple sees as unavailable for a supplier (held or booked) */
+/** dates a couple sees as unavailable for a supplier (deposit paid only — tentative bookings stay bookable) */
 export function unavailable(sup: Supplier): Set<string> {
   const out = new Set<string>();
   personaFor(sup.id).jobs.filter(blocksDate).forEach((b) => { let d = b.date; const end = b.endDate || b.date; while (d <= end) { out.add(d); d = addDays(d, 1); } });
@@ -657,10 +710,12 @@ export const featuredPersonas = ['stone-villa', 'meadow-light', 'long-table', 'w
 export type Board = {
   id: string; name: string; blurb: string; imgs: string[]; palette: [string, string][]; words: string[]; ideas: string[];
   match: { region: string; style: string; regions: string[]; styles: string[] };
+  /** Spotlight add-on (£49/mo): these suppliers are shown on this board */
+  spotlight: string[];
 };
 export const boards: Board[] = [
   {
-    id: 'country', name: 'Country house', blurb: 'Honey stone, walled gardens and long candlelit tables.',
+    id: 'country', spotlight: ['stone-villa', 'strings-attached', 'crumb-crown'], name: 'Country house', blurb: 'Honey stone, walled gardens and long candlelit tables.',
     imgs: ['/images/villa.jpg', '/images/table.jpg', '/images/avenue.jpg', '/images/bouquet.jpg', '/images/gardens.jpg'],
     palette: [['Olive', '#7A8F58'], ['Honey stone', '#D8C29D'], ['Ivory', '#FAF6F2'], ['Soft sage', '#C9D3B0'], ['Blush', '#E7C8BE']],
     words: ['Walled garden', 'Garden roses', 'Long tables', 'Candlelight', 'Linen'],
@@ -668,7 +723,7 @@ export const boards: Board[] = [
     match: { region: 'Cotswolds', style: 'Country house', regions: ['Cotswolds', 'Yorkshire', 'Lake District'], styles: ['Country house', 'Classic', 'Garden'] },
   },
   {
-    id: 'city', name: 'City', blurb: 'Warehouse lofts, rooftop vows and a late-night party.',
+    id: 'city', spotlight: ['glasshouse', 'studio-halden', 'copper-pot', 'sugar-loaf'], name: 'City', blurb: 'Warehouse lofts, rooftop vows and a late-night party.',
     imgs: ['/images/setting.jpg', '/images/table.jpg', '/images/aisle.jpg', '/images/bouquet2.jpg', '/images/table2.jpg'],
     palette: [['Ink', '#2A2A24'], ['Champagne', '#D4B895'], ['Chalk', '#F4F1EC'], ['Smoke', '#9A978C'], ['Brass', '#B08D57']],
     words: ['Rooftop', 'Industrial', 'Flash photography', 'Cocktails', 'Statement florals'],
@@ -676,7 +731,7 @@ export const boards: Board[] = [
     match: { region: 'London', style: 'Modern', regions: ['London'], styles: ['Modern'] },
   },
   {
-    id: 'mountain', name: 'Mountain', blurb: 'Fells, lakes and a cosy barn with a fire pit.',
+    id: 'mountain', spotlight: ['fellside-barn', 'north-pine', 'loch-ard'], name: 'Mountain', blurb: 'Fells, lakes and a cosy barn with a fire pit.',
     imgs: ['/images/hills.jpg', '/images/field.jpg', '/images/hero.jpg', '/images/table2.jpg', '/images/couple.jpg'],
     palette: [['Pine', '#3F4E34'], ['Slate', '#6B7177'], ['Moss', '#8C9A6B'], ['Heather', '#A88BA0'], ['Oat', '#E8DCC6']],
     words: ['Lakeside vows', 'Fire pits', 'Wool blankets', 'Adventure portraits', 'Whisky bar'],
@@ -684,7 +739,7 @@ export const boards: Board[] = [
     match: { region: 'Lake District', style: 'Rustic', regions: ['Lake District', 'Scotland', 'Yorkshire'], styles: ['Rustic', 'Country house'] },
   },
   {
-    id: 'seaside', name: 'Seaside', blurb: 'Clifftop ceremonies, sea pinks and sunset on the beach.',
+    id: 'seaside', spotlight: ['harbour-light', 'saltwater', 'sea-pink', 'coastline-bridal'], name: 'Seaside', blurb: 'Clifftop ceremonies, sea pinks and sunset on the beach.',
     imgs: ['/images/aisle.jpg', '/images/hills.jpg', '/images/bouquet2.jpg', '/images/couple.jpg', '/images/setting.jpg'],
     palette: [['Sea', '#5E8C99'], ['Sand', '#E9DCC4'], ['Sea pink', '#E4A9B0'], ['Driftwood', '#A89580'], ['Foam', '#F6F4EE']],
     words: ['Clifftop', 'Sea pinks', 'Barefoot', 'Sunset portraits', 'Seafood feast'],
@@ -692,7 +747,7 @@ export const boards: Board[] = [
     match: { region: 'Cornwall', style: 'Coastal', regions: ['Cornwall', 'Devon'], styles: ['Coastal', 'Garden'] },
   },
   {
-    id: 'garden', name: 'Garden party', blurb: 'Orchards, parterres and a relaxed outdoor feast.',
+    id: 'garden', spotlight: ['bramley-orchard', 'wild-bloom', 'harvest-hearth', 'acoustic-fox'], name: 'Garden party', blurb: 'Orchards, parterres and a relaxed outdoor feast.',
     imgs: ['/images/gardens.jpg', '/images/arch.jpg', '/images/bouquet.jpg', '/images/table2.jpg', '/images/field.jpg'],
     palette: [['Leaf', '#6E8B4E'], ['Petal', '#F1D7D2'], ['Butter', '#F3E3A6'], ['Cream', '#FBF7EF'], ['Lavender', '#B9AFD1']],
     words: ['Floral arch', 'Orchard', 'Festoon lights', 'Sharing boards', 'Lawn games'],
@@ -700,7 +755,7 @@ export const boards: Board[] = [
     match: { region: 'Devon', style: 'Garden', regions: ['Devon', 'Cotswolds', 'Surrey'], styles: ['Garden'] },
   },
   {
-    id: 'barn', name: 'Rustic barn', blurb: 'Timber beams, wildflowers and dancing till late.',
+    id: 'barn', spotlight: ['willow-mill', 'smoke-ember', 'moorland-blooms'], name: 'Rustic barn', blurb: 'Timber beams, wildflowers and dancing till late.',
     imgs: ['/images/table2.jpg', '/images/field.jpg', '/images/hills.jpg', '/images/bouquet.jpg', '/images/table.jpg'],
     palette: [['Oak', '#8A6A4A'], ['Wheat', '#E6D3A8'], ['Fern', '#6F8455'], ['Rust', '#B5643C'], ['Cream', '#FAF3E6']],
     words: ['Timber beams', 'Wildflowers', 'Hay bales', 'Live-fire food', 'Barn dance'],

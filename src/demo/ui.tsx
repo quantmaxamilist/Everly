@@ -1,5 +1,5 @@
 'use client';
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, Fragment, useContext, useEffect, useRef, useState } from 'react';
 import Icon from '@/components/Icon';
 import A from '@/components/A';
 import { BRAND, asset } from '@/lib/site';
@@ -7,7 +7,7 @@ import s from './app.module.css';
 
 export type Step = { label: string; done: boolean };
 export type Mode = 'web' | 'app';
-export type NavItem<T extends string> = { id: T; label: string; icon: string; count?: number; appHidden?: boolean; appLabel?: string };
+export type NavItem<T extends string> = { id: T; label: string; icon: string; count?: number; appHidden?: boolean; appLabel?: string; webHidden?: boolean; group?: string };
 
 /** Which layout the preview is drawn in. Web = laptop/desktop platform, App = phone app. */
 const ModeCtx = createContext<Mode>('app');
@@ -68,10 +68,11 @@ export function Shell<T extends string>({ side, title, intro, steps, other, nav,
             <div className={s.wBrand}><Logo /><span className={s.wSideTag}>{side}</span></div>
             {extra}
             <nav className={s.wNav} aria-label={`${side} menu`}>
-              {nav.items.map((t) => (
+              {nav.items.filter((t) => !t.webHidden).map((t, i, arr) => (
+                <Fragment key={t.id}>{t.group && t.group !== arr[i - 1]?.group && <span className={s.wNavGroup}>{t.group}</span>}
                 <button key={t.id} disabled={nav.disabled} className={nav.active === t.id ? s.on : ''} onClick={() => nav.onChange(t.id)} aria-current={nav.active === t.id ? 'page' : undefined}>
                   <Icon name={t.icon} size={20} />{t.label}{t.count ? <span className={s.wCount}>{t.count}</span> : null}
-                </button>
+                </button></Fragment>
               ))}
             </nav>
             <div className={s.wGuide}>
@@ -195,7 +196,8 @@ export function Sheet({ title, onClose, children, wide }: { title: string; onClo
 }
 
 export function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
-  useEffect(() => { const t = setTimeout(onDone, 2600); return () => clearTimeout(t); }, [msg, onDone]);
+  const done = useRef(onDone); done.current = onDone;
+  useEffect(() => { const t = setTimeout(() => done.current(), 2800); return () => clearTimeout(t); }, [msg]);
   return <div className={s.toast} role="status"><Icon name="check" />{msg}</div>;
 }
 

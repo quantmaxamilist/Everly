@@ -2,7 +2,7 @@ import A from './A';
 import Icon from './Icon';
 import Img from './Img';
 import s from './CtaBand.module.css';
-export default function CtaBand({ title = 'Start building your wedding', text = 'Free for couples. Build as many versions as you like, then book the one you love.' }: { title?: string; text?: string }) {
+export default function CtaBand({ title = 'Start building your wedding', text = 'Free for couples. Build as many versions as you like, then book the one you love.', primary = { to: '/start', label: 'Start building' }, secondary = { to: '/start', label: 'List your business' } }: { title?: string; text?: string; primary?: { to: string; label: string }; secondary?: { to: string; label: string } }) {
   return (
     <section className={`section ${s.band}`}>
       <div className={`container ${s.in}`}>
@@ -12,8 +12,8 @@ export default function CtaBand({ title = 'Start building your wedding', text = 
             <h2>{title}</h2>
             <p className="lead">{text}</p>
             <div className={s.ctas}>
-              <A to="/start" className="btn btn--light">Start building <Icon name="arrow" /></A>
-              <A to="/start" className="btn btn--ghost">List your business</A>
+              <A to={primary.to} className="btn btn--light">{primary.label} <Icon name="arrow" /></A>
+              <A to={secondary.to} className="btn btn--ghost">{secondary.label}</A>
             </div>
           </div>
           <div className={s.arch}><Img src="/images/arch.jpg" alt="Outdoor ceremony with a floral arch" fill sizes="(min-width: 900px) 380px, 80vw" /></div>

@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import A from './A';
 import Icon from './Icon';
 import s from './Form.module.css';
 
@@ -71,6 +72,7 @@ export default function Form({ kind }: { kind: Kind }) {
       <button className={`btn ${s.submit}`} disabled={state === 'sending'}>
         {state === 'sending' ? 'Sending…' : kind === 'signup' ? 'Get early access' : kind === 'login' ? 'Log in' : 'Send message'} <Icon name="arrow" />
       </button>
+      {kind !== 'login' && <p className={s.legal}>By sending this form you agree to our <A to="/privacy">Privacy Policy</A>.</p>}
       {state === 'error' && <p className={s.err} role="alert">Something went wrong — please try again.</p>}
     </form>
   );

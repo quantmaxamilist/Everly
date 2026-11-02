@@ -3,11 +3,18 @@ import PageHero from '@/components/PageHero';
 import Features from '@/components/Features';
 import Split from '@/components/Split';
 import CtaBand from '@/components/CtaBand';
+import FoundingForm from '@/components/FoundingForm';
 import A from '@/components/A';
 import Icon from '@/components/Icon';
 import s from '../inner.module.css';
 
-export const metadata: Metadata = { title: 'For suppliers', description: 'List your venue or wedding business on Asteria. Packages, availability, enquiries, contracts and deposits in one dashboard.' };
+export const metadata: Metadata = { title: 'For suppliers', description: 'Become an Asteria Founding Partner: 12 months free from launch and 3% commission on Asteria bookings. Packages, availability, enquiries, contracts and deposits in one dashboard.' };
+
+const offer = [
+  { t: '12 months free', d: 'No subscription for your first 12 months from official launch.' },
+  { t: '3% commission', d: 'On qualifying Asteria bookings during your Founding Partner period.' },
+  { t: 'Full platform access', d: 'Every supplier feature as it becomes available.' },
+];
 
 const items = [
   { icon: 'layers', t: 'Packages & pricing', d: 'Create packages, extras and upgrades, with seasonal, day-of-week and per-guest pricing.' },
@@ -22,8 +29,26 @@ export default function Page() {
   return (
     <>
       <PageHero eyebrow="For suppliers" title={<>Get booked. <em>Get paid.</em></>} lead="Show couples exactly what you offer and what it costs. Asteria handles the enquiries, contracts and deposits, so you can focus on the weddings." img="/images/setting.jpg">
-        <A to="/start" className="btn">List your business <Icon name="arrow" /></A>
+        <A to="#founding" className="btn">Become a Founding Partner <Icon name="arrow" /></A>
+        <A to="/supplier-preview" className="btn btn--ghost">See the supplier preview</A>
       </PageHero>
+      <section id="founding" className={`section dark ${s.founding}`}>
+        <div className={`container ${s.formWrap}`}>
+          <div className={s.formSide}>
+            <p className="eyebrow">Early access</p>
+            <h2>Become a <em>Founding Partner</em></h2>
+            <p className="lead">Register now to be one of the first suppliers on Asteria. We&rsquo;ll help you set up your listing ahead of launch.</p>
+            <ul className={s.offer}>
+              {offer.map((o) => <li key={o.t}><Icon name="check" /><span><b>{o.t}</b>{o.d}</span></li>)}
+            </ul>
+            <p className={s.offerSmall}>After your Founding Partner period you move to <b>Starter — £29/month + 5% commission</b>, unless you choose another plan or cancel. Registering is free: no payment is taken and no subscription is activated.</p>
+          </div>
+          <div className={s.formCard}>
+            <h3 className={s.formTitle}>Register for early access</h3>
+            <FoundingForm />
+          </div>
+        </div>
+      </section>
       <section className="section sand">
         <div className="container">
           <div className="sh"><p className="eyebrow">Your dashboard</p><h2 className="rv">Run your bookings <em>in one place</em></h2></div>
@@ -49,7 +74,7 @@ export default function Page() {
           </Split>
         </div>
       </section>
-      <CtaBand title="Be one of the first on Asteria" text="Register your interest now and we will help you set up your listing ahead of launch." />
+      <CtaBand title="Be one of the first on Asteria" text="Founding Partners get 12 months free from launch and 3% commission on Asteria bookings." primary={{ to: '#founding', label: 'Become a Founding Partner' }} secondary={{ to: '/supplier-preview', label: 'See the supplier preview' }} />
     </>
   );
 }

@@ -10,3 +10,8 @@
 .done { display: grid; gap: .8rem; justify-items: center; text-align: center; padding: 2rem 0; }
 .done > span { width: 64px; height: 64px; border-radius: 50%; background: var(--sage); color: var(--olive-dark); display: grid; place-items: center; }
 .done p { color: var(--muted); max-width: 36ch; }
+.tick { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: .75rem; align-items: start; font-size: .92rem; color: var(--olive-ink); cursor: pointer; }
+.tick input { width: 20px; height: 20px; margin-top: 2px; accent-color: var(--olive); }
+.tick small { display: block; margin-top: .15rem; }
+.legal { font-size: .8rem; color: var(--muted); line-height: 1.5; }
+.legal a { color: var(--olive-dark); text-decoration: underline; text-underline-offset: 2px; }
