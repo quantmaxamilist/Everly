@@ -2,7 +2,7 @@ import A from './A';
 import Icon from './Icon';
 import Img from './Img';
 import s from './CtaBand.module.css';
-export default function CtaBand({ title = 'Start building your wedding', text = 'Free for couples. Build as many versions as you like, then book the one you love.', primary = { to: '/start', label: 'Start building' }, secondary = { to: '/start', label: 'List your business' } }: { title?: string; text?: string; primary?: { to: string; label: string }; secondary?: { to: string; label: string } }) {
+export default function CtaBand({ title = 'Start building your wedding', text = 'Free for couples. Build as many versions as you like, then book the one you love.', primary = { to: '/couples#early-access', label: 'Join early access' }, secondary = { to: '/suppliers#founding', label: 'Become a Founding Partner' } }: { title?: string; text?: string; primary?: { to: string; label: string }; secondary?: { to: string; label: string } }) {
   return (
     <section className={`section ${s.band}`}>
       <div className={`container ${s.in}`}>

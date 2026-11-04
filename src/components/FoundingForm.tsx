@@ -10,6 +10,7 @@ import s from './Form.module.css';
  * the access key created for Asteria's own email address). No payment, no account.
  */
 const KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+const READINESS = ['Ready — my packages and prices are set', 'Mostly ready — prices need finalising', 'Not yet — I’d like help setting up packages & pricing'];
 const CATEGORIES = ['Venue', 'Photographer', 'Videographer', 'Catering', 'Florist', 'Music / DJ / band', 'Cakes', 'Hair & make-up', 'Bridalwear', 'Cars & transport', 'Stationery', 'Styling & decor', 'Other'];
 
 export default function FoundingForm() {
@@ -37,6 +38,10 @@ export default function FoundingForm() {
           'Supplier category': v('category'),
           'Location / areas covered': v('areas'),
           'Website / social': v('website') || '—',
+          'Packages / what they offer': v('packages') || '—',
+          'Typical starting price': v('price') || '—',
+          'Pricing readiness': v('readiness'),
+          'Permission to contact': fd.get('contact') ? 'Yes — agreed to be contacted about their listing' : 'No',
           'Marketing & launch updates': fd.get('marketing') ? 'Yes — opted in' : 'No',
           'Privacy notice': 'Shown on the form',
           Registered: new Date().toLocaleString('en-GB', { timeZone: 'Europe/London' }),
@@ -71,6 +76,17 @@ export default function FoundingForm() {
       </div>
       <div className="field"><label htmlFor="fp-areas">Location / areas covered</label><input id="fp-areas" name="areas" className="input" required placeholder="e.g. Based in Bath — cover the Cotswolds & South West" /></div>
       <div className="field"><label htmlFor="fp-web">Website or social <small>(optional)</small></label><input id="fp-web" name="website" className="input" placeholder="e.g. www.yourbusiness.co.uk or @yourbusiness" /></div>
+      <div className="field"><label htmlFor="fp-pk">Your packages, roughly <small>(optional)</small></label><textarea id="fp-pk" name="packages" className="input" style={{ minHeight: 96 }} placeholder="e.g. Full-day exclusive use, midweek package, evening reception only" /></div>
+      <div className={s.two}>
+        <div className="field"><label htmlFor="fp-price">Typical starting price <small>(optional)</small></label><input id="fp-price" name="price" className="input" placeholder="e.g. From £4,500 or £45 per guest" /></div>
+        <div className="field"><label htmlFor="fp-ready">Pricing readiness</label>
+          <select id="fp-ready" name="readiness" className="input" required defaultValue=""><option value="" disabled>Choose…</option>{READINESS.map((c) => <option key={c}>{c}</option>)}</select>
+        </div>
+      </div>
+      <label className={s.tick}>
+        <input type="checkbox" name="contact" value="yes" required />
+        <span>I&rsquo;m happy for Asteria to contact me about my Founding Partner registration and setting up my listing.</span>
+      </label>
       <label className={s.tick}>
         <input type="checkbox" name="marketing" value="yes" />
         <span>Send me launch updates and occasional Asteria news by email. <small>Optional — you can unsubscribe at any time.</small></span>

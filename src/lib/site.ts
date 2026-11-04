@@ -14,7 +14,7 @@ export const site = {
   tagline: 'Every event starts here.',
   description:
     'Asteria is the UK wedding planning platform where couples build their wedding — venue, suppliers and budget — compare options side by side, then book and pay in one place.',
-  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://www.asteriaevents.co.uk', // TODO: confirm domain (placeholder)
+  url: process.env.NEXT_PUBLIC_SITE_URL || 'https://asteria-events.com',
   email: 'hello@asteriaevents.co.uk', // TODO: confirm inbox (placeholder)
   instagram: '', // TODO: brand pack shows @asteriaeventsco — confirm before adding
 };
