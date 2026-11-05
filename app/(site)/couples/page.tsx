@@ -30,7 +30,7 @@ export default function Page() {
     <>
       <PageHero eyebrow="For couples" title={<>Plan less. <em>Enjoy more.</em></>} lead="Asteria brings your venue, suppliers, budget and bookings together, so you can spend less time on spreadsheets and more time looking forward to the day." img="/images/couple.jpg">
         <A to="#early-access" className="btn">Join early access <Icon name="arrow" /></A>
-        <A to="/couple-preview" className="btn btn--ghost">Try the preview</A>
+        <A to="/couple-preview" className="btn btn--ghost">Use demo</A>
       </PageHero>
       <section id="early-access" className={`section dark ${s.founding}`}>
         <div className={`container ${s.formWrap}`}>
@@ -59,7 +59,7 @@ export default function Page() {
           <Split eyebrow="Your budget, your way" title={<>Always know <em>the real cost</em></>} text="Add a budget and Asteria shows what is allocated and what is left with every choice. No budget? No problem — just build and see where you land." points={['Live totals as you build', 'Spend breakdown by supplier', 'Smart suggestions to save money']} img="/images/bouquet2.jpg" alt="Bride holding a white bouquet" />
         </div>
       </section>
-      <CtaBand title="Be first to build your wedding" text="Join the early access list and we’ll email you as soon as Asteria opens." primary={{ to: '#early-access', label: 'Join early access' }} secondary={{ to: '/couple-preview', label: 'Try the preview' }} />
+      <CtaBand title="Be first to build your wedding" text="Join the early access list and we’ll email you as soon as Asteria opens." primary={{ to: '#early-access', label: 'Join early access' }} secondary={{ to: '/couple-preview', label: 'Use demo' }} />
     </>
   );
 }

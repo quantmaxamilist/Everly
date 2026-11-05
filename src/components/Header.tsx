@@ -31,7 +31,7 @@ export default function Header() {
           ))}
         </nav>
         <div className={s.actions}>
-          <A to="/login" className={s.login}>Log in</A>
+          <A to="/start" className={s.login}>Use demo</A>
           <A to="/signup" className="btn btn--sm">Join early access</A>
         </div>
         <button className={s.toggle} type="button" aria-expanded={open} aria-controls="mnav" aria-label={open ? 'Close menu' : 'Open menu'} onClick={() => setOpen(!open)}>
@@ -46,8 +46,7 @@ export default function Header() {
         </nav>
         <div className={s.mcta}>
           <A to="/signup" className="btn">Join early access <Icon name="arrow" /></A>
-          <A to="/start" className="btn btn--ghost">Try the preview</A>
-          <A to="/login" className="btn btn--ghost">Log in</A>
+          <A to="/start" className="btn btn--ghost">Use demo</A>
         </div>
       </div>
     </header>

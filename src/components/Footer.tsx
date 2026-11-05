@@ -19,10 +19,9 @@ export default function Footer() {
           <div>
             <p className={s.h}>Get started</p>
             <ul>
-              <li><A to="/couples#early-access">Join early access</A></li>
+              <li><A to="/signup">Join early access</A></li>
               <li><A to="/suppliers#founding">Become a Founding Partner</A></li>
-              <li><A to="/start">Try the preview</A></li>
-              <li><A to="/login">Log in</A></li>
+              <li><A to="/start">Use demo</A></li>
             </ul>
           </div>
           <div>
