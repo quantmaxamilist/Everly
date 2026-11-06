@@ -9,7 +9,8 @@ import s from './Form.module.css';
  * Sends each sign-up to Asteria's inbox through Web3Forms (NEXT_PUBLIC_WEB3FORMS_KEY,
  * the access key created for Asteria's own email address). No payment, no account.
  */
-const KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+// Web3Forms access key (public — safe in client code). Sends to hello@asteria-events.com.
+const KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY || '216c8b28-3c5e-40b2-9383-e7db963e0139';
 const READINESS = ['Ready — my packages and prices are set', 'Mostly ready — prices need finalising', 'Not yet — I’d like help setting up packages & pricing'];
 const CATEGORIES = ['Venue', 'Photographer', 'Videographer', 'Catering', 'Florist', 'Music / DJ / band', 'Cakes', 'Hair & make-up', 'Bridalwear', 'Cars & transport', 'Stationery', 'Styling & decor', 'Other'];
 
