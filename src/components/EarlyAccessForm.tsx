@@ -8,7 +8,8 @@ import s from './Form.module.css';
  * Couples' early-access list. Each sign-up is emailed to Asteria's inbox through Web3Forms
  * (NEXT_PUBLIC_WEB3FORMS_KEY — the key made for Asteria's own email address). No account is created.
  */
-const KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+// Web3Forms access key (public — safe in client code). Sends to hello@asteria-events.com.
+const KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY || '216c8b28-3c5e-40b2-9383-e7db963e0139';
 
 export default function EarlyAccessForm() {
   const [state, setState] = useState<'idle' | 'sending' | 'done' | 'error' | 'off'>('idle');

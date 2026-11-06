@@ -5,7 +5,8 @@ import Icon from './Icon';
 import s from './Form.module.css';
 
 type Kind = 'signup' | 'login' | 'contact';
-const KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+// Web3Forms access key (public — safe in client code). Sends to hello@asteria-events.com.
+const KEY = process.env.NEXT_PUBLIC_WEB3FORMS_KEY || '216c8b28-3c5e-40b2-9383-e7db963e0139';
 
 export default function Form({ kind }: { kind: Kind }) {
   const [role, setRole] = useState<'couple' | 'supplier'>('couple');
