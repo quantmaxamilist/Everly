@@ -892,3 +892,22 @@ textarea.input { min-height: 96px; resize: none; }
 .dueBox .dueSplit li { border-top-color: rgba(243,238,232,.18); }
 .dueBox .dueSplit small { opacity: .7; }
 .body { grid-auto-rows: max-content; }
+
+/* supplier listing editor */
+.photoGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.photo { position: relative; aspect-ratio: 1; border-radius: 12px; overflow: hidden; background: var(--sand); }
+.photo img { width: 100%; height: 100%; object-fit: cover; }
+.photoX, .photoXInline { width: 26px; height: 26px; border-radius: 50%; border: 0; display: grid; place-items: center; cursor: pointer; background: rgba(255,255,255,.92); color: var(--olive-ink); box-shadow: 0 2px 6px rgba(28,28,20,.2); }
+.photoX { position: absolute; top: 5px; right: 5px; }
+.photoXInline { background: var(--off); box-shadow: none; flex-shrink: 0; }
+.coverTag, .coverBtn { position: absolute; left: 5px; bottom: 5px; font-size: .6rem; font-weight: 600; letter-spacing: .06em; text-transform: uppercase; padding: 3px 7px; border-radius: 99px; }
+.coverTag { background: var(--olive); color: #fff; }
+.coverBtn { border: 0; background: rgba(255,255,255,.92); color: var(--olive-ink); cursor: pointer; }
+.photoAdd { aspect-ratio: 1; border-radius: 12px; border: 1.5px dashed var(--accent); display: grid; place-items: center; align-content: center; gap: 4px; color: var(--olive-dark); font-size: .74rem; cursor: pointer; background: var(--off); }
+.photoAdd:hover { background: var(--sage); }
+.pkgRow { text-align: left; cursor: pointer; border: 1.5px solid transparent; width: 100%; transition: border-color .2s; }
+.pkgRow:hover { border-color: rgba(88,88,63,.35); }
+.extraEdit { display: grid; grid-template-columns: minmax(0, 1fr) 84px auto 26px; gap: 6px; align-items: center; }
+.extraEdit .input { min-height: 40px; padding: 6px 10px; font-size: .84rem; border-radius: 10px; }
+.ppTick { display: inline-flex; align-items: center; gap: 4px; font-size: .74rem; color: var(--muted); }
+.ppTick .check { width: 18px; height: 18px; }

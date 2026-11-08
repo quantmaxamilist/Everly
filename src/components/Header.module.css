@@ -10,7 +10,8 @@
 .login { text-decoration: none; font-size: .93rem; font-weight: 500; color: var(--olive-dark); }
 .login:hover { text-decoration: underline; text-underline-offset: 4px; }
 .toggle { margin-left: auto; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; border: 1px solid var(--line); background: #fff; cursor: pointer; color: var(--olive-ink); }
-.mnav { position: fixed; inset: 76px 0 0; background: var(--off); padding: 1.5rem var(--gutter) 2rem; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
+/* absolute, not fixed: the header's backdrop-filter makes fixed children size to the header */
+.mnav { position: absolute; top: 100%; left: 0; right: 0; height: calc(100vh - 76px); height: calc(100dvh - 76px); background: var(--off); padding: 1.5rem var(--gutter) 2rem; display: flex; flex-direction: column; justify-content: space-between; overflow-y: auto; }
 .mnav[hidden] { display: none; }
 .mnav nav { display: grid; }
 .mnav nav a { font-family: var(--f-display); font-size: 1.9rem; color: var(--olive-ink); text-decoration: none; padding: .55rem 0; border-bottom: 1px solid var(--line); }

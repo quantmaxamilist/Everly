@@ -18,7 +18,7 @@ export default function Header() {
     return () => window.removeEventListener('scroll', on);
   }, []);
   useEffect(() => { setOpen(false); }, [path]);
-  useEffect(() => { document.documentElement.style.overflow = open ? 'hidden' : ''; }, [open]);
+  useEffect(() => { document.body.style.overflow = open ? 'hidden' : ''; }, [open]);
   const isActive = (p: string) => path === p || path === p + '.html' || path.endsWith(p.slice(1) + '.html');
 
   return (
@@ -38,7 +38,7 @@ export default function Header() {
           <Icon name={open ? 'close' : 'menu'} />
         </button>
       </div>
-      <div id="mnav" className={s.mnav} hidden={!open}>
+      <div id="mnav" className={s.mnav} hidden={!open} onClick={(e) => { if ((e.target as HTMLElement).closest('a')) setOpen(false); }}>
         <nav aria-label="Mobile">
           <A to="/">Home</A>
           {nav.map((n) => <A key={n.path} to={n.path}>{n.label}</A>)}

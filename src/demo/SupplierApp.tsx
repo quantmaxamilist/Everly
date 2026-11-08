@@ -6,7 +6,7 @@ import { Shell, Top, Sheet, Toast, Stars, loadEnquiry, useWeb } from './ui';
 import type { EnquiryPayload } from './CoupleApp';
 import {
   suppliers, personaFor, featuredPersonas, categories, catOne, PREVIEW_MONTHS, monthLabel, dayPrice, shortPrice, shortGbp, gbp, fmtDate, supById, addDays, daysBetween, paymentsDue, depositAmt, isBooked, blocksDate,
-  PLANS, planById, pct, planYear, breakEven, isTentative, PROC_LABEL, txCount, processingFee, gbp2, TODAY, BALANCE_DAYS, CONTRACT_DAYS, STATUS_LABEL, pkgTotal, type Job, type JobStatus, type Persona, type Supplier, type Due, type PlanId, type SubPlan,
+  PLANS, planById, pct, planYear, breakEven, isTentative, regions, styles, extrasFor, type Extra, type Package, PROC_LABEL, txCount, processingFee, gbp2, TODAY, BALANCE_DAYS, CONTRACT_DAYS, STATUS_LABEL, pkgTotal, type Job, type JobStatus, type Persona, type Supplier, type Due, type PlanId, type SubPlan,
 } from './data';
 import s from './app.module.css';
 import c from './calendar.module.css';
@@ -37,15 +37,18 @@ export default function SupplierApp() {
   const [closed, setClosed] = useState<Record<string, string>>({});
   const [asOpen, setAsOpen] = useState(false);
 
-  const persona = personaFor(pid);
-  const sup = persona.sup;
+  const [edits, setEdits] = useState<Partial<Supplier>>({});
+  const [extras, setExtras] = useState<Extra[] | null>(null);
+  const persona0 = personaFor(pid);
+  const sup: Supplier = useMemo(() => ({ ...persona0.sup, ...edits }), [persona0, edits]);
+  const persona: Persona = useMemo(() => ({ ...persona0, sup }), [persona0, sup]);
 
   const load = (id: string, cj: Job | null) => {
     const list = personaFor(id).jobs.map((j) => ({ ...j }));
     const all = cj && cj.id && supById(id) && cj.pid && supById(id)!.packages.some((p) => p.id === cj.pid) ? [cj, ...list] : list;
     const first = all.find((j) => j.status === 'new');
     setPid(id); setJobs(all); setSelId(first?.id ?? null); setOpenId(null);
-    setPrices({}); setClosed({});
+    setPrices({}); setClosed({}); setEdits({}); setExtras(null);
     setPlanId(cheapestPlan(asteriaTakings(all)).id);
     setNotes(seedNotes(all));
     setBrochure({ name: `${supById(id)!.name} brochure 2027.pdf`, size: 1_800_000 + (id.length % 7) * 300_000 });
@@ -115,7 +118,9 @@ export default function SupplierApp() {
         notes={notes} addons={addons} setAddon={(k, v) => { setAddons((a) => ({ ...a, [k]: v })); setSeen((x) => ({ ...x, plan: true })); setToast(v ? `${k === 'featured' ? 'Featured' : 'Spotlight'} turned on (preview — nothing charged)` : `${k === 'featured' ? 'Featured' : 'Spotlight'} turned off`); }} />}
       {tab === 'enq' && <Inbox jobs={jobs} sup={sup} selId={selId} onOpen={open} onSelect={(id) => { setSelId(id); setSeen((x) => ({ ...x, opened: true })); }} act={act} avatar={avatarBtn} plan={plan} />}
       {tab === 'cal' && <Calendar sup={sup} jobs={jobs} month={month} setMonth={setMonth} prices={prices} setPrices={(d, p) => { setPrices((x) => { const n = { ...x }; d.forEach((k) => { n[k] = p; }); return n; }); setSeen((x) => ({ ...x, calendar: true })); setToast(`Price set to ${shortPrice(sup, p)} for ${d.length} day${d.length > 1 ? 's' : ''}`); }} closed={closed} setClosed={(d, reason) => { setClosed((x) => { const n = { ...x }; d.forEach((k) => { if (reason) n[k] = reason; else delete n[k]; }); return n; }); setSeen((x) => ({ ...x, calendar: true })); setToast(reason ? `${d.length} day${d.length > 1 ? 's' : ''} closed — ${reason}` : 'Dates re-opened'); }} onJob={(j) => open(j.id)} addJob={addJob} />}
-      {tab === 'list' && <Listing persona={persona} onSwitch={() => setAsOpen(true)} brochure={brochure} setBrochure={(b) => { setBrochure(b); setToast(b ? `${b.name} uploaded — couples can download it from your listing` : 'Brochure removed'); }} addons={addons} />}
+      {tab === 'list' && <Listing persona={persona} onSwitch={() => setAsOpen(true)} brochure={brochure} setBrochure={(b) => { setBrochure(b); setToast(b ? `${b.name} uploaded — couples can download it from your listing` : 'Brochure removed'); }} addons={addons}
+        update={(patch, msg) => { setEdits((e) => { const n = { ...e, ...patch }; if (patch.packages) n.fromPrice = Math.min(...patch.packages.map((p) => p.price)); if (patch.gallery) n.img = patch.gallery[0] ?? '/images/setting.jpg'; return n; }); if (msg) setToast(msg); }}
+        extras={extras ?? extrasFor(persona0.sup)} setExtras={setExtras} />}
       {openJob && <Sheet title={openJob.received ? `Enquiry ${openJob.id}` : `Booking ${openJob.id}`} onClose={() => setOpenId(null)}><JobDetail j={openJob} sup={sup} act={act} jobs={jobs} plan={plan} /></Sheet>}
       {asOpen && (
         <Sheet title="Preview as…" onClose={() => setAsOpen(false)}>
@@ -822,24 +827,61 @@ function BookingForm({ sup, range, withQuote, onSave, onClose }: { sup: Supplier
 }
 
 /* ---------------- listing ---------------- */
-function Listing({ persona, onSwitch, brochure, setBrochure, addons }: { persona: Persona; onSwitch: () => void; brochure: { name: string; size: number } | null; setBrochure: (b: { name: string; size: number } | null) => void; addons: Addons }) {
+type Patch = (patch: Partial<Supplier>, msg?: string) => void;
+
+function Listing({ persona, onSwitch, brochure, setBrochure, addons, update, extras, setExtras }: { persona: Persona; onSwitch: () => void; brochure: { name: string; size: number } | null; setBrochure: (b: { name: string; size: number } | null) => void; addons: Addons; update: Patch; extras: Extra[]; setExtras: (x: Extra[]) => void }) {
   const web = useWeb();
   const sup = persona.sup;
+  const [editProfile, setEditProfile] = useState(false);
+  const [pkgEdit, setPkgEdit] = useState<Package | 'new' | null>(null);
   const views = 600 + sup.reviews * 9;
   const stats = [['Profile views', views.toLocaleString('en-GB'), 'this month'], ['Saved by couples', String(Math.round(views / 11)), 'tapped ♥ this month'], ['Enquiries', String(Math.round(views / 48)), 'this month']];
+  const photos = sup.gallery;
+  const addPhotos = (files: FileList | null) => {
+    if (!files?.length) return;
+    const urls = [...files].filter((f) => f.type.startsWith('image/')).map((f) => URL.createObjectURL(f));
+    update({ gallery: [...photos, ...urls] }, `${urls.length} photo${urls.length === 1 ? '' : 's'} added`);
+  };
+  const savePkg = (p: Package) => {
+    const exists = sup.packages.some((x) => x.id === p.id);
+    update({ packages: exists ? sup.packages.map((x) => (x.id === p.id ? p : x)) : [...sup.packages, p] }, exists ? `${p.name} updated` : `${p.name} added to your listing`);
+    setPkgEdit(null);
+  };
+  const setExtra = (i: number, patch: Partial<Extra>) => setExtras(extras.map((x, k) => (k === i ? { ...x, ...patch } : x)));
   return (
     <>
-      <Top title="Your listing" right={web ? <span style={{ display: 'flex', gap: 6 }}>{addons.featured && <span className={`${s.tag} ${s.tagFeat}`}>★ Featured</span>}{addons.spotlight && <span className={`${s.tag} ${s.tagFeat}`}>Spotlight</span>}<span className={s.tag}>Live on Asteria</span></span> : undefined} />
+      <Top title="Your listing" kicker={web ? 'Edit what couples see — photos, details, packages and extras' : undefined} right={web ? <span style={{ display: 'flex', gap: 6 }}>{addons.featured && <span className={`${s.tag} ${s.tagFeat}`}>★ Featured</span>}{addons.spotlight && <span className={`${s.tag} ${s.tagFeat}`}>Spotlight</span>}<span className={s.tag}>Live on Asteria</span></span> : undefined} />
       <div className={`${s.body} ${s.listGrid}`}>
+        <div className={s.autoNote} style={web ? { gridColumn: '1 / -1' } : undefined}><Icon name="edit" size={16} /><span>Preview — edit anything here to see how it works. Changes aren&rsquo;t saved and reset when you reload; saving comes with the full platform.</span></div>
         <div className={s.listMain}>
           <div className={s.card} style={{ padding: 0, overflow: 'hidden' }}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={asset(sup.img)} alt="" style={{ width: '100%', height: web ? 240 : 150, objectFit: 'cover' }} />
             <div style={{ padding: '0 16px 16px', display: 'grid', gap: 6 }}>
-              <b className={s.h3}>{sup.name}{addons.featured && <span className={s.featBadge}>★ Featured</span>}</b>
-              <span className={s.muted}>{sup.category} · {sup.town}, {sup.region} · <span className={s.stars}>★ {sup.rating}</span> ({sup.reviews})</span>
-              <p style={{ fontSize: '.9rem' }}>{sup.about}</p>
+              <div className={s.rowBetween} style={{ alignItems: 'flex-start' }}>
+                <b className={s.h3}>{sup.name}{addons.featured && <span className={s.featBadge}>★ Featured</span>}</b>
+                <button className={`${s.btn} ${s.btnSm} ${s.btnGhost}`} style={{ width: 'auto' }} onClick={() => setEditProfile(true)}><Icon name="edit" />Edit details</button>
+              </div>
+              <span className={s.muted}>{sup.category} · {sup.town}, {sup.region}{sup.capacity ? ` · up to ${sup.capacity} guests` : ''}{sup.travels ? ' · travels UK-wide' : ''} · <span className={s.stars}>★ {sup.rating}</span> ({sup.reviews})</span>
+              <p style={{ fontSize: '.9rem', whiteSpace: 'pre-line' }}>{sup.about}</p>
               {!web && <span className={s.tag}>Live on Asteria</span>}
+            </div>
+          </div>
+          <div className={s.card}>
+            <div className={s.rowBetween}><b className={s.h3}>Photos</b><span className={s.muted} style={{ fontSize: '.76rem' }}>{photos.length} photo{photos.length === 1 ? '' : 's'} · first one is your cover</span></div>
+            <div className={s.photoGrid}>
+              {photos.map((src, i) => (
+                <div key={src + i} className={s.photo}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={asset(src)} alt="" />
+                  {i === 0 ? <span className={s.coverTag}>Cover</span> : <button className={s.coverBtn} onClick={() => update({ gallery: [src, ...photos.filter((_, k) => k !== i)] }, 'Cover photo changed')}>Make cover</button>}
+                  <button className={s.photoX} onClick={() => update({ gallery: photos.filter((_, k) => k !== i) }, 'Photo removed')} aria-label="Remove photo"><Icon name="close" size={14} /></button>
+                </div>
+              ))}
+              <label className={s.photoAdd}>
+                <Icon name="plus" size={22} /><span>Add photos</span>
+                <input type="file" accept="image/*" multiple hidden onChange={(e) => { addPhotos(e.target.files); e.target.value = ''; }} />
+              </label>
             </div>
           </div>
           <div className={s.kpis} style={{ gridTemplateColumns: 'repeat(3, minmax(0,1fr))' }}>
@@ -858,21 +900,95 @@ function Listing({ persona, onSwitch, brochure, setBrochure, addons }: { persona
               <Icon name="plus" />{brochure ? 'Replace brochure' : 'Upload brochure'}
               <input type="file" accept="application/pdf" hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) setBrochure({ name: f.name, size: f.size }); e.target.value = ''; }} />
             </label>
-            <p className={s.muted} style={{ fontSize: '.74rem' }}>Preview — the file stays on your device and isn&rsquo;t uploaded.</p>
           </div>
           {!web && <button className={`${s.btn} ${s.btnGhost}`} onClick={onSwitch}><Icon name="users" />Preview as another supplier</button>}
         </div>
         <div className={s.listSide}>
-          <div className={s.rowBetween}><b className={s.h3}>Packages</b><button className={s.link}><Icon name="plus" size={14} /> Add package</button></div>
+          <div className={s.rowBetween}><b className={s.h3}>Packages</b><button className={s.link} onClick={() => setPkgEdit('new')}><Icon name="plus" size={14} /> Add package</button></div>
           {sup.packages.map((p) => (
-            <div key={p.id} className={s.card}>
-              <div className={s.rowBetween}><b className={s.h3}>{p.name}</b><Icon name="edit" size={18} /></div>
+            <button key={p.id} className={`${s.card} ${s.pkgRow}`} onClick={() => setPkgEdit(p)}>
+              <div className={s.rowBetween}><b className={s.h3}>{p.name}</b><span className={s.link}><Icon name="edit" size={15} />Edit</span></div>
               <div className={s.rowBetween}><span className={s.muted}>{p.summary}</span><span className={s.price}>{gbp(p.price)}{p.perGuest ? ' pp' : ''}</span></div>
-              <span className={s.muted}>Deposit {p.deposit}%{p.maxGuests ? ` · up to ${p.maxGuests} guests` : ''}{p.hours ? ` · ${p.hours}` : ''}</span>
-            </div>
+              <span className={s.muted}>Deposit {p.deposit}%{p.maxGuests ? ` · up to ${p.maxGuests} guests` : ''}{p.hours ? ` · ${p.hours}` : ''} · {p.includes.length} inclusion{p.includes.length === 1 ? '' : 's'}</span>
+            </button>
           ))}
+          <div className={s.card}>
+            <div className={s.rowBetween}><b className={s.h3}>Extras</b><span className={s.muted} style={{ fontSize: '.76rem' }}>Add-ons couples can tick</span></div>
+            {extras.map((x, i) => (
+              <div key={x.id} className={s.extraEdit}>
+                <input className={s.input} value={x.name} onChange={(e) => setExtra(i, { name: e.target.value })} aria-label="Extra name" />
+                <input className={s.input} inputMode="numeric" value={gbp(x.price)} onChange={(e) => setExtra(i, { price: +e.target.value.replace(/\D/g, '') || 0 })} aria-label="Price" />
+                <label className={s.ppTick}><input type="checkbox" className={s.check} checked={!!x.perGuest} onChange={(e) => setExtra(i, { perGuest: e.target.checked })} />pp</label>
+                <button className={s.photoXInline} onClick={() => setExtras(extras.filter((_, k) => k !== i))} aria-label={`Remove ${x.name}`}><Icon name="close" size={14} /></button>
+              </div>
+            ))}
+            <button className={`${s.btn} ${s.btnGhost} ${s.btnSm}`} onClick={() => setExtras([...extras, { id: `x-${Date.now()}`, name: 'New extra', price: 100 }])}><Icon name="plus" />Add an extra</button>
+          </div>
         </div>
       </div>
+      {editProfile && <ProfileForm sup={sup} onClose={() => setEditProfile(false)} onSave={(patch) => { update(patch, 'Listing details updated'); setEditProfile(false); }} />}
+      {pkgEdit && <PackageForm pkg={pkgEdit === 'new' ? null : pkgEdit} sup={sup} canDelete={sup.packages.length > 1} onClose={() => setPkgEdit(null)} onSave={savePkg}
+        onDelete={(p) => { update({ packages: sup.packages.filter((x) => x.id !== p.id) }, `${p.name} removed`); setPkgEdit(null); }} />}
     </>
+  );
+}
+
+function ProfileForm({ sup, onClose, onSave }: { sup: Supplier; onClose: () => void; onSave: (p: Partial<Supplier>) => void }) {
+  const [f, setF] = useState({ name: sup.name, town: sup.town, region: sup.region, style: sup.style, capacity: sup.capacity ?? 0, travels: !!sup.travels, about: sup.about });
+  const set = (x: Partial<typeof f>) => setF((o) => ({ ...o, ...x }));
+  const venue = sup.category === 'Venues';
+  return (
+    <Sheet title="Edit listing details" onClose={onClose}>
+      <div className={s.field}><label htmlFor="pf-n">Business name</label><input id="pf-n" className={s.input} value={f.name} onChange={(e) => set({ name: e.target.value })} /></div>
+      <div className={s.btnRow}>
+        <div className={s.field}><label htmlFor="pf-t">Town</label><input id="pf-t" className={s.input} value={f.town} onChange={(e) => set({ town: e.target.value })} /></div>
+        <div className={s.field}><label htmlFor="pf-r">Region</label><select id="pf-r" className={s.input} value={f.region} onChange={(e) => set({ region: e.target.value })}>{regions.map((r) => <option key={r}>{r}</option>)}</select></div>
+      </div>
+      <div className={s.btnRow}>
+        <div className={s.field}><label htmlFor="pf-s">Style</label><select id="pf-s" className={s.input} value={f.style} onChange={(e) => set({ style: e.target.value })}>{styles.map((x) => <option key={x}>{x}</option>)}</select></div>
+        {venue
+          ? <div className={s.field}><label htmlFor="pf-c">Max guests</label><input id="pf-c" inputMode="numeric" className={s.input} value={f.capacity || ''} onChange={(e) => set({ capacity: +e.target.value.replace(/\D/g, '') || 0 })} /></div>
+          : <label className={s.rowBetween} style={{ alignSelf: 'end', minHeight: 48 }}><span>Travel UK-wide</span><input type="checkbox" className={s.check} checked={f.travels} onChange={(e) => set({ travels: e.target.checked })} /></label>}
+      </div>
+      <div className={s.field}><label htmlFor="pf-a">About — what you offer</label><textarea id="pf-a" className={s.input} style={{ minHeight: 150 }} value={f.about} onChange={(e) => set({ about: e.target.value })} /><span className={s.muted} style={{ fontSize: '.74rem' }}>{f.about.length} characters · shown at the top of your listing</span></div>
+      <div className={s.sticky}><button className={s.btn} disabled={!f.name.trim()} onClick={() => onSave({ name: f.name.trim(), town: f.town.trim(), region: f.region, style: f.style, about: f.about.trim(), ...(venue ? { capacity: f.capacity || undefined } : { travels: f.travels }) })}>Save details</button></div>
+    </Sheet>
+  );
+}
+
+function PackageForm({ pkg, sup, canDelete, onClose, onSave, onDelete }: { pkg: Package | null; sup: Supplier; canDelete: boolean; onClose: () => void; onSave: (p: Package) => void; onDelete: (p: Package) => void }) {
+  const base = pkg ?? { id: `${sup.id}-p${Date.now()}`, name: '', price: 0, perGuest: !!sup.packages[0]?.perGuest, summary: '', includes: [], deposit: sup.packages[0]?.deposit ?? 25 };
+  const [f, setF] = useState({ ...base, includesText: base.includes.join('\n') });
+  const [confirm, setConfirm] = useState(false);
+  const set = (x: Partial<typeof f>) => setF((o) => ({ ...o, ...x }));
+  const valid = f.name.trim() && f.price > 0;
+  const save = () => { const { includesText, ...rest } = f; onSave({ ...rest, name: f.name.trim(), summary: f.summary.trim(), includes: includesText.split('\n').map((l) => l.trim()).filter(Boolean), hours: f.hours?.trim() || undefined, maxGuests: f.maxGuests || undefined }); };
+  return (
+    <Sheet title={pkg ? `Edit ${pkg.name}` : 'Add a package'} onClose={onClose}>
+      <div className={s.field}><label htmlFor="pk-n">Package name</label><input id="pk-n" className={s.input} value={f.name} placeholder="e.g. Midweek Package" onChange={(e) => set({ name: e.target.value })} /></div>
+      <div className={s.field}><label htmlFor="pk-s">Short description</label><input id="pk-s" className={s.input} value={f.summary} placeholder="e.g. Mon–Thu exclusive use" onChange={(e) => set({ summary: e.target.value })} /></div>
+      <div className={s.btnRow}>
+        <div className={s.field}><label htmlFor="pk-p">Price</label><input id="pk-p" inputMode="numeric" className={s.input} value={f.price ? gbp(f.price) : ''} placeholder="£" onChange={(e) => set({ price: +e.target.value.replace(/\D/g, '') || 0 })} /></div>
+        <div className={s.field}><label>Charged</label><div className={s.seg}><button type="button" className={!f.perGuest ? s.on : ''} onClick={() => set({ perGuest: false })}>Flat price</button><button type="button" className={f.perGuest ? s.on : ''} onClick={() => set({ perGuest: true })}>Per guest</button></div></div>
+      </div>
+      <div className={s.btnRow}>
+        <div className={s.field}><label htmlFor="pk-d">Deposit to book</label><select id="pk-d" className={s.input} value={f.deposit} onChange={(e) => set({ deposit: +e.target.value })}>{[10, 20, 25, 30, 50].map((x) => <option key={x} value={x}>{x}%</option>)}</select></div>
+        <div className={s.field}><label htmlFor="pk-g">Max guests <small className={s.muted}>(optional)</small></label><input id="pk-g" inputMode="numeric" className={s.input} value={f.maxGuests || ''} onChange={(e) => set({ maxGuests: +e.target.value.replace(/\D/g, '') || undefined })} /></div>
+      </div>
+      <div className={s.field}><label htmlFor="pk-h">Hours / coverage <small className={s.muted}>(optional)</small></label><input id="pk-h" className={s.input} value={f.hours ?? ''} placeholder="e.g. 11am – midnight" onChange={(e) => set({ hours: e.target.value })} /></div>
+      <div className={s.field}><label htmlFor="pk-i">What&rsquo;s included <small className={s.muted}>(one per line)</small></label><textarea id="pk-i" className={s.input} style={{ minHeight: 130 }} value={f.includesText} placeholder={'Ceremony room\nTables, chairs & linen\nWedding coordinator'} onChange={(e) => set({ includesText: e.target.value })} /></div>
+      {confirm && pkg && (
+        <div className={`${s.card} ${s.overCard}`}>
+          <b>Remove {pkg.name}?</b>
+          <p className={s.muted}>Couples won&rsquo;t see it any more. Existing bookings keep their package.</p>
+          <div className={s.btnRow}><button className={`${s.btn} ${s.btnGhost}`} onClick={() => setConfirm(false)}>Keep</button><button className={`${s.btn} ${s.btnDanger}`} onClick={() => onDelete(pkg)}>Remove package</button></div>
+        </div>
+      )}
+      <div className={s.sticky}>
+        <button className={s.btn} disabled={!valid} onClick={save}>{pkg ? 'Save changes' : 'Add package'}</button>
+        {pkg && canDelete && !confirm && <button className={`${s.btn} ${s.btnGhost} ${s.btnDangerGhost}`} onClick={() => setConfirm(true)}>Remove package</button>}
+        {!valid && <span className={s.muted} style={{ textAlign: 'center', fontSize: '.78rem' }}>Add a name and a price</span>}
+      </div>
+    </Sheet>
   );
 }
