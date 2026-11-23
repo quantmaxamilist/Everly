@@ -204,3 +204,17 @@ details.box[open] > summary { margin-bottom: 12px; }
 .hide { display: none; }
 @media (max-width: 979px) { .deskOnly { display: none !important; } }
 @media (min-width: 980px) { .phoneOnly { display: none !important; } }
+
+/* live updates */
+.side .live { margin-top: auto; }
+.live + .me { margin-top: -10px; }
+.live { display: flex; align-items: center; gap: 8px; padding: 6px 12px; font-size: .76rem; color: var(--muted); }
+.liveDot { width: 7px; height: 7px; border-radius: 50%; background: #5f9a62; box-shadow: 0 0 0 3px rgba(95, 154, 98, .18); flex-shrink: 0; }
+.live > span:nth-child(2) { flex: 1; white-space: nowrap; }
+.liveBtn { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--line); background: #fff; color: var(--olive-dark); cursor: pointer; flex-shrink: 0; padding: 0; }
+.liveBtn:hover { background: var(--off); }
+.liveBtn:focus-visible { outline: 2px solid var(--olive-dark); outline-offset: 2px; }
+.topbar .liveBtn { width: 36px; height: 36px; }
+.spin svg { animation: liveSpin .7s ease-in-out; }
+@keyframes liveSpin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .spin svg { animation: none; } }

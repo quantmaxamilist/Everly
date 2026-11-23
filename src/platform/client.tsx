@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { useFormStatus } from 'react-dom';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import s from './p.module.css';
 
 /** Submit button that shows a pending state. */
@@ -24,6 +24,85 @@ export function AutoRefresh({ every = 15000 }: { every?: number }) {
   const r = useRouter();
   useEffect(() => { const t = setInterval(() => { if (document.visibilityState === 'visible') r.refresh(); }, every); return () => clearInterval(t); }, [r, every]);
   return null;
+}
+
+/**
+ * Keeps every signed-in page up to date without a manual reload.
+ * Pulls fresh data every 20s while the tab is open, and straight away when you come back to the tab.
+ * Never refreshes while someone is typing or has unsaved changes in a form.
+ */
+export function LiveUpdates({ every = 20000 }: { every?: number }) {
+  const r = useRouter();
+  const [last, setLast] = useState(() => Date.now());
+  const [now, setNow] = useState(() => Date.now());
+  const [busy, setBusy] = useState(false);
+  const dirty = useRef(false);
+  const lastRef = useRef(last);
+  const path = usePathname();
+  useEffect(() => { dirty.current = false; const n = Date.now(); lastRef.current = n; setLast(n); }, [path]);
+
+  useEffect(() => {
+    const typing = () => {
+      const el = document.activeElement as HTMLElement | null;
+      return !!el && (el.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(el.tagName));
+    };
+    const pull = (force = false) => {
+      if (!force && (document.visibilityState !== 'visible' || typing() || dirty.current)) return;
+      setBusy(true);
+      r.refresh();
+      const n = Date.now(); lastRef.current = n; setLast(n); setNow(n);
+      setTimeout(() => setBusy(false), 700);
+      window.dispatchEvent(new CustomEvent('ast-pulled'));
+    };
+    const onInput = () => { dirty.current = true; };
+    const onSubmit = () => { dirty.current = false; };
+    const onVis = () => { if (document.visibilityState === 'visible' && Date.now() - lastRef.current > 5000) pull(); };
+    const onAsk = () => { dirty.current = false; pull(true); };
+    document.addEventListener('input', onInput, true);
+    document.addEventListener('submit', onSubmit, true);
+    document.addEventListener('visibilitychange', onVis);
+    window.addEventListener('ast-pull', onAsk);
+    const t = setInterval(() => pull(), every);
+    const tick = setInterval(() => setNow(Date.now()), 5000);
+    return () => {
+      document.removeEventListener('input', onInput, true);
+      document.removeEventListener('submit', onSubmit, true);
+      document.removeEventListener('visibilitychange', onVis);
+      window.removeEventListener('ast-pull', onAsk);
+      clearInterval(t); clearInterval(tick);
+    };
+  }, [r, every]);
+
+  const secs = Math.max(0, Math.round((now - last) / 1000));
+  const ago = secs < 10 ? 'just now' : secs < 60 ? `${Math.floor(secs / 10) * 10}s ago` : `${Math.floor(secs / 60)}m ago`;
+  return (
+    <div className={s.live}>
+      <span className={s.liveDot} aria-hidden="true" />
+      <span>Live · updated {ago}</span>
+      <button type="button" className={`${s.liveBtn} ${busy ? s.spin : ''}`} onClick={() => window.dispatchEvent(new CustomEvent('ast-pull'))} aria-label="Refresh now" title="Refresh now">
+        <RefreshIcon size={15} />
+      </button>
+    </div>
+  );
+}
+
+const RefreshIcon = ({ size }: { size: number }) => (
+  <svg viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7" /><path d="M20 5v6h-6" /></svg>
+);
+
+/** Phone header refresh button (the timer itself lives in LiveUpdates). */
+export function RefreshButton() {
+  const [busy, setBusy] = useState(false);
+  useEffect(() => {
+    const on = () => { setBusy(true); setTimeout(() => setBusy(false), 700); };
+    window.addEventListener('ast-pulled', on);
+    return () => window.removeEventListener('ast-pulled', on);
+  }, []);
+  return (
+    <button type="button" className={`${s.liveBtn} ${busy ? s.spin : ''}`} onClick={() => window.dispatchEvent(new CustomEvent('ast-pull'))} aria-label="Refresh" title="Refresh">
+      <RefreshIcon size={18} />
+    </button>
+  );
 }
 
 /** Scrolls a thread to the newest message. */

@@ -2,13 +2,23 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { dbConfigured } from '@/platform/db';
 import { currentUser, hasGate, homeFor } from '@/platform/auth';
-import { loginAction } from '@/platform/actions/auth';
+import { loginAction, logoutAction } from '@/platform/actions/auth';
 import { AuthPage, Flash, s } from '@/platform/ui';
 import { Submit } from '@/platform/client';
 
 export async function LoginView({ sp, admin }: { sp: Record<string, string | string[] | undefined>; admin?: boolean }) {
-  if (!dbConfigured() || !(await hasGate())) redirect('/platform');
+  if (!dbConfigured() || !(await hasGate())) redirect(admin ? '/platform?next=/admin/login' : '/platform');
   const u = await currentUser();
+  if (u && admin && u.role !== 'admin') {
+    return (
+      <AuthPage>
+        <div><p className={s.kicker}>Asteria admin</p><h1>Switch account</h1></div>
+        <p className={s.muted}>This browser is signed in as <b>{u.name || u.email}</b> ({u.role}). Log out to sign in to the admin panel.</p>
+        <form action={logoutAction}><input type="hidden" name="to" value="admin" /><Submit className={s.full} pending="Logging out…">Log out and continue to admin</Submit></form>
+        <Link href={homeFor(u.role)} className={`${s.btn} ${s.ghost} ${s.full}`}>Stay in my {u.role} account</Link>
+      </AuthPage>
+    );
+  }
   if (u) redirect(homeFor(u.role));
   return (
     <AuthPage>

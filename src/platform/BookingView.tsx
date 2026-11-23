@@ -3,7 +3,7 @@ import Icon from '@/components/Icon';
 import { db, getSetting } from './db';
 import { messagesOf, type Booking, type Supplier } from './data';
 import { sendMessage, sendContract, declineEnquiry, signContract, recordPayment, cancelBooking, saveNote } from './actions/booking';
-import { AutoRefresh, ConfirmSubmit, ScrollEnd, Submit } from './client';
+import { ConfirmSubmit, ScrollEnd, Submit } from './client';
 import { StatusTag, s } from './ui';
 import { balanceDue, daysUntil, depositOf, fmtDate, fmtWhen, gbp, isBooked } from './util';
 
@@ -148,7 +148,6 @@ export async function BookingView({ b, sup, side, meId }: { b: Booking; sup: Sup
           <Submit pending="…">Send</Submit>
         </form>
       ) : null}
-      <AutoRefresh />
     </div>
   );
 

@@ -5,6 +5,7 @@ import { db } from './db';
 import type { User } from './auth';
 import { logoutAction } from './actions/auth';
 import { STATUS } from './util';
+import { LiveUpdates, RefreshButton } from './client';
 import s from './p.module.css';
 
 type Nav = { href: string; key: string; label: string; short?: string; icon: string; count?: number; tab?: boolean };
@@ -64,9 +65,10 @@ export async function Shell({ user, active, children }: { user: User; active: st
             </Link>
           ))}
         </nav>
+        <LiveUpdates />
         <div className={s.me}>
           <div><b>{user.name || user.email}</b><small>{user.email}</small></div>
-          <form action={logoutAction}><button className={s.linkBtn}>Log out</button></form>
+          <form action={logoutAction}>{user.role === 'admin' && <input type="hidden" name="to" value="admin" />}<button className={s.linkBtn}>Log out</button></form>
         </div>
       </aside>
       <div className={s.main}>
@@ -74,6 +76,7 @@ export async function Shell({ user, active, children }: { user: User; active: st
           <span className={s.topLogo}><Logo height={22} /></span>
           <span className={s.roleTag}>{ROLE[user.role]}</span>
           <span className={s.spacer} />
+          <RefreshButton />
           <Link href={settingsHref} className={s.avatar} aria-label="Account">{initials(user.name, user.email)}</Link>
         </header>
         <main className={s.content}>{children}</main>

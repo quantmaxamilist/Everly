@@ -1,14 +1,15 @@
 'use server';
 import { redirect } from 'next/navigation';
 import { db } from '../db';
-import { adminExists, checkPassword, currentUser, endSession, hasGate, hashPassword, homeFor, setGatePassword, startSession, unlockGate, type Role } from '../auth';
+import { adminExists, safeNext, checkPassword, currentUser, endSession, hasGate, hashPassword, homeFor, setGatePassword, startSession, unlockGate, type Role } from '../auth';
 import { CATEGORIES, clean, qs } from '../util';
 
 const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
 export async function unlockAction(fd: FormData) {
   const ok = await unlockGate(clean(fd.get('password'), 200));
-  redirect(ok ? '/platform' : '/platform' + qs({ e: 'That password isn’t right' }));
+  const next = safeNext(fd.get('next'));
+  redirect(ok ? next || '/platform' : '/platform' + qs({ e: 'That password isn’t right', next }));
 }
 
 export async function loginAction(fd: FormData) {
@@ -60,9 +61,9 @@ export async function signupAction(fd: FormData) {
   redirect(role === 'supplier' ? '/platform/supplier/listing?m=' + encodeURIComponent('Welcome! Set up your listing — Asteria will approve it before couples can see it.') : '/platform/couple/settings?welcome=1');
 }
 
-export async function logoutAction() {
+export async function logoutAction(fd?: FormData) {
   await endSession();
-  redirect('/platform/login');
+  redirect(fd?.get('to') === 'admin' ? '/admin/login' : '/platform/login');
 }
 
 /** One-time setup: first admin account + the platform password. Only works while no admin exists. */

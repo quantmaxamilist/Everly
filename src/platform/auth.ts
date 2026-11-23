@@ -74,13 +74,17 @@ export const homeFor = (role: Role) => (role === 'admin' ? '/admin' : role === '
 
 /** Use at the top of every protected page and server action. */
 export async function requireUser(role?: Role | Role[]): Promise<User> {
-  if (!dbConfigured() || !(await hasGate())) redirect('/platform');
-  const u = await currentUser();
-  if (!u) redirect('/platform/login');
   const roles = role ? (Array.isArray(role) ? role : [role]) : null;
-  if (roles && !roles.includes(u.role)) redirect(homeFor(u.role));
+  const adminOnly = !!roles && roles.length === 1 && roles[0] === 'admin';
+  if (!dbConfigured() || !(await hasGate())) redirect(adminOnly ? '/platform?next=/admin/login' : '/platform');
+  const u = await currentUser();
+  if (!u) redirect(adminOnly ? '/admin/login' : '/platform/login');
+  if (roles && !roles.includes(u.role)) redirect(adminOnly ? '/admin/login' : homeFor(u.role));
   return u;
 }
+
+/** Only allow redirects to our own pages. */
+export const safeNext = (v: unknown) => (typeof v === 'string' && /^\/(platform|admin)(\/[\w\-/?=&]*)?$/.test(v) ? v : '');
 
 export async function adminExists() {
   const sql = await db();
