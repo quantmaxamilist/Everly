@@ -96,7 +96,7 @@ export default function FoundingForm() {
       <button className={`btn ${s.submit}`} disabled={state === 'sending'}>
         {state === 'sending' ? 'Sending…' : 'Become a Founding Partner'} <Icon name="arrow" />
       </button>
-      <p className={s.legal}>By registering you agree to our <A to="/privacy">Privacy Policy</A>. We use your details to manage your Founding Partner registration and contact you about it. No payment is taken and no subscription is activated.</p>
+      <p className={s.legal}>By registering you agree to our <A to="/privacy">Privacy Notice</A>. Founding Partners join on our <A to="/supplier-terms">Supplier Terms</A>. We use your details to manage your Founding Partner registration and contact you about it. No payment is taken and no subscription is activated.</p>
       {state === 'error' && <p className={s.err} role="alert">Something went wrong — please try again.</p>}
       {state === 'off' && <p className={s.err} role="alert">Registration isn&rsquo;t switched on yet — please try again soon.</p>}
     </form>

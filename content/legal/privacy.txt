@@ -1,0 +1,78 @@
+Asteria Events Privacy Notice
+
+Effective date: 11/11/2026
+
+## Who we are
+Asteria Events Ltd is the controller for the personal information described in this notice. We operate asteria-events.com, a UK wedding planning and supplier marketplace.
+
+For privacy questions, requests or complaints, email support@asteria-events.com or write to Asteria Events LTD 1st Floor, 3 & 4 Cranmere Court, Lustleigh Close, Matford Business Park, Exeter, Devon, United Kingdom, EX2 8PW
+
+This notice covers website visitors, early-access subscribers, couples, suppliers and supplier representatives, and people whose details are shared with us through the platform. References to accounts, bookings, payments and other marketplace features apply as those features become available.
+
+## What we collect and where it comes from
+• Visitors and early-access subscribers: Your name, email address and any preferences you submit, plus technical information such as IP address, browser and device type, and website security logs.
+
+• Couples and other people involved in a wedding: Contact and account details, wedding date and location, budget and guest count, saved plans, invitations, enquiries, messages, booking details and contracts, depending on the features you use. We may get details about you from someone who invites you into a plan or from a supplier involved in a booking. Please share only information about other people that is needed for the feature.
+
+• Suppliers and business contacts: Name, role, business details, work email and phone number, correspondence and listing information. We collect this from you or your colleagues and may find prospective supplier contacts on public business websites, directories and professional profiles.
+
+• Payments and support: Booking references, amounts, payment and refund status, and information you share when you contact us. When Stripe Connect is used, Stripe collects payment card details and collects supplier identity and payout information through its own flows. We receive information relevant to operating the marketplace, such as payment references, status and whether a supplier can accept payments.
+
+• Reviews and public listings: If you choose to publish a review or supply information for a public listing, that content and the name shown with it may be visible to other users and the public.
+
+Providing information for marketing or a public review is optional. We need some information to run particular features. For example, without an email address we cannot send early-access updates, and without relevant booking details we cannot help administer a booking.
+
+## How we use personal information
+[table]
+What we do | UK GDPR lawful basis
+
+Manage your account and provide planning, booking, payment and support features you request | Performance of our contract with you or steps you request before entering into it. Where we handle someone else’s details to support your invitation or booking, our legitimate interests in providing those features.
+
+Manage supplier relationships, publish agreed listings and administer commission and subscriptions | Performance of our contract with individual suppliers, or our legitimate interests in running supplier relationships and the marketplace where we deal with representatives of a business.
+
+Send early-access announcements and other promotional emails you opt into | Consent. You can unsubscribe at any time.
+
+Identify and contact relevant prospective suppliers | Our legitimate interests in growing the marketplace, where appropriate and where electronic marketing rules permit the contact. Where those rules require consent, we obtain it.
+
+Keep our platform secure, prevent misuse, moderate content, resolve disputes and diagnose technical problems | Our legitimate interests in operating a secure marketplace, maintaining reliable services and handling disputes.
+
+Keep required financial records and respond to lawful requests | Compliance with our legal obligations.
+[/table]
+
+We may send service messages about a feature you use, such as a booking confirmation or a security alert. You can opt out of marketing and still receive necessary service messages.
+
+## Who we share information with
+• Invited collaborators and suppliers: We share relevant information with the people you invite to a shared plan and the suppliers you enquire with or book. Suppliers decide how to use information for their own quotes, contracts and service delivery and may provide their own privacy notices.
+
+• Service providers: We use providers for functions such as website hosting, communications, supplier contact management (including monday.com), and technical support. They receive information needed for their work.
+
+• Stripe: We share information needed for payments and supplier onboarding. Stripe also uses personal information for its own purposes, such as fraud prevention and meeting legal obligations. See Stripe’s Privacy Policy.
+
+• Professional advisers and authorities: We may share relevant information where needed for advice, legal claims or compliance with a lawful request.
+
+## International transfers
+Some of the providers we use may store or access personal information outside the UK. When we use Stripe Connect for payments and supplier onboarding, Stripe may process personal information in Ireland and the United States.
+
+Where UK data protection law restricts a transfer, we use an applicable safeguard. This may include UK adequacy regulations for destinations such as Ireland, or the UK Extension to the EU–US Data Privacy Framework for eligible transfers to certified US organisations. Where adequacy does not apply, we use appropriate contractual safeguards, such as the UK International Data Transfer Addendum to the EU Standard Contractual Clauses, where applicable.
+
+You can contact us using the details in section 1 to ask where your information is transferred, which safeguards apply, or for a copy of the relevant contractual safeguards.
+
+## How long we keep information
+We keep waitlist details while we run early access and review them when the waitlist closes. If you unsubscribe or object to marketing, we may keep a minimal record of your preference so we can respect it. We review prospective supplier contact information based on whether the details are current and the relationship or outreach is still relevant.
+
+We keep account, booking, payment and support records for as long as needed to provide the service, handle refunds and disputes, and comply with legal and accounting obligations. In deciding how long to keep particular records, we consider the date the account or booking ends, any unresolved complaint or claim, and any statutory recordkeeping requirement. Technical logs are kept according to how long they are needed to diagnose incidents and keep the service secure.
+
+## Cookies and similar technologies
+Our public website does not currently use cookies for analytics or advertising. You can block or delete cookies in your browser settings. If you block cookies, some features may not work as intended.
+
+If we introduce optional cookies or similar technologies, we will explain what they do and how you can manage your choices. Where consent is required, we will ask for it before using them.
+
+## Your rights
+Depending on how we use your information, you can ask for access, correction, deletion, restriction or a portable copy of information you provided. Where we rely on consent, you can withdraw it at any time. This does not affect how we used the information before you withdrew consent.
+
+You can object to direct marketing at any time. Use the unsubscribe link or contact us at support@asteria-events.com. You can also object to other processing based on our legitimate interests for reasons relating to your situation.
+
+To exercise your rights or make a privacy complaint, use the contact details in section 1. We will acknowledge privacy complaints within 30 days, investigate them and tell you the outcome. You also have the right to complain to the Information Commissioner’s Office.
+
+## Changes to this notice
+We will post the current notice here and let you know about significant changes where appropriate.

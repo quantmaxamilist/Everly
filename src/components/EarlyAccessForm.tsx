@@ -75,7 +75,7 @@ export default function EarlyAccessForm() {
       <button className={`btn ${s.submit}`} disabled={state === 'sending'}>
         {state === 'sending' ? 'Sending…' : 'Join early access'} <Icon name="arrow" />
       </button>
-      <p className={s.legal}>By joining you agree to our <A to="/privacy">Privacy Policy</A>. We&rsquo;ll use your details to tell you when Asteria opens.</p>
+      <p className={s.legal}>By joining you agree to our <A to="/privacy">Privacy Notice</A>. We&rsquo;ll use your details to tell you when Asteria opens.</p>
       {state === 'error' && <p className={s.err} role="alert">Something went wrong — please try again.</p>}
       {state === 'off' && <p className={s.err} role="alert">The early access list isn&rsquo;t switched on yet — please try again soon.</p>}
     </form>

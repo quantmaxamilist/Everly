@@ -31,8 +31,8 @@ export default function Footer() {
         </div>
       </div>
       <div className={`container ${s.bot}`}>
-        <p>© {new Date().getFullYear()} Asteria. All rights reserved.</p>
-        <p><A to="/privacy">Privacy</A> · <A to="/terms">Terms</A></p>
+        <p>© {new Date().getFullYear()} Asteria Events Ltd · Company no. 17554727</p>
+        <p><A to="/terms">Terms</A> · <A to="/privacy">Privacy</A> · <A to="/supplier-terms">Supplier terms</A></p>
       </div>
     </footer>
   );

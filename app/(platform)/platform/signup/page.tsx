@@ -40,7 +40,11 @@ export default async function Page({ searchParams }: P) {
         )}
         <div className={s.field}><label htmlFor="em">Email</label><input id="em" name="email" type="email" className={s.input} required defaultValue={v('email')} autoComplete="email" /></div>
         <div className={s.field}><label htmlFor="pw">Password <small>(at least 8 characters)</small></label><input id="pw" name="password" type="password" className={s.input} required minLength={8} autoComplete="new-password" /></div>
-        <label className={s.check}><input type="checkbox" name="terms" required /><span>I agree to the Asteria <Link href="/terms">terms</Link> and <Link href="/privacy">privacy policy</Link>.</span></label>
+        {role === 'supplier' ? (
+          <label className={s.check}><input type="checkbox" name="terms" required /><span>I agree to the <Link href="/supplier-terms" target="_blank">Supplier Terms</Link> and have read the <Link href="/privacy" target="_blank">Privacy Notice</Link>. I&rsquo;m authorised to accept them for this business.</span></label>
+        ) : (
+          <label className={s.check}><input type="checkbox" name="terms" required /><span>I&rsquo;m 18 or over and agree to the <Link href="/terms" target="_blank">Terms of Use</Link>. I&rsquo;ve read the <Link href="/privacy" target="_blank">Privacy Notice</Link>.</span></label>
+        )}
         <Submit className={s.full} pending="Creating account…">Create account</Submit>
       </form>
       <p className={s.muted}>Already have an account? <Link href="/platform/login">Log in</Link></p>

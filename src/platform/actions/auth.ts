@@ -4,6 +4,8 @@ import { db } from '../db';
 import { adminExists, safeNext, checkPassword, currentUser, endSession, hasGate, hashPassword, homeFor, setGatePassword, startSession, unlockGate, type Role } from '../auth';
 import { CATEGORIES, clean, qs } from '../util';
 
+/** Versions of the legal documents people accept at sign-up (bump when Asteria publishes new versions). */
+const TERMS = { couple: 'terms-2026-11-22', supplier: 'supplier-terms-1.0-2026-11-22' };
 const emailOk = (e: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e);
 
 export async function unlockAction(fd: FormData) {
@@ -35,7 +37,7 @@ export async function signupAction(fd: FormData) {
   if (!name) back('Please add your name');
   if (!emailOk(email)) back('Please enter a valid email address');
   if (pw.length < 8) back('Use a password of at least 8 characters');
-  if (!fd.get('terms')) back('Please agree to the terms and privacy policy');
+  if (!fd.get('terms')) back(role === 'supplier' ? 'Please accept the Supplier Terms to continue' : 'Please confirm you’re 18 or over and accept the Terms of Use');
   let business = '', category = '';
   if (role === 'supplier') {
     business = clean(fd.get('business'), 120); category = clean(fd.get('category'), 60);
@@ -47,7 +49,7 @@ export async function signupAction(fd: FormData) {
   if (exists) back('An account with that email already exists — log in instead');
   const hash = await hashPassword(pw);
   const id = await sql.begin(async (tx) => {
-    const [u] = await tx<{ id: string }[]>`insert into users (email, password_hash, name, role) values (${email}, ${hash}, ${name}, ${role}) returning id`;
+    const [u] = await tx<{ id: string }[]>`insert into users (email, password_hash, name, role, terms_version, terms_accepted_at) values (${email}, ${hash}, ${name}, ${role}, ${role === 'supplier' ? TERMS.supplier : TERMS.couple}, now()) returning id`;
     if (role === 'supplier') {
       await tx`insert into suppliers (user_id, name, category, region, town) values (${u.id}, ${business}, ${category}, ${clean(fd.get('region'), 60)}, ${clean(fd.get('town'), 80)})`;
       const admins = await tx<{ id: string }[]>`select id from users where role = 'admin'`;

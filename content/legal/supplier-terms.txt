@@ -1,0 +1,84 @@
+Asteria Supplier Terms
+
+Version 1.0 · Effective from 22/11/2026
+
+## Who this agreement is between
+These terms are between Asteria Events Ltd (“Asteria”, “we”, “us”), registered in England under company number 17554727, with its registered office at Unit 3-4 Cranmere Court, Lustleigh Close, Marsh Barton Trading Estate, Exeter, England, EX2 8PW, and the business identified in the supplier application (“you”, “the Supplier”).
+
+By accepting these terms, you confirm that you are acting for business purposes and have authority to bind the Supplier. This agreement includes the Fee Schedule you accept and any founding partner offer we confirm to you in writing. Where that offer differs from the Fee Schedule, the confirmed offer takes priority for the benefits and dates it expressly covers.
+
+Contact us at support@asteria-events.com for account queries, notices and complaints.
+
+## Asteria’s role and your contract with the couple
+Asteria provides a wedding marketplace where couples can discover suppliers, send enquiries, agree bookings, sign contracts and make payments when those features are available.
+
+You are the seller of the goods or services you provide. The booking contract is between you and the couple. You are responsible for your quotes, booking terms, performance, invoicing and any refunds or other remedies due under that contract or by law. Asteria is responsible for the platform services it provides under this agreement.
+
+An enquiry, saved wedding plan or provisional quote does not confirm a booking. Tell the couple what they must do to confirm, such as accepting your booking terms, signing your contract or paying a deposit. Once a booking is confirmed, keep the couple informed about any material changes and obtain their agreement where required.
+
+## Your account and listing
+Provide accurate business and contact details, keep them up to date, and secure your account credentials. You are responsible for the permissions you give to staff and for removing access when they no longer need it.
+
+Keep your listing, availability, prices, package details and service areas accurate. Before a couple commits, provide your trading identity and contact details, a clear description of what is included, the service date, the total price including applicable taxes and mandatory charges, the payment schedule, and your cancellation and refund terms. If the total cannot reasonably be calculated in advance, explain how it will be calculated.
+
+Maintain the licences, permissions, qualifications and insurance required by law or expressly required for your category. Provide reasonable evidence on request. Notify us promptly if a change affects your ability to fulfil an existing booking.
+
+## Enquiries, bookings and payments
+You may advertise and sell through other channels. For a booking arranged through Asteria, use Asteria’s booking and payment tools for the deposit, instalments and final balance. Do not redirect an Asteria enquiry or booking off-platform to avoid commission or bypass the booking process. This clause does not apply solely because a customer you obtained independently later views your Asteria listing.
+
+You set the deposit amount and payment schedule, subject to applicable law and any schedule you agree with the couple. You must clearly disclose that schedule before the couple commits and obtain any permission required before taking a later payment automatically.
+
+To accept payments, complete Stripe Connect onboarding, agree to the Stripe terms that apply to you and keep your verification and payout information current. Stripe processes booking payments on your connected account. You authorise Asteria to collect the agreed commission through Stripe as an application fee. Ordinary Stripe payment processing fees are payable by you under your Stripe arrangement. Stripe controls its payout timing, verification requirements and any restrictions it places on your connected account.
+
+If there is a payment dispute or chargeback, respond promptly and provide relevant booking records. Stripe handles the dispute under its terms. If you owe the couple a refund, process it through the original payment route where available and notify the couple. The Fee Schedule explains how Asteria’s commission is treated on full and partial refunds.
+
+## Commission, subscriptions and founding partners
+Commission. Asteria charges commission on bookings made through the platform at the rate and on the amounts set out in the Fee Schedule you accept. The Fee Schedule also explains when commission is collected, how it applies across instalments, and whether VAT is included or added. Asteria will make the applicable Fee Schedule available before you accept it.
+
+Subscriptions. If you are on a paid plan, the price, billing interval, renewal date and cancellation process will be shown before you accept the plan. Subscriptions renew for the billing interval you selected unless you cancel before renewal. If you cancel, the plan will end at the end of the current billing period, subject to any refund rights under this agreement or applicable law.
+
+Founding partners. Every supplier accepted as a founding partner receives 12 months without subscription fees, starting on the date specified in their founding partner confirmation. The offer also includes free initial listing setup. Booking commission and Stripe fees continue to apply unless your written offer expressly waives them.
+
+At the end of the 12 months, you move onto Asteria’s lowest-priced paid supplier plan unless you choose another plan or cancel before the first paid period. Before any charge is taken, we will tell you the plan name, price, billing interval, first charge date and how to cancel. We will only charge you under a valid payment authorisation.
+
+You are responsible for your own tax obligations, including VAT on your sales where applicable. Provide accurate information if we reasonably need it to verify your details or meet any reporting obligation to HMRC.
+
+## Cancellations, refunds and complaints from couples
+Make your booking terms available before the couple commits. Any cancellation fee or amount you retain from a deposit must comply with applicable law. Nothing in your booking terms or this agreement removes a couple’s statutory rights.
+
+If you need to cancel or materially change a booking, tell the couple promptly, notify Asteria where the booking was made through the platform, and provide any refund or other remedy due. If you propose a replacement supplier or a new date, obtain the couple’s agreement before treating it as a change to the booking.
+
+You handle complaints about the goods or services you sell. Asteria handles complaints about its platform and may help the parties locate records or understand a payment’s status.
+
+## Listing content, reviews and search placement
+You keep ownership of the content you provide. You give Asteria a non-exclusive, royalty-free licence to display and format it as needed to operate the marketplace and show your listing. We will only use your content in separate advertising campaigns or additional distribution channels where we’ve explained that use and agreed it with you. You confirm you have permission to use any images, logos and other content you upload.
+
+Do not post, buy or solicit fake reviews, conceal a review incentive or pressure a couple to amend an honest review. We may investigate reported content and restrict or remove content that is unlawful, misleading or breaches these terms.
+
+Search ranking. We will label any paid placements. A listing or subscription does not guarantee a particular number of enquiries or bookings.
+
+## Personal information and access to records
+Asteria explains its use of personal information in its Privacy Notice. Where you decide how to use couple or guest information for your quotes, contracts and service delivery, you are responsible for that use under applicable data protection law.
+
+Use information obtained through Asteria only for a lawful purpose relevant to the enquiry or booking, unless you have another lawful basis to use it. Follow applicable electronic marketing rules before adding anyone to a marketing list. Keep booking data secure, limit access to staff who need it, and tell us promptly if a security incident affects information shared through Asteria.
+
+While your account is active, you can access the listing, enquiry, booking and payment information made available in your account. Asteria can access information needed to operate and support the marketplace, resolve disputes and meet its legal obligations. Other suppliers receive only the information relevant to their own enquiries and bookings. After your account ends, contact us for copies of records we still hold and can lawfully disclose. Download records you need before closing your account.
+
+## Restrictions, suspension and ending the agreement
+You may end this agreement by closing your account or emailing supplier support. Ending the agreement stops future renewal once any current billing period ends. Amounts already due and obligations under confirmed bookings continue to apply.
+
+We may restrict a listing or suspend access where reasonably necessary because of inaccurate or unlawful listings, material breaches, unpaid fees, fraud, security risks, serious customer safety concerns, or a payment restriction that prevents us from supporting bookings. We will provide the reasons in writing and explain how to challenge the decision, subject to legal restrictions on what we can disclose.
+
+If we end your access to the whole platform, we will normally give at least 30 days’ written notice and the reasons. We may act sooner where applicable law permits or requires it. We will explain how existing bookings and records can be managed, where lawful and practicable.
+
+## Changes to these terms
+We will send proposed changes to these terms or the Fee Schedule by email or another format you can keep. We will normally give at least 15 days’ notice, and longer where applicable law requires it or you reasonably need more time to adapt. Changes may take effect sooner where the law permits.
+
+If you disagree with a proposed change, you may end the agreement before it takes effect. Changes will not apply retrospectively except where required by law or where permitted by law and beneficial to you.
+
+## Responsibility and disputes
+Each party is responsible for its own obligations under this agreement. Asteria will provide its platform services with reasonable care and skill. Nothing in these terms restricts liability for fraud, fraudulent misrepresentation, death or personal injury caused by negligence, or any other liability that cannot lawfully be restricted.
+
+Raise disputes about fees, account restrictions or operation of the platform at support@asteria-events.com. We will review the complaint and communicate the outcome in writing. If we cannot resolve a dispute directly, either party may propose mediation.
+
+This agreement is governed by the law of England and Wales. The courts of England and Wales have jurisdiction, subject to any mandatory rules that apply.

@@ -1,0 +1,59 @@
+Asteria Events Website & Marketplace Terms of Use
+
+Effective from 22/11/2026
+
+## Who we are
+Asteria Events Ltd operates asteria-events.com and the Asteria wedding planning and supplier marketplace. We are registered in England under company number 17554727. Our registered office is Unit 3-4 Cranmere Court, Lustleigh Close, Marsh Barton Trading Estate, Exeter, England, EX2 8PW.
+
+You can contact us at support@asteria-events.com
+
+These terms apply when you browse Asteria, join our early-access list, create a couple’s account or use our planning and booking features. Suppliers who join Asteria are subject to a separate supplier agreement for their listings, commission, subscriptions and other commercial arrangements.
+
+## Using Asteria
+Asteria helps couples plan their wedding, discover and compare suppliers, and manage enquiries and bookings. Using Asteria as a couple is free. You pay suppliers for the goods and services you book.
+
+Some features may be introduced after the website launches. The booking, payment and review sections below apply when those features are available.
+
+You must be at least 18 to create an account or make a booking. Keep your account details accurate and your login secure. If you invite a partner to a wedding plan, they may be able to see and edit information in that shared plan. Only share access with someone you authorise to see it, and contact us if you suspect unauthorised access.
+
+## Supplier listings, prices and availability
+Suppliers provide information about their services, packages, prices and availability. Planning tools and comparison views may show estimates based on details such as your date, guest count and selected options. An estimate, saved wedding plan or enquiry does not reserve a date or guarantee a price.
+
+Before you commit to a booking, check the supplier’s identity, the goods or services included, the date, the total price including applicable taxes and mandatory charges, the payment schedule, and the cancellation terms. If an exact total cannot reasonably be calculated in advance, the pricing information will explain how the total is calculated. We will label paid placements so you can identify them.
+
+## Who your booking is with
+When you book an independent supplier through Asteria, your contract for the wedding goods or services is with that supplier. The supplier is responsible for providing what you agreed to buy. Asteria provides the marketplace, planning tools and booking features, and is responsible for the services it provides to you.
+
+An enquiry or provisional quote is not a confirmed booking. The booking process will explain what you need to do to confirm. This may include accepting the supplier’s terms, signing a contract or paying a deposit. Keep a copy of the supplier’s confirmation and any signed agreement.
+
+## Deposits, balances and payments
+Payments for bookings made through Asteria are made through the platform using Stripe. Payment is processed for the supplier through its connected Stripe account. Asteria may receive a commission from the supplier.
+
+The supplier sets the deposit, instalments and balance due dates. The booking process will show the amount payable now and any remaining payment obligations before you commit. If you miss a payment, the consequences are governed by the supplier’s booking terms and applicable law. Contact the supplier promptly if you need to change the payment schedule.
+
+## Cancellations, changes and refunds
+If you want to cancel, postpone or change a booking, contact the supplier using the details in your booking confirmation. You can also contact Asteria support for help locating your booking or resolving a platform payment issue.
+
+Your supplier’s booking terms explain any cancellation charges, deposit treatment and refund process, subject to your statutory rights. Where a statutory cooling-off right applies, it takes priority. Some bookings, such as catering booked for a specific date, may be exempt from the statutory cooling-off period. The position depends on what you booked and the applicable law.
+
+If a supplier cancels or cannot provide the agreed goods or services, contact the supplier about the next steps and any refund or other remedy you are entitled to. If a refund is due through Asteria, we can help you check its status. Your statutory rights and any rights you have with your payment provider continue to apply.
+
+## Reviews and content you share
+Reviews must reflect genuine experiences. You must disclose any incentive and must not post fake reviews, impersonate anyone, or publish unlawful, abusive or misleading content. Please do not include private contact details or other personal information in a public review. We may investigate reports and remove or restrict content that breaches these rules. We do not remove a review simply because it is negative.
+
+You keep ownership of the content you submit. You give us permission to store, display and share it as needed to provide the features you use. For example, we may show a review you choose to publish or share an enquiry with the supplier you contact. Only upload content you have permission to use.
+
+## Account restrictions and changes to the service
+We may restrict an account where reasonably necessary to address fraud, security concerns, unlawful activity or a serious breach of these terms. Where reasonable and lawful, we will explain the restriction and how you can contact us to challenge it. If you need access to an existing booking confirmation or contract after a restriction, contact us for help.
+
+We may update these terms to reflect changes to the law or to our services. We will explain material changes and give reasonable notice where practicable. Updates to these terms do not change an existing supplier booking or remove rights you already have under it.
+
+## Our responsibility to you
+We are responsible for foreseeable loss you suffer as a result of our breach of these terms or failure to use reasonable care and skill. We do not limit or exclude liability for fraud, fraudulent misrepresentation, death or personal injury caused by negligence, or anything else that cannot lawfully be limited or excluded. These terms do not affect your statutory rights.
+
+If your complaint concerns the supplier’s goods or services, contact the supplier first. If it concerns Asteria’s platform or something we have done, contact us at support@asteria-events.com. Include your booking reference if you have one.
+
+## Privacy and applicable law
+Our Privacy Notice explains how we handle personal information, including what we share with suppliers and payment providers when you use the platform.
+
+These terms are governed by the law of England and Wales. If you are a consumer, you retain the protection of mandatory laws that apply where you live, and you can bring proceedings in any court available to you under applicable law.

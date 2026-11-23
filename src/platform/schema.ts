@@ -15,6 +15,8 @@ create table if not exists users (
   created_at timestamptz not null default now(),
   last_login timestamptz
 );
+alter table users add column if not exists terms_version text;
+alter table users add column if not exists terms_accepted_at timestamptz;
 
 create table if not exists suppliers (
   id uuid primary key default gen_random_uuid(),

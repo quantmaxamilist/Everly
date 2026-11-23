@@ -1,16 +1,8 @@
 import type { Metadata } from 'next';
-import s from '../inner.module.css';
+import LegalDoc from '@/components/LegalDoc';
 
-export const metadata: Metadata = { title: 'Terms of use', robots: { index: false } };
+export const metadata: Metadata = { title: 'Terms of Use', description: 'The terms that apply when you browse Asteria or use our wedding planning and booking features.', alternates: { canonical: '/terms' } };
 
 export default function Page() {
-  return (
-    <section className="section">
-      <div className={`container ${s.narrow} ${s.prose}`}>
-        <p className="eyebrow">Legal</p>
-        <h1>Terms of use</h1>
-        <p>This page will hold Asteria&rsquo;s terms of use, prepared by a solicitor before launch.</p>
-      </div>
-    </section>
-  );
+  return <LegalDoc file="terms.txt" self="/terms" />;
 }
