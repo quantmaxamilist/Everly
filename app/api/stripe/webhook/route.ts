@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db, getSetting } from '@/platform/db';
 import { sKey, verifyWebhook, type StripeEvent } from '@/platform/stripe';
-import { applyAccount, settleBookingSession } from '@/platform/payments';
+import { applyAccount, applyRefund, settleBookingSession } from '@/platform/payments';
 import { applySubscription, settleInvoice, settlePlatformSession } from '@/platform/billing';
 
 export const dynamic = 'force-dynamic';
@@ -24,6 +24,9 @@ export async function POST(req: Request) {
       case 'checkout.session.completed':
       case 'checkout.session.async_payment_succeeded':
         if (ev.account) await settleBookingSession(o); else await settlePlatformSession(o);
+        break;
+      case 'charge.refunded':
+        if (ev.account) await applyRefund(o);
         break;
       case 'account.updated':
         await applyAccount(o);

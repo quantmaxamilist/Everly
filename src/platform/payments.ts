@@ -15,10 +15,10 @@ async function note(bookingId: string, body: string) {
  * Card payments pass `stripeSession`; the same session is only ever counted once.
  * Returns false if it was already recorded.
  */
-export async function applyPayment(b: Booking, sup: Supplier, p: { amount: number; kind: string; method: string; reference?: string; stripeSession?: string; feePence?: number; by: 'supplier' | 'card' }) {
+export async function applyPayment(b: Booking, sup: Supplier, p: { amount: number; kind: string; method: string; reference?: string; stripeSession?: string; paymentIntent?: string; feePence?: number; by: 'supplier' | 'card' }) {
   const sql = await db();
-  const ins = await sql<{ id: string }[]>`insert into payments (booking_id, kind, amount, method, reference, stripe_session, fee_pence)
-    values (${b.id}, ${p.kind}, ${p.amount}, ${p.method}, ${p.reference ?? ''}, ${p.stripeSession ?? null}, ${p.feePence ?? 0})
+  const ins = await sql<{ id: string }[]>`insert into payments (booking_id, kind, amount, method, reference, stripe_session, stripe_payment_intent, fee_pence)
+    values (${b.id}, ${p.kind}, ${p.amount}, ${p.method}, ${p.reference ?? ''}, ${p.stripeSession ?? null}, ${p.paymentIntent ?? null}, ${p.feePence ?? 0})
     on conflict do nothing returning id`;
   if (!ins.length) return false;
   const [cur] = await sql<{ paid: number; status: string; total: number; deposit_pct: number }[]>`
@@ -86,7 +86,7 @@ export async function startCardPayment(b: Booking, sup: Supplier, origin: string
   return session.url;
 }
 
-type Session = { id: string; mode: string; payment_status: string; status?: string; amount_total: number; metadata: Record<string, string>; subscription?: string | null; customer?: string | null; customer_email?: string | null };
+type Session = { id: string; mode: string; payment_status: string; status?: string; amount_total: number; metadata: Record<string, string>; subscription?: string | null; customer?: string | null; customer_email?: string | null; payment_intent?: string | null };
 
 /** Records a completed booking payment (called from the webhook and when the couple returns from Stripe). */
 export async function settleBookingSession(s: Session) {
@@ -96,7 +96,7 @@ export async function settleBookingSession(s: Session) {
   if (!b) return false;
   const sup = await supplierById(b.supplier_id);
   if (!sup) return false;
-  return applyPayment(b, sup, { amount: Math.round(s.amount_total / 100), kind: s.metadata.pay || 'payment', method: 'card', reference: s.id, stripeSession: s.id, feePence: Number(s.metadata.fee) || 0, by: 'card' });
+  return applyPayment(b, sup, { amount: Math.round(s.amount_total / 100), kind: s.metadata.pay || 'payment', method: 'card', reference: s.id, stripeSession: s.id, paymentIntent: s.payment_intent ?? undefined, feePence: Number(s.metadata.fee) || 0, by: 'card' });
 }
 
 /** Couple came back from Stripe: check the session straight away (the webhook does the same, whichever is first wins). */
@@ -143,4 +143,35 @@ export async function applyAccount(a: { id: string; charges_enabled: boolean }) 
   if (!before) return;
   await sql`update suppliers set payouts_ready = ${!!a.charges_enabled} where id = ${before.id}`;
   if (a.charges_enabled && !before.payouts_ready) await notify(before.user_id, 'Card payments are switched on — couples can now pay you through Asteria', '/platform/supplier/account');
+}
+
+/* ---------------- refunds ---------------- */
+type Charge = { id: string; amount: number; amount_refunded: number; payment_intent: string | null; application_fee: string | null; metadata?: Record<string, string> };
+
+/**
+ * A supplier refunded a couple (from their Stripe dashboard). Asteria returns its commission on the refunded
+ * part to the supplier, and the booking's paid total goes down.
+ */
+export async function applyRefund(ch: Charge) {
+  if (!ch.payment_intent) return false;
+  const sql = await db();
+  const [pay] = await sql<{ id: string; booking_id: string; amount: number; refunded: number }[]>`select id, booking_id, amount, refunded from payments where stripe_payment_intent = ${ch.payment_intent}`;
+  if (!pay) return false;
+  const refundedPounds = Math.round(ch.amount_refunded / 100);
+  const newly = refundedPounds - pay.refunded;
+  // return Asteria's commission in proportion to what was refunded
+  if (ch.application_fee) {
+    const fee = await stripe<{ amount: number; amount_refunded: number }>('GET', `/application_fees/${ch.application_fee}`);
+    const due = Math.round((fee.amount * ch.amount_refunded) / ch.amount) - fee.amount_refunded;
+    if (due > 0) await stripe('POST', `/application_fees/${ch.application_fee}/refunds`, { amount: due }, { idempotencyKey: `feerefund-${ch.id}-${ch.amount_refunded}` });
+    await sql`update payments set fee_refunded_pence = ${Math.max(fee.amount_refunded, 0) + Math.max(due, 0)} where id = ${pay.id}`;
+  }
+  if (newly <= 0) return true;
+  await sql`update payments set refunded = ${refundedPounds} where id = ${pay.id}`;
+  const [b] = await sql<{ paid: number; couple_user_id: string | null; supplier_id: string }[]>`update bookings set paid = greatest(0, paid - ${newly}), updated_at = now() where id = ${pay.booking_id} returning paid, couple_user_id, supplier_id`;
+  await note(pay.booking_id, `${gbp(newly)} refunded to the couple by card`);
+  await notify(b.couple_user_id, `${gbp(newly)} has been refunded to your card`, `/platform/couple/bookings/${pay.booking_id}`);
+  const sup = await supplierById(b.supplier_id);
+  if (sup) await notify(sup.user_id, `Refund of ${gbp(newly)} recorded — Asteria’s commission on it has been returned to you`, `/platform/supplier/enquiries/${pay.booking_id}`);
+  return true;
 }

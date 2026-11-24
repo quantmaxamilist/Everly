@@ -24,7 +24,7 @@ export async function BookingView({ b, sup, side, meId }: { b: Booking; sup: Sup
   if (side === 'supplier') await sql`update messages set read_supplier = true where booking_id = ${b.id} and not read_supplier`;
   else await sql`update messages set read_couple = true where booking_id = ${b.id} and not read_couple`;
   const msgs = await messagesOf(b.id);
-  const pays = await sql<{ id: string; amount: number; kind: string; method: string; created_at: Date }[]>`select id, amount, kind, method, created_at from payments where booking_id = ${b.id} order by created_at`;
+  const pays = await sql<{ id: string; amount: number; kind: string; method: string; refunded: number; created_at: Date }[]>`select id, amount, kind, method, refunded, created_at from payments where booking_id = ${b.id} order by created_at`;
   const stage = PIPE.findIndex(([k]) => k === b.status);
   const dep = depositOf(b); const owed = Math.max(0, b.total - b.paid);
   const closed = b.status === 'declined' || b.status === 'cancelled';
@@ -177,7 +177,7 @@ export async function BookingView({ b, sup, side, meId }: { b: Booking; sup: Sup
   const payments = pays.length > 0 && (
     <div className={s.card}>
       <b className={s.h3}>Payments</b>
-      <div className={s.list}>{pays.map((p) => <div key={p.id} className={s.li}><span><b>{gbp(p.amount)}</b><small>{p.kind} · {p.method === 'card' ? 'card via Asteria' : p.method} · {fmtDate(p.created_at)}</small></span><span className={`${s.tag} ${s.t_ok}`}>Received</span></div>)}</div>
+      <div className={s.list}>{pays.map((p) => <div key={p.id} className={s.li}><span><b>{gbp(p.amount)}</b><small>{p.kind} · {p.method === 'card' ? 'card via Asteria' : p.method} · {fmtDate(p.created_at)}</small></span>{p.refunded > 0 ? <span className={`${s.tag} ${s.t_warn}`}>{p.refunded >= p.amount ? 'Refunded' : `${gbp(p.refunded)} refunded`}</span> : <span className={`${s.tag} ${s.t_ok}`}>Received</span>}</div>)}</div>
     </div>
   );
 

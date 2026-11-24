@@ -28,9 +28,9 @@ export default async function Page({ searchParams }: P) {
     sql<{ id: string; couple_name: string; supplier: string; date: string; status: string; total: number; created_at: Date }[]>`select b.id, b.couple_name, s.name as supplier, b.date::text as date, b.status, b.total, b.created_at from bookings b join suppliers s on s.id = b.supplier_id where b.source = 'asteria' order by b.created_at desc limit 8`,
     notificationsFor(u.id, 6),
     sql<{ commission: number; commission_month: number; card_total: number; subs: number; subs_month: number; passes: number; passes_month: number; plans_live: number; featured: number; spotlight: number; plus: number; payouts: number }[]>`select
-      (select coalesce(sum(fee_pence), 0)::int from payments where stripe_session is not null) as commission,
-      (select coalesce(sum(fee_pence), 0)::int from payments where stripe_session is not null and created_at >= date_trunc('month', now())) as commission_month,
-      (select coalesce(sum(amount), 0)::int from payments where stripe_session is not null) as card_total,
+      (select coalesce(sum(fee_pence - fee_refunded_pence), 0)::int from payments where stripe_session is not null) as commission,
+      (select coalesce(sum(fee_pence - fee_refunded_pence), 0)::int from payments where stripe_session is not null and created_at >= date_trunc('month', now())) as commission_month,
+      (select coalesce(sum(amount - refunded), 0)::int from payments where stripe_session is not null) as card_total,
       (select coalesce(sum(amount_pence), 0)::int from platform_payments where kind <> 'pass') as subs,
       (select coalesce(sum(amount_pence), 0)::int from platform_payments where kind <> 'pass' and created_at >= date_trunc('month', now())) as subs_month,
       (select coalesce(sum(amount_pence), 0)::int from platform_payments where kind = 'pass') as passes,

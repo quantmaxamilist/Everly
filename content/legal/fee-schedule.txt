@@ -24,6 +24,9 @@ Commission applies to payments couples make by card through Asteria for bookings
 
 No commission is charged on direct bookings you add to your calendar yourself, or on payments couples make to you outside Asteria.
 
+## Refunds
+If you refund a card payment to a couple, in full or in part, Asteria returns its commission on the refunded amount to you automatically. Stripe's own fees on refunded payments are set by Stripe under your Stripe agreement.
+
 ## Stripe fees
 Card payments are processed by Stripe on your own connected Stripe account. Stripe's payment processing fees are charged to you by Stripe under your Stripe agreement, separately from Asteria's commission. Stripe pays out to your bank account on your Stripe payout schedule.
 

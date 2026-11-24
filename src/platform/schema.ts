@@ -232,6 +232,9 @@ alter table users add column if not exists plus_at timestamptz;
 alter table payments add column if not exists stripe_session text;
 alter table payments add column if not exists fee_pence int not null default 0;
 create unique index if not exists payments_stripe_session on payments(stripe_session) where stripe_session is not null;
+alter table payments add column if not exists stripe_payment_intent text;
+alter table payments add column if not exists refunded int not null default 0;
+alter table payments add column if not exists fee_refunded_pence int not null default 0;
 
 -- Asteria's own income: plans, Featured, Spotlight, Wedding Pass
 create table if not exists platform_payments (

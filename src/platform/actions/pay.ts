@@ -60,7 +60,7 @@ export async function manageBilling() {
 
 /* admin: one click sets up the webhooks and the billing page in Stripe */
 const EVENTS_PLATFORM = ['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'customer.subscription.created', 'customer.subscription.updated', 'customer.subscription.deleted', 'invoice.paid'];
-const EVENTS_CONNECT = ['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'account.updated'];
+const EVENTS_CONNECT = ['checkout.session.completed', 'checkout.session.async_payment_succeeded', 'account.updated', 'charge.refunded'];
 
 export async function connectStripe() {
   await requireUser('admin');
