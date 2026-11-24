@@ -28,6 +28,16 @@ export async function searchSuppliers(f: Filters): Promise<Card[]> {
     limit 120`;
 }
 
+/** Spotlight suppliers for the strip at the top of Explore (region first, then the rest of the UK). */
+export async function spotlightCards(region: string, cat: string): Promise<Card[]> {
+  const sql = await db();
+  return sql<Card[]>`
+    select ${CARD(sql)} from suppliers s
+    where s.status = 'approved' and s.spotlight ${cat ? sql`and s.category = ${cat}` : sql``}
+    order by (s.region = ${region || ''} or s.travels) desc, random()
+    limit 6`;
+}
+
 export async function cardsByIds(ids: string[]): Promise<Card[]> {
   if (!ids.length) return [];
   const sql = await db();

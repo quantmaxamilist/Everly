@@ -42,6 +42,14 @@ export const PLANS = [
   { id: 'elite', name: 'Elite', rate: 0.02, monthly: 199 },
 ];
 export const planOf = (id: string) => PLANS.find((p) => p.id === id) ?? PLANS[0];
+/** Paid extras for suppliers, and the couples' Wedding Pass (prices in £) */
+export const ADDONS = {
+  featured: { name: 'Featured', monthly: 29, what: 'A Featured badge and a place at the top of Explore in your category and region.' },
+  spotlight: { name: 'Spotlight', monthly: 49, what: 'A spot in the Spotlight strip at the top of Explore, shown to couples planning in your region.' },
+} as const;
+export const WEDDING_PASS = { name: 'Wedding Pass', price: 24.99, what: ['Multiple plans to compare side by side', 'Savings finder — cheaper suppliers that fit your date and guests', 'Price watch — alerts when saved suppliers change prices'] };
+/** Founding Partners pay no subscription for 12 months from approval */
+export const foundingUntil = (approvedAt: Date | string | null) => (approvedAt ? addDaysISO(dateISO(approvedAt), 365) : null);
 
 export const clean = (v: FormDataEntryValue | null, max = 2000) => String(v ?? '').trim().slice(0, max);
 export const num = (v: FormDataEntryValue | null) => { const n = parseInt(String(v ?? '').replace(/[^\d-]/g, ''), 10); return Number.isFinite(n) ? n : 0; };

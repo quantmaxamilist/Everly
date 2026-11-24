@@ -1,0 +1,37 @@
+Asteria Supplier Fee Schedule
+
+Effective from 24/11/2026
+
+## Plans and commission
+This Fee Schedule forms part of the Asteria Supplier Terms. It sets out what Asteria charges suppliers for bookings made through the platform and for optional paid features.
+
+[table]
+Plan | Monthly subscription | Commission on bookings made through Asteria
+Founding Partner | £0 for 12 months from approval | 3%
+Starter | £29 | 5%
+Growth | £59 | 4%
+Pro | £99 | 3%
+Elite | £199 | 2%
+[/table]
+
+You can change plan at any time from Account & plan. A new plan's subscription starts on the day you choose it, and its commission rate applies to card payments taken from then on.
+
+## Founding Partners
+Founding Partners pay no subscription for 12 months from the date their listing is approved. Commission and Stripe fees still apply. Before the 12 months end, Asteria will tell you the plan, price, billing interval, first charge date and how to cancel. Nothing is charged without your authorisation.
+
+## How commission is collected
+Commission applies to payments couples make by card through Asteria for bookings that started on Asteria. It is calculated on each payment (deposit, instalment or balance) at your plan's rate when the payment is made, and is collected automatically by Stripe as an application fee from that payment.
+
+No commission is charged on direct bookings you add to your calendar yourself, or on payments couples make to you outside Asteria.
+
+## Stripe fees
+Card payments are processed by Stripe on your own connected Stripe account. Stripe's payment processing fees are charged to you by Stripe under your Stripe agreement, separately from Asteria's commission. Stripe pays out to your bank account on your Stripe payout schedule.
+
+## Optional extras
+[table]
+Extra | Price | What you get
+Featured | £29 a month | A Featured badge and a place at the top of Explore in your category and region
+Spotlight | £49 a month | A place in the Spotlight strip at the top of Explore, labelled as promoted
+[/table]
+
+Paid placements are always labelled. Subscriptions renew monthly until cancelled. You can cancel at any time from Account & plan → Manage billing, and the subscription ends at the end of the current billing period.

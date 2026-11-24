@@ -5,6 +5,8 @@ export type Supplier = {
   id: string; user_id: string; name: string; category: string; town: string; region: string; style: string; about: string;
   capacity: number | null; travels: boolean; phone: string; website: string; status: 'pending' | 'approved' | 'suspended';
   plan: string; featured: boolean; spotlight: boolean; brochure_url: string | null; brochure_name: string | null; created_at: Date;
+  approved_at: Date | null; stripe_account: string | null; stripe_account_mode: string | null; payouts_ready: boolean;
+  stripe_customer: string | null; stripe_customer_mode: string | null; plan_sub: string | null; featured_sub: string | null; spotlight_sub: string | null;
 };
 export type Photo = { id: string; url: string; position: number };
 export type Booking = {

@@ -213,4 +213,55 @@ create table if not exists notifications (
   created_at timestamptz not null default now()
 );
 create index if not exists notifications_user on notifications(user_id, created_at desc);
+
+/* ---------- stage 2: payments, subscriptions, Asteria Plus ---------- */
+alter table suppliers add column if not exists approved_at timestamptz;
+alter table suppliers add column if not exists stripe_account text;
+alter table suppliers add column if not exists stripe_account_mode text;
+alter table suppliers add column if not exists payouts_ready boolean not null default false;
+alter table suppliers add column if not exists stripe_customer text;
+alter table suppliers add column if not exists stripe_customer_mode text;
+alter table suppliers add column if not exists plan_sub text;
+alter table suppliers add column if not exists featured_sub text;
+alter table suppliers add column if not exists spotlight_sub text;
+update suppliers set approved_at = created_at where status = 'approved' and approved_at is null;
+
+alter table users add column if not exists plus boolean not null default false;
+alter table users add column if not exists plus_at timestamptz;
+
+alter table payments add column if not exists stripe_session text;
+alter table payments add column if not exists fee_pence int not null default 0;
+create unique index if not exists payments_stripe_session on payments(stripe_session) where stripe_session is not null;
+
+-- Asteria's own income: plans, Featured, Spotlight, Wedding Pass
+create table if not exists platform_payments (
+  id uuid primary key default gen_random_uuid(),
+  kind text not null,
+  supplier_id uuid references suppliers(id) on delete set null,
+  user_id uuid references users(id) on delete set null,
+  amount_pence int not null,
+  stripe_id text unique,
+  created_at timestamptz not null default now()
+);
+
+create table if not exists stripe_events (
+  id text primary key,
+  created_at timestamptz not null default now()
+);
+
+-- couples can keep several plans (Asteria Plus)
+create table if not exists wedding_plans (
+  id uuid primary key default gen_random_uuid(),
+  wedding_id uuid not null references weddings(id) on delete cascade,
+  name text not null default 'My plan',
+  created_at timestamptz not null default now()
+);
+alter table plan_items add column if not exists plan_id uuid references wedding_plans(id) on delete cascade;
+insert into wedding_plans (wedding_id, name)
+  select w.id, 'My plan' from weddings w
+  where exists (select 1 from plan_items i where i.wedding_id = w.id and i.plan_id is null)
+    and not exists (select 1 from wedding_plans p where p.wedding_id = w.id);
+update plan_items i set plan_id = (select p.id from wedding_plans p where p.wedding_id = i.wedding_id order by p.created_at limit 1) where i.plan_id is null;
+alter table plan_items drop constraint if exists plan_items_wedding_id_supplier_id_key;
+create unique index if not exists plan_items_plan_supplier on plan_items(plan_id, supplier_id);
 `;

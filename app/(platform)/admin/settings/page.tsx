@@ -4,6 +4,8 @@ import { changePasswordAction } from '@/platform/actions/auth';
 import { mailConfigured } from '@/platform/mail';
 import { storageConfigured } from '@/platform/storage';
 import { Submit } from '@/platform/client';
+import { connectStripe } from '@/platform/actions/pay';
+import { stripeConfigured, stripeMode, stripeReady } from '@/platform/stripe';
 import { Flash, Head, Shell, s } from '@/platform/ui';
 
 export const metadata = { title: 'Settings' };
@@ -16,8 +18,9 @@ export default async function Page({ searchParams }: P) {
     ['Database', true, 'Connected'],
     ['Photo & brochure storage', storageConfigured(), storageConfigured() ? 'Vercel Blob connected' : 'Connect a Blob store in Vercel → Storage'],
     ['Email', mailConfigured(), mailConfigured() ? 'Resend connected' : 'Add RESEND_API_KEY in Vercel to send emails and e-invites'],
-    ['Card payments', !!process.env.STRIPE_SECRET_KEY, process.env.STRIPE_SECRET_KEY ? 'Stripe connected' : 'Next phase — Stripe account needed'],
+    ['Card payments', await stripeReady(), (await stripeReady()) ? `Stripe connected (${stripeMode() === 'live' ? 'LIVE — real payments' : 'test mode — no real money'})` : stripeConfigured() ? 'Key added — press “Connect Stripe” below' : 'Add STRIPE_SECRET_KEY in Vercel'],
   ];
+  const ready = await stripeReady();
   return (
     <Shell user={u} active="settings">
       <Head title="Settings" kicker="Platform access and services" />
@@ -27,6 +30,14 @@ export default async function Page({ searchParams }: P) {
           <b className={s.h3}>Services</b>
           <div className={s.list}>{checks.map(([n, ok, d]) => <div key={n} className={s.li}><span><b>{n}</b><small>{d}</small></span><span className={`${s.tag} ${ok ? s.t_ok : s.t_new}`}>{ok ? 'On' : 'Not yet'}</span></div>)}</div>
         </div>
+        <form action={connectStripe} className={`${s.card} ${s.form}`}>
+          <div className={s.row}><b className={s.h3}>Stripe</b>{stripeConfigured() && <span className={`${s.tag} ${stripeMode() === 'live' ? s.t_ok : s.t_new}`}>{stripeMode() === 'live' ? 'Live' : 'Test mode'}</span>}</div>
+          <p className={s.muted}>{!stripeConfigured()
+            ? 'Add your Stripe secret key to Vercel as STRIPE_SECRET_KEY, redeploy, then come back here.'
+            : ready ? 'Connected. Suppliers can switch on card payments from Account & plan, and plans, Featured, Spotlight and the Wedding Pass can be bought. Press again if you change the site address or Stripe key.'
+            : 'One click sets up Stripe’s notifications to Asteria (webhooks) and the supplier billing page.'}</p>
+          {stripeConfigured() && <Submit className={s.sm} pending="Connecting…">{ready ? 'Reconnect Stripe' : 'Connect Stripe'}</Submit>}
+        </form>
         <form action={changeGate} className={`${s.card} ${s.form}`}>
           <b className={s.h3}>Platform password</b>
           <p className={s.muted}>Everyone needs this to reach the platform until launch. Changing it signs other people out of the gate.</p>

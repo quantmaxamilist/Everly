@@ -7,6 +7,7 @@ import { requireUser } from '../auth';
 import { extrasOf, notify, packagesOf, supplierById, supplierFree, weddingFor } from '../data';
 import { sendMail, wrap, escapeHtml, mailConfigured } from '../mail';
 import { REGIONS, clean, extraTotal, fmtDate, gbp, num, pkgTotal } from '../util';
+import { isPlus, plansFor } from '../plus';
 
 async function me() {
   const u = await requireUser('couple');
@@ -51,18 +52,67 @@ export async function addToPlan(fd: FormData) {
   const sql = await db();
   const [p] = await sql`select 1 from packages where id = ${pid} and supplier_id = ${sid}`;
   if (!p) go(`/platform/couple/s/${sid}`, 'e', 'Choose a package');
-  await sql`insert into plan_items (wedding_id, supplier_id, package_id, extras) values (${w.id}, ${sid}, ${pid}, ${extras})
-    on conflict (wedding_id, supplier_id) do update set package_id = excluded.package_id, extras = excluded.extras`;
+  const plans = await plansFor(w.id);
+  const plan = plans.find((x) => x.id === clean(fd.get('plan'), 40)) ?? plans[0];
+  await sql`insert into plan_items (wedding_id, plan_id, supplier_id, package_id, extras) values (${w.id}, ${plan.id}, ${sid}, ${pid}, ${extras})
+    on conflict (plan_id, supplier_id) do update set package_id = excluded.package_id, extras = excluded.extras`;
   revalidatePath('/platform/couple/plan');
-  go('/platform/couple/plan', 'm', 'Added to your plan');
+  go(`/platform/couple/plan?p=${plan.id}`, 'm', `Added to ${plan.name}`);
 }
 
 export async function removeFromPlan(fd: FormData) {
   const { w } = await me();
   const sql = await db();
-  await sql`delete from plan_items where id = ${clean(fd.get('id'), 40)} and wedding_id = ${w.id}`;
+  const [r] = await sql<{ plan_id: string }[]>`delete from plan_items where id = ${clean(fd.get('id'), 40)} and wedding_id = ${w.id} returning plan_id`;
   revalidatePath('/platform/couple/plan');
-  go('/platform/couple/plan', 'm', 'Removed from your plan');
+  go(`/platform/couple/plan${r ? `?p=${r.plan_id}` : ''}`, 'm', 'Removed from your plan');
+}
+
+/* ---------------- several plans (Asteria Plus) ---------------- */
+const PLAN = '/platform/couple/plan';
+export async function newPlan(fd: FormData) {
+  const { u, w } = await me();
+  if (!(await isPlus(u.id))) go('/platform/couple/plus', 'm', 'Multiple plans are part of Asteria Plus');
+  const sql = await db();
+  const plans = await plansFor(w.id);
+  if (plans.length >= 8) go(PLAN, 'e', 'You can keep up to 8 plans');
+  const name = clean(fd.get('name'), 60) || `Plan ${plans.length + 1}`;
+  const copyFrom = plans.find((x) => x.id === clean(fd.get('copy'), 40));
+  const [p] = await sql<{ id: string }[]>`insert into wedding_plans (wedding_id, name) values (${w.id}, ${name}) returning id`;
+  if (copyFrom) await sql`insert into plan_items (wedding_id, plan_id, supplier_id, package_id, extras) select wedding_id, ${p.id}, supplier_id, package_id, extras from plan_items where plan_id = ${copyFrom.id}`;
+  revalidatePath(PLAN);
+  go(`${PLAN}?p=${p.id}`, 'm', copyFrom ? `${name} created as a copy of ${copyFrom.name}` : `${name} created`);
+}
+export async function renamePlan(fd: FormData) {
+  const { w } = await me();
+  const sql = await db();
+  const id = clean(fd.get('plan'), 40); const name = clean(fd.get('name'), 60);
+  if (name) await sql`update wedding_plans set name = ${name} where id = ${id} and wedding_id = ${w.id}`;
+  revalidatePath(PLAN);
+  go(`${PLAN}?p=${id}`, 'm', 'Plan renamed');
+}
+export async function deletePlan(fd: FormData) {
+  const { w } = await me();
+  const sql = await db();
+  const plans = await plansFor(w.id);
+  if (plans.length < 2) go(PLAN, 'e', 'You need at least one plan');
+  await sql`delete from wedding_plans where id = ${clean(fd.get('plan'), 40)} and wedding_id = ${w.id}`;
+  revalidatePath(PLAN);
+  go(PLAN, 'm', 'Plan deleted');
+}
+/** Savings finder: swap a supplier in a plan for the cheaper suggestion. */
+export async function swapInPlan(fd: FormData) {
+  const { u, w } = await me();
+  if (!(await isPlus(u.id))) go('/platform/couple/plus', 'm', 'The savings finder is part of Asteria Plus');
+  const sql = await db();
+  const itemId = clean(fd.get('item'), 40); const sid = clean(fd.get('sid'), 40); const pid = clean(fd.get('package_id'), 40);
+  const [i] = await sql<{ plan_id: string }[]>`select plan_id from plan_items where id = ${itemId} and wedding_id = ${w.id}`;
+  const [k] = await sql`select 1 from packages k join suppliers s on s.id = k.supplier_id where k.id = ${pid} and s.id = ${sid} and s.status = 'approved'`;
+  if (!i || !k) go(PLAN, 'e', 'That suggestion is no longer available');
+  await sql`delete from plan_items where id = ${itemId}`;
+  await sql`insert into plan_items (wedding_id, plan_id, supplier_id, package_id) values (${w.id}, ${i.plan_id}, ${sid}, ${pid}) on conflict (plan_id, supplier_id) do update set package_id = excluded.package_id`;
+  revalidatePath(PLAN);
+  go(`${PLAN}?p=${i.plan_id}`, 'm', 'Swapped — check the new supplier’s page and send them a request');
 }
 
 export async function sendEnquiry(fd: FormData) {

@@ -49,6 +49,8 @@ function parse(file: string) {
 const LINKS: [RegExp, string][] = [
   [/(Privacy Notice)/, '/privacy'],
   [/(separate supplier agreement)/, '/supplier-terms'],
+  [/(Fee Schedule)/, '/fee-schedule'],
+  [/(Asteria Supplier Terms)/, '/supplier-terms'],
   [/(Stripe’s Privacy Policy)/, 'https://stripe.com/gb/privacy'],
   [/(Information Commissioner’s Office)/, 'https://ico.org.uk/make-a-complaint/'],
 ];
@@ -92,6 +94,7 @@ export default function LegalDoc({ file, self }: { file: string; self: string })
               {self !== '/terms' && <Link href="/terms">Terms of Use</Link>}
               {self !== '/privacy' && <Link href="/privacy">Privacy Notice</Link>}
               {self !== '/supplier-terms' && <Link href="/supplier-terms">Supplier Terms</Link>}
+              {self !== '/fee-schedule' && <Link href="/fee-schedule">Fee Schedule</Link>}
             </div>
           </nav>
           <article className={s.body}>

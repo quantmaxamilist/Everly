@@ -15,7 +15,7 @@ export async function setSupplierStatus(fd: FormData) {
   const id = clean(fd.get('id'), 40); const status = clean(fd.get('status'), 20);
   if (!['approved', 'pending', 'suspended'].includes(status)) go('/admin/suppliers', 'e', 'Unknown status');
   const sql = await db();
-  const [s] = await sql<{ name: string; user_id: string }[]>`update suppliers set status = ${status} where id = ${id} returning name, user_id`;
+  const [s] = await sql<{ name: string; user_id: string }[]>`update suppliers set status = ${status}, approved_at = case when ${status} = 'approved' then coalesce(approved_at, now()) else approved_at end where id = ${id} returning name, user_id`;
   if (s && status === 'approved') await notify(s.user_id, 'Your listing is approved and now live on Asteria', '/platform/supplier/listing');
   if (s && status === 'suspended') await notify(s.user_id, 'Your listing has been hidden from couples — contact hello@asteria-events.com', '/platform/supplier');
   revalidatePath('/admin');

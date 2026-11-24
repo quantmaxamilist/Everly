@@ -218,3 +218,7 @@ details.box[open] > summary { margin-bottom: 12px; }
 .spin svg { animation: liveSpin .7s ease-in-out; }
 @keyframes liveSpin { to { transform: rotate(360deg); } }
 @media (prefers-reduced-motion: reduce) { .spin svg { animation: none; } }
+
+/* Asteria Plus */
+.plusBadge { display: inline-flex; align-items: center; gap: 4px; justify-self: start; font-size: .62rem; letter-spacing: .14em; text-transform: uppercase; font-weight: 600; padding: 3px 9px; border-radius: 99px; background: linear-gradient(135deg, #e2c9a5, #cab79f); color: #2a2a1e; }
+.btn .plusBadge { margin-right: 4px; }

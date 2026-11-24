@@ -5,6 +5,7 @@ import { db } from '@/platform/db';
 import { requireUser } from '@/platform/auth';
 import { extrasOf, packagesOf, photosOf, supplierById, supplierFree, weddingFor } from '@/platform/data';
 import { savedIds } from '@/platform/couple';
+import { plansFor } from '@/platform/plus';
 import { sendEnquiry, addToPlan, toggleSaved } from '@/platform/actions/couple';
 import { EnquiryTotal, Submit } from '@/platform/client';
 import { Flash, Shell, StatusTag, s } from '@/platform/ui';
@@ -24,6 +25,7 @@ export default async function Page({ params, searchParams }: P) {
   const sql = await db();
   const [open] = u.role === 'couple' ? await sql<{ id: string; status: string }[]>`select id, status from bookings where supplier_id = ${sup.id} and couple_user_id = ${u.id} and status in ('enquiry','contract','deposit','paid') limit 1` : [];
   const free = w?.date ? await supplierFree(sup.id, w.date) : null;
+  const plans = w ? await plansFor(w.id) : [];
   const isCouple = u.role === 'couple';
   const back = `/platform/couple/s/${sup.id}`;
 
@@ -95,7 +97,8 @@ export default async function Page({ params, searchParams }: P) {
                 <EnquiryTotal pkgs={pkgs} extras={extras} guests={guests} />
                 <p className={s.muted} style={{ fontSize: '.78rem' }}>Nothing is charged now. {sup.name} will reply with their contract; your date is secured once you sign and pay the deposit.</p>
                 <Submit pending="Sending…">Send request</Submit>
-                <button formAction={addToPlan} className={`${s.btn} ${s.ghost}`}>Add to my plan instead</button>
+                {plans.length > 1 && <div className={s.field}><label htmlFor="eq-pl">Plan</label><select id="eq-pl" name="plan" className={s.input}>{plans.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}</select></div>}
+                <button formAction={addToPlan} formNoValidate className={`${s.btn} ${s.ghost}`}>Add to {plans.length > 1 ? 'a plan' : 'my plan'} instead</button>
               </form>
             )}
           </div>

@@ -4,7 +4,7 @@ import { requireUser } from '@/platform/auth';
 import { setSupplierStatus, setSupplierFlags } from '@/platform/actions/admin';
 import { Submit } from '@/platform/client';
 import { Flash, Head, Shell, s } from '@/platform/ui';
-import { PLANS, fmtDate } from '@/platform/util';
+import { PLANS, fmtDate, foundingUntil, planOf } from '@/platform/util';
 
 export const metadata = { title: 'Suppliers' };
 type P = { searchParams: Promise<Record<string, string | string[] | undefined>> };
@@ -15,8 +15,8 @@ export default async function Page({ searchParams }: P) {
   const f = typeof sp.f === 'string' && ['pending', 'approved', 'suspended'].includes(sp.f) ? sp.f : 'all';
   const q = typeof sp.q === 'string' ? sp.q : '';
   const sql = await db();
-  const rows = await sql<{ id: string; name: string; category: string; town: string; region: string; status: string; plan: string; featured: boolean; spotlight: boolean; email: string; created_at: Date; photos: number; packages: number; bookings: number }[]>`
-    select s.id, s.name, s.category, s.town, s.region, s.status, s.plan, s.featured, s.spotlight, u.email, s.created_at,
+  const rows = await sql<{ id: string; name: string; category: string; town: string; region: string; status: string; plan: string; featured: boolean; spotlight: boolean; email: string; created_at: Date; photos: number; packages: number; bookings: number; payouts_ready: boolean; plan_sub: string | null; featured_sub: string | null; spotlight_sub: string | null; approved_at: Date | null }[]>`
+    select s.id, s.name, s.category, s.town, s.region, s.status, s.plan, s.featured, s.spotlight, u.email, s.created_at, s.payouts_ready, s.plan_sub, s.featured_sub, s.spotlight_sub, s.approved_at,
       (select count(*)::int from photos p where p.supplier_id = s.id) as photos,
       (select count(*)::int from packages k where k.supplier_id = s.id) as packages,
       (select count(*)::int from bookings b where b.supplier_id = s.id and b.status in ('deposit','paid')) as bookings
@@ -38,7 +38,7 @@ export default async function Page({ searchParams }: P) {
               <span><b className={s.h3}><Link href={`/platform/couple/s/${r.id}`}>{r.name}</Link></b><br /><span className={s.muted}>{r.category} · {[r.town, r.region].filter(Boolean).join(', ') || 'No location'} · {r.email} · joined {fmtDate(r.created_at)}</span></span>
               <span className={`${s.tag} ${r.status === 'approved' ? s.t_ok : r.status === 'pending' ? s.t_new : s.t_warn}`}>{r.status === 'approved' ? 'Live' : r.status === 'pending' ? 'Waiting for approval' : 'Hidden'}</span>
             </div>
-            <span className={s.muted}>{r.photos} photos · {r.packages} packages · {r.bookings} bookings</span>
+            <span className={s.muted}>{r.photos} photos · {r.packages} packages · {r.bookings} bookings · card payments {r.payouts_ready ? 'on' : 'off'} · {r.plan === 'founding' ? `Founding Partner${foundingUntil(r.approved_at) ? ` (free until ${fmtDate(foundingUntil(r.approved_at))})` : ''}` : `${planOf(r.plan).name}${r.plan_sub ? ' (paying)' : ' (set by admin)'}`}{r.featured ? ` · Featured${r.featured_sub ? ' (paying)' : ' (free)'}` : ''}{r.spotlight ? ` · Spotlight${r.spotlight_sub ? ' (paying)' : ' (free)'}` : ''}</span>
             <div className={s.btnRow}>
               {r.status !== 'approved' && <form action={setSupplierStatus}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="status" value="approved" /><input type="hidden" name="back" value={`/admin/suppliers?f=${f}`} /><Submit className={s.sm} pending="…">Approve</Submit></form>}
               {r.status !== 'suspended' && <form action={setSupplierStatus}><input type="hidden" name="id" value={r.id} /><input type="hidden" name="status" value="suspended" /><input type="hidden" name="back" value={`/admin/suppliers?f=${f}`} /><Submit className={`${s.ghost} ${s.sm}`} pending="…">Hide</Submit></form>}

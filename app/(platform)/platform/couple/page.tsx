@@ -18,7 +18,7 @@ export default async function Page({ searchParams }: P) {
     bookingsForCouple(u.id), notificationsFor(u.id, 5),
     sql<{ rsvp: string; plus_coming: number; invited: boolean }[]>`select rsvp, plus_coming, invited from guests where wedding_id = ${w.id}`,
     sql<{ key: string }[]>`select key from tasks_done where wedding_id = ${w.id}`,
-    sql<{ n: number }[]>`select count(*)::int as n from plan_items where wedding_id = ${w.id}`,
+    sql<{ n: number }[]>`select count(distinct supplier_id)::int as n from plan_items where wedding_id = ${w.id}`,
   ]);
   const live = bookings.filter((b) => b.status !== 'declined' && b.status !== 'cancelled');
   const booked = live.filter((b) => isBooked(b.status));

@@ -5,6 +5,7 @@ import { db } from '../db';
 import { requireUser } from '../auth';
 import { supplierFor, notify } from '../data';
 import { storeFile, deleteFile } from '../storage';
+import { priceText, priceWatch } from '../plus';
 import { CATEGORIES, REGIONS, clean, num, qs } from '../util';
 
 async function me() {
@@ -84,6 +85,7 @@ export async function savePackage(fd: FormData) {
     hours: clean(fd.get('hours'), 80), includes,
   };
   const sql = await db();
+  const [old] = id ? await sql<{ price: number; per_guest: boolean }[]>`select price, per_guest from packages where id = ${id} and supplier_id = ${sup.id}` : [];
   if (id) {
     await sql`update packages set name = ${vals.name}, summary = ${vals.summary}, price = ${vals.price}, per_guest = ${vals.per_guest}, deposit = ${vals.deposit},
       max_guests = ${vals.max_guests}, hours = ${vals.hours}, includes = ${vals.includes} where id = ${id} and supplier_id = ${sup.id}`;
@@ -91,6 +93,10 @@ export async function savePackage(fd: FormData) {
     await sql`insert into packages (supplier_id, name, summary, price, per_guest, deposit, max_guests, hours, includes, position)
       values (${sup.id}, ${vals.name}, ${vals.summary}, ${vals.price}, ${vals.per_guest}, ${vals.deposit}, ${vals.max_guests}, ${vals.hours}, ${vals.includes},
       (select coalesce(max(position), 0) + 1 from packages where supplier_id = ${sup.id}))`;
+  }
+  // price watch for couples with Asteria Plus
+  if (sup.status === 'approved' && (!old || old.price !== vals.price || old.per_guest !== vals.per_guest)) {
+    await priceWatch(sup.id, sup.name, priceText(vals.name, old ? old.price : null, vals.price, vals.per_guest));
   }
   revalidatePath(L);
   back(L + '#packages', 'm', id ? `${name} updated` : `${name} added`);

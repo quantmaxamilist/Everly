@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Icon from '@/components/Icon';
 import { requireUser } from '@/platform/auth';
 import { weddingFor } from '@/platform/data';
-import { searchSuppliers, savedIds } from '@/platform/couple';
+import { searchSuppliers, savedIds, spotlightCards } from '@/platform/couple';
 import { SupplierCards } from '@/platform/Cards';
 import { Flash, Head, Shell, s } from '@/platform/ui';
 import { CATEGORIES, CAT_ICON, REGIONS, STYLES, fmtDate } from '@/platform/util';
@@ -20,7 +20,7 @@ export default async function Page({ searchParams }: P) {
     cat: v('cat'), q: v('q'), region: touched ? v('region') : w?.region || '', style: v('style'),
     max: parseInt(v('max'), 10) || 0, guests: w?.guests ?? 100, fits: v('fits') === '1', date: w?.date ?? '', free: v('free') === '1',
   };
-  const [cards, saved] = await Promise.all([searchSuppliers(f), savedIds(u.id)]);
+  const [cards, saved, spot] = await Promise.all([searchSuppliers(f), savedIds(u.id), spotlightCards(f.region, f.cat)]);
   const link = (patch: Record<string, string>) => '?' + new URLSearchParams({ cat: f.cat, region: f.region, q: f.q, style: f.style, max: f.max ? String(f.max) : '', fits: f.fits ? '1' : '', free: f.free ? '1' : '', ...patch }).toString();
   const back = '/platform/couple/explore' + link({});
 
@@ -48,7 +48,13 @@ export default async function Page({ searchParams }: P) {
           <button className={`${s.btn} ${s.sm}`}>Search</button>
         </div>
       </form>
-      <p className={s.muted}>{cards.length} {cards.length === 1 ? 'supplier' : 'suppliers'}{f.region ? ` in ${f.region}` : ''} · featured listings first</p>
+      {spot.length > 0 && (
+        <section className={s.stack} style={{ gap: 10 }} aria-label="Spotlight">
+          <div className={s.row}><b className={s.h3}>Spotlight</b><span className={s.muted}>Promoted suppliers{f.region ? ` for ${f.region}` : ''}</span></div>
+          <SupplierCards cards={spot} saved={saved} back={back} guests={f.guests} />
+        </section>
+      )}
+      <p className={s.muted}>{cards.length} {cards.length === 1 ? 'supplier' : 'suppliers'}{f.region ? ` in ${f.region}` : ''} · Featured listings first</p>
       {cards.length ? <SupplierCards cards={cards} saved={saved} back={back} guests={f.guests} /> : <div className={`${s.card} ${s.empty}`}>No suppliers match yet — try widening your search. New suppliers are joining all the time.</div>}
     </Shell>
   );

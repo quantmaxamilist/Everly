@@ -23,6 +23,7 @@ async function navFor(u: User): Promise<Nav[]> {
       { href: '/platform/couple/checklist', key: 'checklist', label: 'Checklist', icon: 'checkbox' },
       { href: '/platform/couple/budget', key: 'budget', label: 'Budget & payments', icon: 'card' },
       { href: '/platform/couple/saved', key: 'saved', label: 'Saved', icon: 'heart' },
+      { href: '/platform/couple/plus', key: 'plus', label: 'Asteria Plus', icon: 'sparkle' },
       { href: '/platform/couple/settings', key: 'settings', label: 'Wedding details', icon: 'edit' },
     ];
   }

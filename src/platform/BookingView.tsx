@@ -3,6 +3,8 @@ import Icon from '@/components/Icon';
 import { db, getSetting } from './db';
 import { messagesOf, type Booking, type Supplier } from './data';
 import { sendMessage, sendContract, declineEnquiry, signContract, recordPayment, cancelBooking, saveNote } from './actions/booking';
+import { payBooking } from './actions/pay';
+import { canTakeCards, dueNow } from './payments';
 import { ConfirmSubmit, ScrollEnd, Submit } from './client';
 import { StatusTag, s } from './ui';
 import { balanceDue, daysUntil, depositOf, fmtDate, fmtWhen, gbp, isBooked } from './util';
@@ -29,6 +31,23 @@ export async function BookingView({ b, sup, side, meId }: { b: Booking; sup: Sup
   const terms = b.contract_terms || (await getSetting('terms:' + sup.id)) || DEFAULT_TERMS(sup);
   const other = side === 'supplier' ? b.couple_name : sup.name;
   const extras = Array.isArray(b.extras) ? b.extras : [];
+  const due = dueNow(b);
+  const cards = canTakeCards(sup);
+  const payCard = side === 'couple' && due && (
+    cards ? (
+      <form action={payBooking} className={s.notice} style={{ display: 'grid', gap: 10 }}>
+        <input type="hidden" name="id" value={b.id} />
+        <b>{due.kind === 'deposit' ? 'Deposit' : 'Balance'} due: {gbp(due.amount)}</b>
+        <p className={s.muted}>Pay securely by card, Apple Pay or Google Pay. Your payment goes to {sup.name} through Stripe{due.kind === 'deposit' ? ', and your date is booked as soon as it’s paid' : ''}.</p>
+        <Submit pending="Opening secure payment…"><Icon name="card" />Pay {gbp(due.amount)} by card</Submit>
+      </form>
+    ) : (
+      <div className={s.notice}>
+        <b>{due.kind === 'deposit' ? 'Deposit' : 'Balance'} due: {gbp(due.amount)}</b>
+        <p className={s.muted}>{sup.name} hasn’t switched on card payments yet. Pay them directly as agreed — they’ll confirm it here{due.kind === 'deposit' ? ' and your date will be booked' : ''}.</p>
+      </div>
+    )
+  );
 
   const summary = (
     <div className={s.card}>
@@ -99,12 +118,16 @@ export async function BookingView({ b, sup, side, meId }: { b: Booking; sup: Sup
             <label className={s.check}><input type="checkbox" name="agree" required /><span>I agree to this contract, including a {b.deposit_pct}% deposit of {gbp(dep)} to secure {fmtDate(b.date)}.</span></label>
             <Submit pending="Signing…">Sign contract</Submit>
           </form>
-        ) : (
-          <div className={s.notice}>
-            <b>Deposit due: {gbp(Math.max(0, dep - b.paid))}</b>
-            <p className={s.muted}>Card payments through Asteria are being switched on. For now, pay {sup.name} the deposit directly — they’ll confirm it here and your date will be booked.</p>
-          </div>
-        )}
+        ) : payCard}
+      </div>
+    );
+  }
+  if (side === 'couple' && b.status === 'deposit' && due) {
+    step = (
+      <div className={s.card}>
+        <b className={s.h3}>Your date is booked — balance {gbp(due.amount)}</b>
+        <p className={s.muted}>The balance is due by {fmtDate(balanceDue(b))} ({Math.max(0, daysUntil(balanceDue(b)))} days). You can pay it any time before then.</p>
+        {payCard}
       </div>
     );
   }
@@ -154,7 +177,7 @@ export async function BookingView({ b, sup, side, meId }: { b: Booking; sup: Sup
   const payments = pays.length > 0 && (
     <div className={s.card}>
       <b className={s.h3}>Payments</b>
-      <div className={s.list}>{pays.map((p) => <div key={p.id} className={s.li}><span><b>{gbp(p.amount)}</b><small>{p.kind} · {p.method} · {fmtDate(p.created_at)}</small></span><span className={`${s.tag} ${s.t_ok}`}>Received</span></div>)}</div>
+      <div className={s.list}>{pays.map((p) => <div key={p.id} className={s.li}><span><b>{gbp(p.amount)}</b><small>{p.kind} · {p.method === 'card' ? 'card via Asteria' : p.method} · {fmtDate(p.created_at)}</small></span><span className={`${s.tag} ${s.t_ok}`}>Received</span></div>)}</div>
     </div>
   );
 
