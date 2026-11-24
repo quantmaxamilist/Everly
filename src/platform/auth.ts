@@ -2,7 +2,7 @@ import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
 import { SignJWT, jwtVerify } from 'jose';
 import bcrypt from 'bcryptjs';
-import { randomBytes } from 'node:crypto';
+import { createHmac, randomBytes, randomInt, timingSafeEqual } from 'node:crypto';
 import { db, dbConfigured, getSetting, setSetting, setSettingIfMissing } from './db';
 
 export type Role = 'couple' | 'supplier' | 'admin';
@@ -90,4 +90,48 @@ export async function adminExists() {
   const sql = await db();
   const [r] = await sql<{ n: number }[]>`select count(*)::int as n from users where role = 'admin'`;
   return r.n > 0;
+}
+
+/* ---------------- rate limits ---------------- */
+/** True when `key` has had `max` or more attempts in the last `minutes`. */
+export async function tooMany(key: string, max: number, minutes: number) {
+  const sql = await db();
+  const [r] = await sql<{ n: number }[]>`select count(*)::int as n from auth_attempts where key = ${key} and at > now() - make_interval(mins => ${minutes})`;
+  return r.n >= max;
+}
+export async function noteAttempt(key: string) {
+  const sql = await db();
+  await sql`insert into auth_attempts (key) values (${key})`;
+  if (Math.random() < 0.05) await sql`delete from auth_attempts where at < now() - interval '1 day'`;
+}
+export async function clearAttempts(key: string) {
+  const sql = await db();
+  await sql`delete from auth_attempts where key = ${key}`;
+}
+
+/* ---------------- email sign-in codes ---------------- */
+const hashCode = async (userId: string, code: string) => createHmac('sha256', Buffer.from(await secret())).update(`${userId}:${code}`).digest('hex');
+
+/** Makes a new 6-digit code for the user (older codes stop working). */
+export async function newLoginCode(userId: string) {
+  const code = String(randomInt(0, 1_000_000)).padStart(6, '0');
+  const sql = await db();
+  await sql`update login_codes set used_at = now() where user_id = ${userId} and used_at is null`;
+  await sql`insert into login_codes (user_id, code_hash, expires_at) values (${userId}, ${await hashCode(userId, code)}, now() + interval '10 minutes')`;
+  return code;
+}
+
+/** Checks a code. Each code works once, for 10 minutes, with up to 5 tries. */
+export async function checkLoginCode(userId: string, code: string): Promise<'ok' | 'wrong' | 'expired'> {
+  const sql = await db();
+  const [c] = await sql<{ id: string; code_hash: string; attempts: number }[]>`
+    select id, code_hash, attempts from login_codes where user_id = ${userId} and used_at is null and expires_at > now() order by created_at desc limit 1`;
+  if (!c || c.attempts >= 5) return 'expired';
+  const a = Buffer.from(await hashCode(userId, code)); const b = Buffer.from(c.code_hash);
+  if (a.length === b.length && timingSafeEqual(a, b)) {
+    await sql`update login_codes set used_at = now() where id = ${c.id}`;
+    return 'ok';
+  }
+  await sql`update login_codes set attempts = attempts + 1 where id = ${c.id}`;
+  return c.attempts + 1 >= 5 ? 'expired' : 'wrong';
 }

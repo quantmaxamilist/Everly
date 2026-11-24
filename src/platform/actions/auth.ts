@@ -1,7 +1,8 @@
 'use server';
 import { redirect } from 'next/navigation';
 import { db } from '../db';
-import { adminExists, safeNext, checkPassword, currentUser, endSession, hasGate, hashPassword, homeFor, setGatePassword, startSession, unlockGate, type Role } from '../auth';
+import { adminExists, safeNext, checkPassword, checkLoginCode, clearAttempts, currentUser, endSession, hasGate, hashPassword, homeFor, newLoginCode, noteAttempt, setGatePassword, startSession, tooMany, unlockGate, type Role } from '../auth';
+import { mailConfigured, sendMail, wrap } from '../mail';
 import { CATEGORIES, clean, qs } from '../util';
 
 /** Versions of the legal documents people accept at sign-up (bump when Asteria publishes new versions). */
@@ -19,10 +20,13 @@ export async function loginAction(fd: FormData) {
   const email = clean(fd.get('email'), 200).toLowerCase();
   const pw = clean(fd.get('password'), 200);
   const back = fd.get('back') === 'admin' ? '/admin/login' : '/platform/login';
+  const key = 'pw:' + email;
+  if (await tooMany(key, 5, 15)) redirect(back + qs({ e: 'Too many wrong passwords. Wait 15 minutes, or sign in with an email code instead.', email }));
   const sql = await db();
   const [u] = await sql<{ id: string; role: Role; password_hash: string; status: string }[]>`select id, role, password_hash, status from users where email = ${email}`;
-  if (!u || !(await checkPassword(pw, u.password_hash))) redirect(back + qs({ e: 'Email or password not recognised', email }));
+  if (!u || !(await checkPassword(pw, u.password_hash))) { await noteAttempt(key); redirect(back + qs({ e: 'Email or password not recognised', email })); }
   if (u.status !== 'active') redirect(back + qs({ e: 'This account has been suspended — contact hello@asteria-events.com' }));
+  await clearAttempts(key);
   await startSession(u);
   redirect(homeFor(u.role));
 }
@@ -99,4 +103,65 @@ export async function changePasswordAction(fd: FormData) {
   if (next.length < 8) redirect(back + qs({ e: 'New password must be at least 8 characters' }));
   await sql`update users set password_hash = ${await hashPassword(next)} where id = ${u.id}`;
   redirect(back + qs({ m: 'Password changed' }));
+}
+
+/* ---------------- sign in with an email code ---------------- */
+const codePage = (admin: boolean) => (admin ? '/admin/login/code' : '/platform/login/code');
+
+export async function sendCodeAction(fd: FormData) {
+  if (!(await hasGate())) redirect('/platform');
+  const admin = fd.get('back') === 'admin';
+  const email = clean(fd.get('email'), 200).toLowerCase();
+  const page = codePage(admin);
+  if (!mailConfigured()) redirect(page + qs({ e: 'Email sign-in isn’t switched on yet — contact hello@asteria-events.com' }));
+  if (!emailOk(email)) redirect(page + qs({ e: 'Please enter a valid email address', email }));
+  const key = 'code:' + email;
+  if (await tooMany(key, 3, 15)) redirect(page + qs({ e: 'We’ve sent a few codes already. Wait 15 minutes and try again.', email }));
+  await noteAttempt(key);
+  const sql = await db();
+  const [u] = await sql<{ id: string; name: string; status: string }[]>`select id, name, status from users where email = ${email}`;
+  if (u && u.status === 'active') {
+    const code = await newLoginCode(u.id);
+    await sendMail(email, `${code} is your Asteria sign-in code`, wrap('Your sign-in code',
+      `<p>Hi${u.name ? ' ' + u.name.replace(/[<>&"]/g, '') : ''},</p><p>Use this code to sign in to Asteria:</p>
+       <p style="font-size:32px;letter-spacing:.3em;font-weight:bold;color:#2a2a1e;margin:18px 0">${code}</p>
+       <p>It works once and expires in 10 minutes. If you didn’t ask for it, you can ignore this email — your account is safe.</p>`));
+  }
+  // same answer whether or not the email has an account
+  redirect(page + qs({ email, sent: '1' }));
+}
+
+export async function verifyCodeAction(fd: FormData) {
+  if (!(await hasGate())) redirect('/platform');
+  const admin = fd.get('back') === 'admin';
+  const email = clean(fd.get('email'), 200).toLowerCase();
+  const code = clean(fd.get('code'), 20).replace(/\D/g, '');
+  const page = codePage(admin);
+  const fail = (e: string) => redirect(page + qs({ email, sent: '1', e }));
+  if (code.length !== 6) fail('Enter the 6-digit code from the email');
+  const sql = await db();
+  const [u] = await sql<{ id: string; role: Role; status: string }[]>`select id, role, status from users where email = ${email}`;
+  if (!u) fail('That code isn’t right, or it has expired — request a new one');
+  if (u.status !== 'active') fail('This account has been suspended — contact hello@asteria-events.com');
+  const r = await checkLoginCode(u.id, code);
+  if (r === 'expired') redirect(page + qs({ email, e: 'That code has expired or had too many tries — request a new one' }));
+  if (r === 'wrong') fail('That code isn’t right — check the email and try again');
+  await clearAttempts('pw:' + email);
+  await sql`update users set reset_allowed_until = now() + interval '15 minutes' where id = ${u.id}`;
+  await startSession(u);
+  redirect('/platform/new-password');
+}
+
+/** Straight after signing in with a code, people can set a new password without the old one. */
+export async function setNewPasswordAction(fd: FormData) {
+  const u = await currentUser();
+  if (!u) redirect('/platform/login');
+  const sql = await db();
+  const [r] = await sql<{ ok: boolean }[]>`select coalesce(reset_allowed_until > now(), false) as ok from users where id = ${u.id}`;
+  if (!r?.ok) redirect(homeFor(u.role));
+  const next = clean(fd.get('next'), 200);
+  if (next.length < (u.role === 'admin' ? 10 : 8)) redirect('/platform/new-password' + qs({ e: `Use at least ${u.role === 'admin' ? 10 : 8} characters` }));
+  if (next !== clean(fd.get('confirm'), 200)) redirect('/platform/new-password' + qs({ e: 'The two passwords don’t match' }));
+  await sql`update users set password_hash = ${await hashPassword(next)}, reset_allowed_until = null where id = ${u.id}`;
+  redirect(homeFor(u.role) + qs({ m: 'New password saved' }));
 }

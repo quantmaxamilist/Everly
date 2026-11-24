@@ -4,6 +4,7 @@ import { dbConfigured } from '@/platform/db';
 import { currentUser, hasGate, homeFor } from '@/platform/auth';
 import { loginAction, logoutAction } from '@/platform/actions/auth';
 import { AuthPage, Flash, s } from '@/platform/ui';
+import { mailConfigured } from '@/platform/mail';
 import { Submit } from '@/platform/client';
 
 export async function LoginView({ sp, admin }: { sp: Record<string, string | string[] | undefined>; admin?: boolean }) {
@@ -31,7 +32,9 @@ export async function LoginView({ sp, admin }: { sp: Record<string, string | str
         <Submit className={s.full} pending="Logging in…">Log in</Submit>
       </form>
       {!admin && <p className={s.muted}>New to Asteria? <Link href="/platform/signup?role=couple">Create a couple account</Link> or <Link href="/platform/signup?role=supplier">list your business</Link>.</p>}
-      <p className={s.muted} style={{ fontSize: '.78rem' }}>Forgotten your password? Email hello@asteria-events.com and we’ll reset it.</p>
+      {mailConfigured()
+        ? <p className={s.muted}>Forgotten your password? <Link href={admin ? '/admin/login/code' : '/platform/login/code'}>Email me a sign-in code</Link></p>
+        : <p className={s.muted} style={{ fontSize: '.78rem' }}>Forgotten your password? Email hello@asteria-events.com and we’ll reset it.</p>}
     </AuthPage>
   );
 }

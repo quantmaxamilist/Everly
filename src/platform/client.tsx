@@ -15,8 +15,8 @@ export function ConfirmSubmit({ children, confirm = 'Are you sure?', className =
   const [armed, setArmed] = useState(false);
   const st = useFormStatus();
   useEffect(() => { if (!armed) return; const t = setTimeout(() => setArmed(false), 5000); return () => clearTimeout(t); }, [armed]);
-  if (!armed) return <button type="button" className={`${s.btn} ${className}`} onClick={() => setArmed(true)}>{children}</button>;
-  return <button className={`${s.btn} ${s.danger} ${className}`} name={name} value={value} disabled={st.pending}>{st.pending ? 'Working…' : confirm}</button>;
+  if (!armed) return <button key="ask" type="button" className={`${s.btn} ${className}`} onClick={(e) => { e.preventDefault(); setArmed(true); }}>{children}</button>;
+  return <button key="go" className={`${s.btn} ${s.danger} ${className}`} name={name} value={value} disabled={st.pending}>{st.pending ? 'Working…' : confirm}</button>;
 }
 
 /** Re-fetches server data every few seconds (for message threads). */

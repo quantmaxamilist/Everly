@@ -3,7 +3,7 @@
  * Without a key, emails are skipped silently and everything else keeps working.
  */
 const FROM = process.env.MAIL_FROM || 'Asteria <hello@asteria-events.com>';
-export const mailConfigured = () => !!process.env.RESEND_API_KEY;
+export const mailConfigured = () => !!process.env.RESEND_API_KEY || process.env.MAIL_LOG === '1';
 
 const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]!);
 
@@ -21,6 +21,7 @@ export function wrap(title: string, body: string, cta?: { href: string; label: s
 }
 
 export async function sendMail(to: string, subject: string, html: string): Promise<boolean> {
+  if (process.env.MAIL_LOG === '1') { console.log(`[mail] to=${to} subject=${subject}`); return true; } // local testing only
   if (!process.env.RESEND_API_KEY || !to) return false;
   try {
     const r = await fetch('https://api.resend.com/emails', {
