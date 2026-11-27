@@ -2,7 +2,7 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { randomBytes } from 'node:crypto';
-import { db } from '../db';
+import { db, setSetting } from '../db';
 import { hashPassword, requireUser, setGatePassword, unlockGate } from '../auth';
 import { notify } from '../data';
 import { PLANS, clean, qs } from '../util';
@@ -72,4 +72,12 @@ export async function changeGate(fd: FormData) {
   await setGatePassword(pw);
   await unlockGate(pw);
   go('/admin/settings', 'm', 'Platform password changed — everyone else will need the new one');
+}
+
+/** Make the platform public (no platform password) or put the password back on. */
+export async function setPublic(fd: FormData) {
+  await requireUser('admin');
+  const open = fd.get('open') === '1';
+  await setSetting('gate_open', open ? '1' : '0');
+  go('/admin/settings', 'm', open ? 'The platform is now public — anyone can sign up without a password' : 'The platform password is back on — people need it to get in');
 }

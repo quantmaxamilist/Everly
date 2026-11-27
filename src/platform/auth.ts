@@ -40,7 +40,10 @@ export async function setGatePassword(pw: string) {
   await setSetting('gate_hash', await hashPassword(pw));
   await setSetting('gate_version', String(Date.now()));
 }
+/** When the platform is public (Admin → Settings), nobody needs the platform password. */
+export async function platformPublic() { return (await getSetting('gate_open')) === '1'; }
 export async function hasGate(): Promise<boolean> {
+  if (await platformPublic()) return true;
   const v = await getSetting('gate_version');
   if (!v) return false;
   const p = await verify<{ g: string }>((await cookies()).get(GATE)?.value);

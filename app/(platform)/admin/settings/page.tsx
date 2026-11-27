@@ -1,9 +1,10 @@
 import { requireUser } from '@/platform/auth';
-import { changeGate, addAdmin } from '@/platform/actions/admin';
+import { changeGate, addAdmin, setPublic } from '@/platform/actions/admin';
+import { platformPublic } from '@/platform/auth';
 import { changePasswordAction } from '@/platform/actions/auth';
 import { mailConfigured } from '@/platform/mail';
 import { storageConfigured } from '@/platform/storage';
-import { Submit } from '@/platform/client';
+import { ConfirmSubmit, Submit } from '@/platform/client';
 import { connectStripe } from '@/platform/actions/pay';
 import { stripeConfigured, stripeMode, stripeReady } from '@/platform/stripe';
 import { Flash, Head, Shell, s } from '@/platform/ui';
@@ -14,6 +15,7 @@ type P = { searchParams: Promise<Record<string, string | string[] | undefined>> 
 export default async function Page({ searchParams }: P) {
   const sp = await searchParams;
   const u = await requireUser('admin');
+  const isPublic = await platformPublic();
   const checks: [string, boolean, string][] = [
     ['Database', true, 'Connected'],
     ['Photo & brochure storage', storageConfigured(), storageConfigured() ? 'Vercel Blob connected' : 'Connect a Blob store in Vercel → Storage'],
@@ -38,12 +40,24 @@ export default async function Page({ searchParams }: P) {
             : 'One click sets up Stripe’s notifications to Asteria (webhooks) and the supplier billing page.'}</p>
           {stripeConfigured() && <Submit className={s.sm} pending="Connecting…">{ready ? 'Reconnect Stripe' : 'Connect Stripe'}</Submit>}
         </form>
-        <form action={changeGate} className={`${s.card} ${s.form}`}>
-          <b className={s.h3}>Platform password</b>
-          <p className={s.muted}>Everyone needs this to reach the platform until launch. Changing it signs other people out of the gate.</p>
-          <div className={s.field}><label htmlFor="gt">New platform password</label><input id="gt" name="gate" className={s.input} required minLength={6} /></div>
-          <Submit className={s.sm}>Change platform password</Submit>
-        </form>
+        <div className={`${s.card} ${s.form}`}>
+          <div className={s.row}><b className={s.h3}>Platform access</b><span className={`${s.tag} ${isPublic ? s.t_ok : s.t_new}`}>{isPublic ? 'Public' : 'Password protected'}</span></div>
+          {isPublic ? (
+            <>
+              <p className={s.muted}>Anyone can sign up as a couple or supplier — no platform password needed. Suppliers still need your approval before couples can see them.</p>
+              <form action={setPublic}><input type="hidden" name="open" value="0" /><ConfirmSubmit className={`${s.ghost} ${s.sm}`} confirm="Yes, put the password back">Put the password back on</ConfirmSubmit></form>
+            </>
+          ) : (
+            <>
+              <p className={s.muted}>Everyone needs the platform password to get in. Make it public when you&rsquo;re ready for anyone to sign up.</p>
+              <form action={setPublic}><input type="hidden" name="open" value="1" /><ConfirmSubmit className={s.sm} confirm="Yes, make it public">Remove the password (make public)</ConfirmSubmit></form>
+              <form action={changeGate} className={s.form}>
+                <div className={s.field}><label htmlFor="gt">Or change the platform password</label><input id="gt" name="gate" className={s.input} required minLength={6} /></div>
+                <Submit className={`${s.ghost} ${s.sm}`}>Change platform password</Submit>
+              </form>
+            </>
+          )}
+        </div>
         <form action={addAdmin} className={`${s.card} ${s.form}`}>
           <b className={s.h3}>Add an admin</b>
           <div className={s.f2}>
